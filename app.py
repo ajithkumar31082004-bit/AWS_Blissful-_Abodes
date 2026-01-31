@@ -50,7 +50,7 @@ except ImportError:
 
 
 app = Flask(__name__)
-app.secret_key = "dev-secret-key-change-in-production"
+app.secret_key = "cHOgZyQn5hyqDrlIRNqxdDvecq4Sc7sD5fgrc3aB"
 
 # Configure upload folder
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads", "rooms")
@@ -2015,7 +2015,9 @@ def book_room(room_id):
                 booking_data["nights"] = nights
 
                 # Use dynamic pricing engine
-                base_price = float(room.get("price", 0))
+                # Convert Decimal to float for calculations
+                room_price = room.get("price", 0)
+                base_price = float(room_price) if room_price else 0.0
                 dynamic_price = calculate_dynamic_price(
                     base_price,
                     booking_data["check_in"],
