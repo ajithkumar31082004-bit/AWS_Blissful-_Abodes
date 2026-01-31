@@ -24,6 +24,15 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = "cHOgZyQn5hyqDrlIRNqxdDvecq4Sc7sD5fgrc3aB"
 
+
+# Simple gettext function for templates (no translation, just returns text)
+def gettext(text):
+    return text
+
+
+# Make gettext available in templates
+app.jinja_env.globals.update(_=gettext)
+
 # AWS Configuration - Hardcoded
 REGION = "us-east-1"
 
