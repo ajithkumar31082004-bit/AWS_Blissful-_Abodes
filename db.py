@@ -64,6 +64,17 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(obj)
 
 
+def convert_floats_to_decimal(obj):
+    """Recursively convert all float values to Decimal for DynamoDB compatibility"""
+    if isinstance(obj, dict):
+        return {k: convert_floats_to_decimal(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_floats_to_decimal(item) for item in obj]
+    elif isinstance(obj, float):
+        return Decimal(str(obj))
+    return obj
+
+
 def create_tables():
     """Create DynamoDB tables if they don't exist"""
     if not DYNAMODB_AVAILABLE:
@@ -681,6 +692,8 @@ def add_room(room_data):
         try:
             table = get_table(ROOMS_TABLE)
             if table:
+                # Convert floats to Decimal for DynamoDB
+                room_data = convert_floats_to_decimal(room_data)
                 response = table.put_item(Item=room_data)
                 return response
         except Exception as e:
@@ -839,7 +852,8 @@ def update_room(room_data):
                 for key, value in safe_update.items():
                     update_expr += f"#{key} = :{key}, "
                     expr_names[f"#{key}"] = key
-                    expr_attrs[f":{key}"] = value
+                    # Convert floats to Decimal for DynamoDB
+                    expr_attrs[f":{key}"] = convert_floats_to_decimal(value)
 
                 update_expr = update_expr.rstrip(", ")
                 if update_expr == "SET":
@@ -1253,6 +1267,8 @@ def add_branch(branch_data):
         try:
             table = get_table(BRANCHES_TABLE)
             if table:
+                # Convert floats to Decimal for DynamoDB
+                branch_data = convert_floats_to_decimal(branch_data)
                 response = table.put_item(Item=branch_data)
                 return response
         except Exception as e:
