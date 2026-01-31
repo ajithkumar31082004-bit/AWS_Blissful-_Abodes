@@ -1,0 +1,207 @@
+{% extends "layout.html" %} {% block title %}Booking Confirmed - Blissful
+Abodes{% endblock %} {% block extra_css %}
+<style>
+  .success-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  }
+
+  .success-container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    padding: 60px 40px;
+  }
+
+  .success-icon {
+    font-size: 5rem;
+    color: #28a745;
+    margin-bottom: 25px;
+    animation: scaleIn 0.6s ease;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .success-title {
+    font-size: 2.5rem;
+    color: #1a365d;
+    margin-bottom: 15px;
+    font-family: "Playfair Display", serif;
+  }
+
+  .success-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .booking-info {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    margin: 30px 0;
+    text-align: left;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    color: #666;
+    font-weight: 600;
+  }
+
+  .info-value {
+    color: #1a365d;
+    font-weight: 600;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .btn-primary-action {
+    background: linear-gradient(135deg, #1a365d, #2d9cdb);
+    color: white;
+  }
+
+  .btn-primary-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(26, 54, 93, 0.4);
+  }
+
+  .btn-secondary-action {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-secondary-action:hover {
+    background: #e0e0e0;
+  }
+
+  .confirmation-note {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 25px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .confirmation-note i {
+    font-size: 1.3rem;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="success-page">
+  <div class="success-container">
+    <div class="success-icon">✓</div>
+
+    <h1 class="success-title">Booking Confirmed!</h1>
+
+    <p class="success-message">
+      Your reservation has been successfully created. A confirmation email has
+      been sent to your registered email address.
+    </p>
+
+    <div class="booking-info">
+      <div class="info-row">
+        <span class="info-label">Booking ID:</span>
+        <span class="info-value">{{ booking_id[:12]|upper }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Status:</span>
+        <span class="info-value">✓ Confirmed</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Confirmation Email:</span>
+        <span class="info-value">{{ user.email }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Total Amount:</span>
+        <span class="info-value" style="color: #d4af37">₹49,551</span>
+      </div>
+    </div>
+
+    <div class="confirmation-note">
+      <i class="fas fa-info-circle"></i>
+      <div>
+        <strong>What's Next?</strong>
+        <br />
+        Check your email for the confirmation details. You can modify or cancel
+        your booking up to 24 hours before check-in.
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a
+        href="{{ url_for('my_bookings') }}"
+        class="action-btn btn-primary-action"
+      >
+        <i class="fas fa-calendar-alt"></i> View My Bookings
+      </a>
+      <a href="{{ url_for('rooms') }}" class="action-btn btn-secondary-action">
+        <i class="fas fa-door-open"></i> Book More Rooms
+      </a>
+      <a href="{{ url_for('index') }}" class="action-btn btn-secondary-action">
+        <i class="fas fa-home"></i> Back to Home
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Display booking confirmation message
+    showToast("Booking confirmed successfully!", "success");
+
+    // Optional: Auto-scroll to top
+    window.scrollTo(0, 0);
+  });
+</script>
+{% endblock %}

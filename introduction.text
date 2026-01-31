@@ -1,0 +1,68 @@
+Solution — step-by-step
+
+1. Prepare AWS account
+   - Sign in to AWS Console; pick region (e.g., us-east-1).
+   - Create an IAM admin user for setup (or use existing with IAM, EC2, S3, SNS, DynamoDB, CloudWatch privileges).
+2. Create infra resources (quick path)
+   - Run aws_setup.py from a machine with AWS CLI creds (or convert to CloudFormation).
+   - Provide AWS_ACCOUNT_ID when prompted. Script creates DynamoDB tables, SNS topic, S3 bucket, IAM role/instance profile.
+   - Note outputs: SNS_TOPIC_ARN, S3 bucket name, IAM Role ARN.
+3. Verify resources
+   - Console > DynamoDB: confirm tables (HotelUsers, Hotels, HotelBookings, HotelReviews, HotelAdmins, Branches, Rooms).
+   - Console > SNS: confirm topic and subscriptions (add email subscription for testing).
+   - Console > S3: confirm bucket, versioning/tags.
+   - Console > IAM: confirm role BlissfulAbodesEC2Role + instance profile and attached policies.
+4. Prepare application environment variables
+   - On EC2, create .env or systemd environment variables:
+     AWS_REGION, AWS_ACCOUNT_ID, SNS_TOPIC_ARN, S3_BUCKET_NAME, FLASK_SECRET_KEY, PORT (5000), DYNAMODB_* table names if customized.
+5. Launch EC2 instance
+   - Create EC2 (Amazon Linux 2 / Ubuntu) with:
+     - Instance type: t3.micro (dev) or larger.
+     - IAM role: attach the instance profile created.
+     - Security Group: allow inbound 22 (SSH), 80/443 (if ALB), 5000 (app) as needed. Restrict sources.
+     - Key pair for SSH.
+6. SSH into EC2 and install runtime
+   - Update packages: yum/apt update.
+   - Install python3, pip, git, nginx (optional), docker (optional).
+7. Deploy app code on EC2
+   - git clone your repo into /home/ec2-user/blissful-abodes.
+   - Place .env file with environment variables from step 4.
+   - pip3 install -r requirements.txt (use virtualenv or system Python).
+8. Configure application process manager
+   - Use systemd + gunicorn:
+     - Create systemd unit to run: gunicorn --workers 4 --bind 0.0.0.0:5000 app_aws:app
+     - Ensure WorkingDirectory points to repo and environment variables are loaded (EnvironmentFile=/home/ec2-user/blissful-abodes/.env).
+     - Enable and start service, check journalctl for logs.
+   - Optionally use Docker + ECS/EKS for containerized deploy.
+9. Configure reverse proxy / TLS
+   - Use nginx or ALB + ACM:
+     - For single instance: nginx reverse-proxy at 80/443 to localhost:5000, obtain certificate via Let’s Encrypt or ACM with ALB.
+     - For production scale: set up an Application Load Balancer (ALB) with target group pointing to EC2 instances on port 5000; attach ACM cert to ALB for HTTPS.
+10. Configure health checks & autoscaling (optional)
+    - ALB health check URL: /health
+    - Configure Auto Scaling Group with launch template (attach IAM role) and desired scaling policies.
+11. Monitoring & logging
+    - CloudWatch Logs: configure instance to push gunicorn/nginx logs (CloudWatch agent or use systemd journald->CloudWatch).
+    - CloudWatch metrics: enable custom metrics if needed.
+    - Set CloudWatch alarms for high error rate / CPU / low available capacity.
+12. Notifications & testing
+    - Subscribe an email to SNS topic and test send_notification via app or AWS Console.
+    - Go through flows: signup, login, create hotel (admin), booking, review. Verify DynamoDB items, S3 uploads, SNS notifications.
+13. Hardening & production checklist
+    - Use HTTPS (ACM + ALB).
+    - Use least-privilege IAM policies (narrow down DynamoDB/S3/SNS access).
+    - Hash passwords (bcrypt) before saving.
+    - Store secrets in AWS Parameter Store or Secrets Manager; do not embed in .env in production.
+    - Enable backups (DynamoDB point-in-time recovery) and S3 lifecycle rules.
+    - Enable CloudTrail and VPC Flow Logs if required.
+14. CI/CD (optional)
+    - Set up CI pipeline (GitHub Actions / CodePipeline) to build, run tests, and deploy (SSH, SSM Run Command, or AMI/Container image push).
+15. Rollback plan
+    - Keep AMI / container image versions, and database backups before migration.
+
+If you want, I can:
+- Provide the exact systemd unit file and environment file (for your EC2),
+- Generate a CloudFormation template to create the same infra,
+- Add password hashing code and Secrets Manager integration.
+
+Which one should I add next?

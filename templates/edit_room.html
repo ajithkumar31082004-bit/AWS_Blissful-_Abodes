@@ -1,0 +1,311 @@
+{% extends "base.html" %} {% block title %}Edit Room - Blissful Abodes Admin{%
+endblock %} {% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-edit"></i> Edit Room: {{ room.name }}
+          </h4>
+        </div>
+        <div class="card-body">
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %} {% for category, message in messages %}
+          <div
+            class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+            role="alert"
+          >
+            {{ message }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+          {% endfor %} {% endif %} {% endwith %}
+
+          <form method="POST" enctype="multipart/form-data">
+            <!-- Room Name -->
+            <div class="mb-3">
+              <label for="name" class="form-label">
+                <i class="fas fa-home"></i> Room Name *
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                value="{{ room.name }}"
+                required
+              />
+              <small class="text-muted"
+                >e.g., Presidential Suite, Double Room 001</small
+              >
+            </div>
+
+            <!-- Location -->
+            <div class="mb-3">
+              <label for="location" class="form-label">
+                <i class="fas fa-map-marker-alt"></i> Location *
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="location"
+                name="location"
+                value="{{ room.location }}"
+                required
+              />
+              <small class="text-muted">e.g., Mumbai, Maharashtra</small>
+            </div>
+
+            <!-- Price and Capacity Row -->
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="price" class="form-label">
+                    <i class="fas fa-rupee-sign"></i> Price per Night (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="price"
+                    name="price"
+                    value="{{ room.price }}"
+                    step="0.01"
+                    min="1"
+                    required
+                  />
+                  <small class="text-muted">In Indian Rupees (₹)</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="capacity" class="form-label">
+                    <i class="fas fa-users"></i> Capacity (Guests) *
+                  </label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="capacity"
+                    name="capacity"
+                    value="{{ room.capacity }}"
+                    min="1"
+                    max="10"
+                    required
+                  />
+                  <small class="text-muted">Number of guests</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Amenities -->
+            <div class="mb-3">
+              <label for="amenities" class="form-label">
+                <i class="fas fa-star"></i> Amenities
+              </label>
+              <textarea
+                class="form-control"
+                id="amenities"
+                name="amenities"
+                rows="3"
+              >
+{{ room.amenities|join(', ') if room.amenities else '' }}</textarea
+              >
+              <small class="text-muted"
+                >Comma-separated (e.g., WiFi, AC, TV, Mini Fridge)</small
+              >
+            </div>
+
+            <!-- Availability Status -->
+            <div class="mb-3">
+              <label for="availability" class="form-label">
+                <i class="fas fa-check-circle"></i> Availability Status
+              </label>
+              <select class="form-select" id="availability" name="availability">
+                <option
+                  value="available"
+                  {% if room.availability == 'available' %}selected{% endif %}
+                >
+                  ✓ Available
+                </option>
+                <option
+                  value="unavailable"
+                  {% if room.availability == 'unavailable' %}selected{% endif %}
+                >
+                  ✗ Unavailable
+                </option>
+                <option
+                  value="maintenance"
+                  {% if room.availability == 'maintenance' %}selected{% endif %}
+                >
+                  🔧 Maintenance
+                </option>
+                <option
+                  value="cleaning"
+                  {% if room.availability == 'cleaning' %}selected{% endif %}
+                >
+                  🧹 Cleaning
+                </option>
+              </select>
+            </div>
+
+            <!-- Room Image -->
+            <div class="mb-3">
+              <label for="room_image" class="form-label">
+                <i class="fas fa-image"></i> Room Image
+              </label>
+              <div class="mb-2">
+                <label for="image_url" class="form-label">
+                  <i class="fas fa-link"></i> Image URL (optional)
+                </label>
+                <input
+                  type="url"
+                  class="form-control"
+                  id="image_url"
+                  name="image_url"
+                  value="{% if room.image and room.image.startswith('http') %}{{ room.image }}{% else %}{% endif %}"
+                  placeholder="https://... (paste an open-source image URL)"
+                />
+                <small class="text-muted"
+                  >If provided, this will be used instead of an uploaded file.</small
+                >
+              </div>
+              {% if room.image and room.image != 'default-room.jpg' %}
+              <div class="mb-2">
+                {% if room.image.startswith('http') %}
+                <img
+                  src="{{ room.image }}"
+                  alt="{{ room.name }}"
+                  class="img-thumbnail"
+                  style="max-width: 200px"
+                />
+                <p class="text-muted small">Current image (external URL)</p>
+                {% else %}
+                <img
+                  src="/static/uploads/rooms/{{ room.image }}"
+                  alt="{{ room.name }}"
+                  class="img-thumbnail"
+                  style="max-width: 200px"
+                />
+                <p class="text-muted small">Current image</p>
+                {% endif %}
+              </div>
+              {% endif %}
+              <input
+                type="file"
+                class="form-control"
+                id="room_image"
+                name="room_image"
+                accept="image/*"
+              />
+              <small class="text-muted"
+                >PNG, JPG, JPEG, GIF, WEBP (Max 5MB). Leave blank to keep
+                current image.</small
+              >
+            </div>
+
+            <!-- Virtual Tour -->
+            <div class="mb-3">
+              <label for="virtual_tour_360_url" class="form-label">
+                <i class="fas fa-vr-cardboard"></i> 360° Tour Image URL (optional)
+              </label>
+              <input
+                type="url"
+                class="form-control"
+                id="virtual_tour_360_url"
+                name="virtual_tour_360_url"
+                value="{{ room.virtual_tour_360_url|default('') }}"
+                placeholder="https://... (equirectangular 360 panorama image)"
+              />
+              <small class="text-muted"
+                >Use an equirectangular 360 panorama. If empty, we auto-pick a demo.</small
+              >
+            </div>
+
+            <!-- Matterport -->
+            <div class="mb-3">
+              <label for="matterport_url" class="form-label">
+                <i class="fas fa-cube"></i> Matterport URL (optional)
+              </label>
+              <input
+                type="url"
+                class="form-control"
+                id="matterport_url"
+                name="matterport_url"
+                value="{{ room.matterport_url|default('') }}"
+                placeholder="https://my.matterport.com/show/?m=XXXXX"
+              />
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex gap-2 pt-3">
+              <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                <i class="fas fa-save"></i> Update Room
+              </button>
+              <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="btn btn-secondary btn-lg flex-grow-1"
+              >
+                <i class="fas fa-times"></i> Cancel
+              </a>
+            </div>
+          </form>
+
+          <!-- Room Info Card -->
+          <div class="alert alert-info mt-4">
+            <h6><i class="fas fa-info-circle"></i> Room Information</h6>
+            <ul class="mb-0 small">
+              <li><strong>Room ID:</strong> {{ room.room_id }}</li>
+              <li>
+                <strong>Created:</strong> {{ room.created_at[:10] if
+                room.created_at else 'N/A' }}
+              </li>
+              <li>
+                <strong>Current Status:</strong>
+                <span class="badge bg-success"
+                  >{{ room.availability|title }}</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    border-radius: 10px;
+    border: none;
+  }
+  .card-header {
+    border-radius: 10px 10px 0 0;
+    padding: 1.5rem;
+  }
+  .form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+  .form-control,
+  .form-select {
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+  .btn {
+    border-radius: 5px;
+    font-weight: 600;
+  }
+  .img-thumbnail {
+    border-radius: 5px;
+  }
+</style>
+{% endblock %}

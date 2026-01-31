@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}Modify Booking - Blissful Abodes{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Modify Your Booking</h2>
+                <p class="text-muted">Update your check-in and check-out dates</p>
+            </div>
+
+            <!-- Booking Information Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Current Booking Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Booking ID:</strong>
+                            <p class="text-muted">{{ booking.booking_id }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Room ID:</strong>
+                            <p class="text-muted">{{ booking.room_id }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Current Check-in:</strong>
+                            <p class="text-muted">{{ booking.check_in }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Current Check-out:</strong>
+                            <p class="text-muted">{{ booking.check_out }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Nights:</strong>
+                            <p class="text-muted">{{ booking.nights }} night(s)</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Current Total Price:</strong>
+                            <p class="text-muted">₹{{ "%.2f"|format(booking.total_price|float) }}</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb"></i> Note: The price will be recalculated based on dynamic pricing rules when you modify your dates.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modification Form -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> New Dates</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="modifyBookingForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="check_in" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-check"></i> New Check-in Date
+                                </label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="check_in"
+                                       name="check_in"
+                                       value="{{ booking.check_in }}"
+                                       min="{{ (now().strftime('%Y-%m-%d')) }}"
+                                       required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="check_out" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-times"></i> New Check-out Date
+                                </label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="check_out"
+                                       name="check_out"
+                                       value="{{ booking.check_out }}"
+                                       min="{{ (now().strftime('%Y-%m-%d')) }}"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div id="pricePreview" class="alert alert-warning d-none mb-3">
+                            <strong>Estimated New Price:</strong> <span id="newPrice">Calculating...</span>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Modification Policy:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>You can modify your booking dates at any time</li>
+                                <li>Price may change based on new dates and availability</li>
+                                <li>Weekend and peak season rates may apply</li>
+                                <li>Early bird or last-minute discounts may apply</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success flex-fill">
+                                <i class="fas fa-check"></i> Confirm Modification
+                            </button>
+                            <a href="{{ url_for('my_bookings') }}" class="btn btn-secondary flex-fill">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cancellation Policy -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-ban"></i> Cancellation Policy</h5>
+                </div>
+                <div class="card-body">
+                    <p>If you prefer to cancel this booking instead:</p>
+                    <ul>
+                        <li><strong>7+ days before check-in:</strong> 100% refund</li>
+                        <li><strong>3-6 days before check-in:</strong> 50% refund</li>
+                        <li><strong>Less than 3 days:</strong> No refund</li>
+                    </ul>
+                    <button type="button" class="btn btn-danger" onclick="confirmCancellation()">
+                        <i class="fas fa-trash"></i> Cancel This Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Date validation
+    document.getElementById('check_in').addEventListener('change', function() {
+        const checkIn = new Date(this.value);
+        const checkOutInput = document.getElementById('check_out');
+        const minCheckOut = new Date(checkIn);
+        minCheckOut.setDate(minCheckOut.getDate() + 1);
+        checkOutInput.min = minCheckOut.toISOString().split('T')[0];
+
+        if (checkOutInput.value && new Date(checkOutInput.value) <= checkIn) {
+            checkOutInput.value = minCheckOut.toISOString().split('T')[0];
+        }
+    });
+
+    // Price preview calculation (rough estimate)
+    document.getElementById('check_in').addEventListener('change', calculateEstimate);
+    document.getElementById('check_out').addEventListener('change', calculateEstimate);
+
+    function calculateEstimate() {
+        const checkIn = document.getElementById('check_in').value;
+        const checkOut = document.getElementById('check_out').value;
+
+        if (checkIn && checkOut) {
+            const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+            if (nights > 0) {
+                const basePrice = {{ booking.total_price|float }} / {{ booking.nights }};
+                const estimate = basePrice * nights;
+                document.getElementById('newPrice').textContent = '₹' + estimate.toFixed(2) + ' (approximate)';
+                document.getElementById('pricePreview').classList.remove('d-none');
+            }
+        }
+    }
+
+    // Cancellation confirmation
+    function confirmCancellation() {
+        if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+            fetch('/booking/{{ booking.booking_id }}/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Booking cancelled successfully!\n\n' +
+                          'Refund Amount: ₹' + data.refund_amount.toFixed(2) + '\n' +
+                          'Cancellation Fee: ₹' + data.cancellation_fee.toFixed(2) + '\n' +
+                          'Refund Percentage: ' + data.refund_percent + '%');
+                    window.location.href = '/my-bookings';
+                } else {
+                    alert('Error cancelling booking: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+    }
+
+    // Form validation
+    document.getElementById('modifyBookingForm').addEventListener('submit', function(e) {
+        const checkIn = new Date(document.getElementById('check_in').value);
+        const checkOut = new Date(document.getElementById('check_out').value);
+
+        if (checkOut <= checkIn) {
+            e.preventDefault();
+            alert('Check-out date must be after check-in date');
+            return false;
+        }
+    });
+</script>
+
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+    }
+
+    .btn {
+        border-radius: 5px;
+        font-weight: 500;
+        padding: 10px 20px;
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 2px solid #e0e0e0;
+        padding: 10px;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+</style>
+{% endblock %}

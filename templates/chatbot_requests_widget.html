@@ -1,0 +1,599 @@
+<!-- Chatbot Requests Widget - Reusable component for admin/staff dashboards -->
+<div class="chatbot-requests-section">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="section-heading">
+                <i class="fas fa-robot"></i> Chatbot Requests & Reports
+                {% if pending_requests|length > 0 %}
+                <span class="badge bg-danger pulse-badge">{{ pending_requests|length }} Pending</span>
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="request-stat-card pending">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>{{ pending_requests|length }}</h4>
+                    <p>Pending Requests</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="request-stat-card service">
+                <div class="stat-icon">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>{{ service_requests|length }}</h4>
+                    <p>Service Requests</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="request-stat-card report">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>{{ report_requests|length }}</h4>
+                    <p>Reports/Issues</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="request-stat-card all">
+                <div class="stat-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="stat-content">
+                    <h4>{{ (service_requests|length + report_requests|length) }}</h4>
+                    <p>Total Active</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs for Different Request Types -->
+    <ul class="nav nav-tabs mb-3" id="requestTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                <i class="fas fa-clock"></i> Pending
+                {% if pending_requests|length > 0 %}
+                <span class="badge bg-danger">{{ pending_requests|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="service-tab" data-bs-toggle="tab" data-bs-target="#service" type="button">
+                <i class="fas fa-concierge-bell"></i> Service Requests
+                {% if service_requests|length > 0 %}
+                <span class="badge bg-info">{{ service_requests|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button">
+                <i class="fas fa-exclamation-triangle"></i> Reports
+                {% if report_requests|length > 0 %}
+                <span class="badge bg-warning">{{ report_requests|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="requestTabContent">
+        <!-- Pending Requests Tab -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            {% if pending_requests %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>User</th>
+                            <th>Details</th>
+                            <th>Time</th>
+                            <th>Priority</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in pending_requests %}
+                        <tr>
+                            <td><code>{{ request.request_id[:8] }}</code></td>
+                            <td>
+                                {% if request.request_type == 'extra_service' %}
+                                <span class="badge bg-info"><i class="fas fa-concierge-bell"></i> Service</span>
+                                {% elif request.request_type == 'report' %}
+                                <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Report</span>
+                                {% elif request.request_type == 'booking' %}
+                                <span class="badge bg-primary"><i class="fas fa-calendar"></i> Booking</span>
+                                {% elif request.request_type == 'review' %}
+                                <span class="badge bg-success"><i class="fas fa-star"></i> Review</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ request.user_name|default('Guest', true) }}</strong><br>
+                                <small class="text-muted">{{ request.user_email|default('N/A', true) }}</small>
+                            </td>
+                            <td>
+                                <div class="request-details">
+                                    {{ request.details[:100] }}{% if request.details|length > 100 %}...{% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <small>{{ request.created_at[:19]|replace('T', ' ') }}</small>
+                            </td>
+                            <td>
+                                {% if request.priority == 'urgent' %}
+                                <span class="badge bg-danger">Urgent</span>
+                                {% elif request.priority == 'high' %}
+                                <span class="badge bg-warning">High</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="viewRequest('{{ request.request_id }}')">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="markAsProcessing('{{ request.request_id }}')">
+                                    <i class="fas fa-tasks"></i> Process
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> No pending requests. Great job!
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Service Requests Tab -->
+        <div class="tab-pane fade" id="service" role="tabpanel">
+            {% if service_requests %}
+            <div class="row">
+                {% for request in service_requests %}
+                <div class="col-md-6 mb-3">
+                    <div class="card request-card service-card">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-concierge-bell"></i> Service Request #{{ request.request_id[:8] }}
+                                <span class="badge bg-light text-dark float-end">{{ request.status|title }}</span>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Guest:</strong> {{ request.user_name|default('Guest', true) }}</p>
+                            <p><strong>Email:</strong> {{ request.user_email|default('N/A', true) }}</p>
+                            <p><strong>Request:</strong></p>
+                            <div class="request-details-box">
+                                {{ request.details }}
+                            </div>
+                            <p class="mb-2"><strong>Time:</strong> <small>{{ request.created_at[:19]|replace('T', ' ') }}</small></p>
+                            {% if request.staff_assigned %}
+                            <p class="mb-0"><strong>Assigned to:</strong> {{ request.staff_assigned }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-primary" onclick="viewRequest('{{ request.request_id }}')">
+                                <i class="fas fa-eye"></i> Full Details
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="completeRequest('{{ request.request_id }}')">
+                                <i class="fas fa-check"></i> Mark Complete
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="assignStaff('{{ request.request_id }}')">
+                                <i class="fas fa-user-plus"></i> Assign Staff
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No service requests at the moment.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Reports Tab -->
+        <div class="tab-pane fade" id="reports" role="tabpanel">
+            {% if report_requests %}
+            <div class="row">
+                {% for request in report_requests %}
+                <div class="col-md-6 mb-3">
+                    <div class="card request-card report-card">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="fas fa-exclamation-triangle"></i> Report #{{ request.request_id[:8] }}
+                                <span class="badge bg-light text-dark float-end">{{ request.status|title }}</span>
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Guest:</strong> {{ request.user_name|default('Guest', true) }}</p>
+                            <p><strong>Email:</strong> {{ request.user_email|default('N/A', true) }}</p>
+                            <p><strong>Issue Reported:</strong></p>
+                            <div class="request-details-box alert alert-warning">
+                                {{ request.details }}
+                            </div>
+                            <p class="mb-2"><strong>Time:</strong> <small>{{ request.created_at[:19]|replace('T', ' ') }}</small></p>
+                            {% if request.booking_id %}
+                            <p class="mb-0"><strong>Booking ID:</strong> <code>{{ request.booking_id }}</code></p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-primary" onclick="viewRequest('{{ request.request_id }}')">
+                                <i class="fas fa-eye"></i> Full Details
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="markAsUrgent('{{ request.request_id }}')">
+                                <i class="fas fa-exclamation"></i> Mark Urgent
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="resolveReport('{{ request.request_id }}')">
+                                <i class="fas fa-check"></i> Resolve
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No reports at the moment.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Request Detail Modal -->
+<div class="modal fade" id="requestDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="requestDetailContent">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" onclick="updateRequestStatus('processing')">
+                    <i class="fas fa-tasks"></i> Start Processing
+                </button>
+                <button type="button" class="btn btn-primary" onclick="updateRequestStatus('completed')">
+                    <i class="fas fa-check"></i> Mark Complete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chatbot-requests-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.section-heading {
+    color: #1a365d;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.pulse-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.request-stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.request-stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.request-stat-card .stat-icon {
+    font-size: 2.5rem;
+    margin-right: 15px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.request-stat-card.pending .stat-icon {
+    background: #ffc107;
+    color: white;
+}
+
+.request-stat-card.service .stat-icon {
+    background: #17a2b8;
+    color: white;
+}
+
+.request-stat-card.report .stat-icon {
+    background: #dc3545;
+    color: white;
+}
+
+.request-stat-card.all .stat-icon {
+    background: #6c757d;
+    color: white;
+}
+
+.request-stat-card h4 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1a365d;
+}
+
+.request-stat-card p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.request-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.request-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.request-details-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #17a2b8;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.nav-tabs .nav-link {
+    color: #666;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    color: #1a365d;
+    font-weight: 600;
+}
+
+.table th {
+    background: #1a365d;
+    color: white;
+    font-weight: 500;
+    border: none;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.request-details {
+    max-width: 300px;
+    white-space: pre-wrap;
+}
+</style>
+
+<script>
+let currentRequestId = null;
+
+function viewRequest(requestId) {
+    currentRequestId = requestId;
+
+    // Fetch request details
+    fetch(`/api/admin/chatbot/request/${requestId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const request = data.request;
+                const content = `
+                    <div class="request-detail">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Request ID:</strong> <code>${request.request_id}</code>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Type:</strong> <span class="badge bg-info">${request.request_type}</span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Guest Name:</strong> ${request.user_name || 'N/A'}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Email:</strong> ${request.user_email || 'N/A'}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <strong>Status:</strong> <span class="badge bg-${request.status === 'pending' ? 'warning' : request.status === 'processing' ? 'info' : 'success'}">${request.status}</span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <strong>Details:</strong>
+                                <div class="alert alert-light mt-2">${request.details}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Created:</strong> ${request.created_at}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Staff Assigned:</strong> ${request.staff_assigned || 'None'}
+                            </div>
+                        </div>
+                        ${request.admin_notes ? `
+                        <div class="row">
+                            <div class="col-12">
+                                <strong>Admin Notes:</strong>
+                                <div class="alert alert-info mt-2">${request.admin_notes}</div>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                `;
+                document.getElementById('requestDetailContent').innerHTML = content;
+                new bootstrap.Modal(document.getElementById('requestDetailModal')).show();
+            } else {
+                alert('Error loading request details: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+}
+
+function updateRequestStatus(status) {
+    if (!currentRequestId) return;
+
+    fetch(`/api/admin/chatbot/request/${currentRequestId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: status})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Request updated successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function markAsProcessing(requestId) {
+    if (confirm('Mark this request as being processed?')) {
+        fetch(`/api/admin/chatbot/request/${requestId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: 'processing'})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+function completeRequest(requestId) {
+    if (confirm('Mark this request as completed?')) {
+        fetch(`/api/admin/chatbot/request/${requestId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: 'completed'})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Request completed!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+function resolveReport(requestId) {
+    const notes = prompt('Add resolution notes (optional):');
+    fetch(`/api/admin/chatbot/request/${requestId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            status: 'completed',
+            admin_notes: notes || 'Report resolved'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Report resolved!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function assignStaff(requestId) {
+    const staffName = prompt('Enter staff member name:');
+    if (staffName) {
+        fetch(`/api/admin/chatbot/request/${requestId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                staff_assigned: staffName,
+                status: 'processing'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Staff assigned!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+function markAsUrgent(requestId) {
+    fetch(`/api/admin/chatbot/request/${requestId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({priority: 'urgent'})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Marked as urgent!');
+            location.reload();
+        }
+    });
+}
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+    location.reload();
+}, 30000);
+</script>

@@ -1,0 +1,671 @@
+{% extends "layout.html" %} {% block title %}Reviews & Ratings - Blissful
+Abodes{% endblock %} {% block extra_css %}
+<style>
+  .reviews-header {
+    background: linear-gradient(135deg, #1a365d, #2d9cdb);
+    color: white;
+    padding: 60px 20px;
+    border-radius: 0 0 30px 30px;
+    margin-bottom: 40px;
+  }
+
+  .reviews-header h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+
+  .reviews-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 30px;
+  }
+
+  .reviews-sidebar {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    height: fit-content;
+  }
+
+  .rating-summary {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .overall-rating {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #d4af37;
+    margin: 10px 0;
+  }
+
+  .rating-stars {
+    color: #d4af37;
+    font-size: 1.2rem;
+    margin: 10px 0;
+    letter-spacing: 3px;
+  }
+
+  .total-reviews {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .rating-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rating-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rating-label {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .rating-bar {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .rating-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d4af37, #f7d154);
+    border-radius: 10px;
+  }
+
+  .rating-count {
+    min-width: 30px;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .reviews-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .reviews-filters {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-button {
+    padding: 8px 16px;
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    color: #666;
+  }
+
+  .filter-button.active {
+    background: #1a365d;
+    color: white;
+    border-color: #1a365d;
+  }
+
+  .filter-button:hover {
+    border-color: #1a365d;
+  }
+
+  .review-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #d4af37;
+  }
+
+  .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+  }
+
+  .reviewer-info {
+    display: flex;
+    gap: 15px;
+    align-items: start;
+  }
+
+  .reviewer-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #1a365d, #2d9cdb);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .reviewer-details h3 {
+    color: #1a365d;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+  }
+
+  .review-date {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .review-rating {
+    display: flex;
+    gap: 5px;
+    color: #d4af37;
+    font-size: 1rem;
+  }
+
+  .review-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a365d;
+    margin: 15px 0;
+  }
+
+  .review-text {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 15px;
+  }
+
+  .review-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9rem;
+    color: #666;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .helpful-button {
+    background: none;
+    border: 1px solid #e9ecef;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+
+  .helpful-button:hover {
+    border-color: #d4af37;
+    color: #d4af37;
+  }
+
+  .helpful-button.liked {
+    background: #d4af37;
+    color: white;
+    border-color: #d4af37;
+  }
+
+  .write-review-section {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+  }
+
+  .review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    padding: 12px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .rating-selector {
+    display: flex;
+    gap: 10px;
+    font-size: 2rem;
+  }
+
+  .star {
+    cursor: pointer;
+    color: #ddd;
+    transition: all 0.2s ease;
+  }
+
+  .star:hover,
+  .star.active {
+    color: #d4af37;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 15px;
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 20px;
+  }
+
+  .empty-state h3 {
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  .empty-state p {
+    color: #999;
+  }
+
+  @media (max-width: 1024px) {
+    .reviews-container {
+      grid-template-columns: 1fr;
+    }
+
+    .reviews-sidebar {
+      position: static;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .reviews-header h1 {
+      font-size: 2rem;
+    }
+
+    .reviews-filters {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .filter-button {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- Reviews Header -->
+<div class="reviews-header">
+  <div style="max-width: 1200px; margin: 0 auto">
+    <h1>Guest Reviews & Ratings</h1>
+    <p>See what our guests say about their experiences at Blissful Abodes</p>
+  </div>
+</div>
+
+<!-- Reviews Container -->
+<div class="reviews-container">
+  <!-- Sidebar - Rating Summary -->
+  <div class="reviews-sidebar">
+    <div class="rating-summary">
+      <div class="overall-rating">4.8</div>
+      <div class="rating-stars">★★★★★</div>
+      <div class="total-reviews">Based on 1,250+ reviews</div>
+    </div>
+
+    <div class="rating-bars">
+      <div class="rating-bar-item">
+        <div class="rating-label">5★</div>
+        <div class="rating-bar">
+          <div class="rating-bar-fill" style="width: 75%"></div>
+        </div>
+        <div class="rating-count">938</div>
+      </div>
+
+      <div class="rating-bar-item">
+        <div class="rating-label">4★</div>
+        <div class="rating-bar">
+          <div class="rating-bar-fill" style="width: 15%"></div>
+        </div>
+        <div class="rating-count">188</div>
+      </div>
+
+      <div class="rating-bar-item">
+        <div class="rating-label">3★</div>
+        <div class="rating-bar">
+          <div class="rating-bar-fill" style="width: 7%"></div>
+        </div>
+        <div class="rating-count">88</div>
+      </div>
+
+      <div class="rating-bar-item">
+        <div class="rating-label">2★</div>
+        <div class="rating-bar">
+          <div class="rating-bar-fill" style="width: 2%"></div>
+        </div>
+        <div class="rating-count">25</div>
+      </div>
+
+      <div class="rating-bar-item">
+        <div class="rating-label">1★</div>
+        <div class="rating-bar">
+          <div class="rating-bar-fill" style="width: 1%"></div>
+        </div>
+        <div class="rating-count">11</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Reviews Section -->
+  <div class="reviews-main">
+    <!-- Write Review Section (if logged in) -->
+    {% if session.user_id %}
+    <div class="write-review-section">
+      <h2 style="color: #1a365d; margin-bottom: 20px">
+        <i class="fas fa-pen-fancy"></i> Share Your Experience
+      </h2>
+
+      <form class="review-form" onsubmit="submitReview(event)">
+        <div class="form-group">
+          <label>Your Rating <span style="color: red">*</span></label>
+          <div class="rating-selector" id="ratingSelector">
+            <span class="star" onclick="setRating(1)">★</span>
+            <span class="star" onclick="setRating(2)">★</span>
+            <span class="star" onclick="setRating(3)">★</span>
+            <span class="star" onclick="setRating(4)">★</span>
+            <span class="star" onclick="setRating(5)">★</span>
+          </div>
+          <input type="hidden" id="rating" name="rating" value="0" required />
+        </div>
+
+        <div class="form-group">
+          <label for="review_title"
+            >Title <span style="color: red">*</span></label
+          >
+          <input
+            type="text"
+            id="review_title"
+            name="review_title"
+            placeholder="e.g., Amazing stay with excellent service"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="review_text"
+            >Your Review <span style="color: red">*</span></label
+          >
+          <textarea
+            id="review_text"
+            name="review_text"
+            placeholder="Share your experience, what you loved, and any suggestions..."
+            required
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary btn-large">
+          <i class="fas fa-paper-plane"></i> Submit Review
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div
+      style="
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+      "
+    >
+      <p style="color: #666; margin-bottom: 20px">
+        <i class="fas fa-info-circle"></i> Please
+        <a href="{{ url_for('login') }}" style="color: #2d9cdb">login</a> to
+        write a review
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Filter Reviews -->
+    <div class="reviews-filters">
+      <span style="font-weight: 600; color: #333">Filter by rating:</span>
+      <button class="filter-button active" onclick="filterReviews('all')">
+        All
+      </button>
+      <button class="filter-button" onclick="filterReviews(5)">5 Stars</button>
+      <button class="filter-button" onclick="filterReviews(4)">4 Stars</button>
+      <button class="filter-button" onclick="filterReviews(3)">3 Stars</button>
+      <button class="filter-button" onclick="filterReviews(2)">2 Stars</button>
+      <button class="filter-button" onclick="filterReviews(1)">1 Star</button>
+    </div>
+
+    <!-- Reviews List -->
+    <div id="reviewsList">
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">👨</div>
+            <div class="reviewer-details">
+              <h3>Rahul Sharma</h3>
+              <div class="review-date">
+                <i class="fas fa-calendar"></i> 2 weeks ago
+                <span style="margin-left: 15px">
+                  <i class="fas fa-map-marker-alt"></i> Mumbai, India</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="review-rating">
+            <span>★</span><span>★</span><span>★</span><span>★</span
+            ><span>★</span>
+          </div>
+        </div>
+
+        <div class="review-title">Exceptional Service and Luxury!</div>
+
+        <div class="review-text">
+          My stay at Blissful Abodes was absolutely amazing! The room was
+          impeccably clean, the staff was incredibly attentive, and the
+          amenities were world-class. The booking process was seamless, and the
+          real-time confirmations made everything hassle-free. I couldn't ask
+          for a better experience. Highly recommended!
+        </div>
+
+        <div class="review-meta">
+          <div class="meta-item">
+            <i class="fas fa-door-open"></i> Presidential Suite
+          </div>
+          <div class="meta-item"><i class="fas fa-calendar"></i> 3 nights</div>
+          <button class="helpful-button" onclick="markHelpful(this)">
+            <i class="fas fa-thumbs-up"></i> Helpful (42)
+          </button>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">👩</div>
+            <div class="reviewer-details">
+              <h3>Priya Gupta</h3>
+              <div class="review-date">
+                <i class="fas fa-calendar"></i> 1 month ago
+                <span style="margin-left: 15px">
+                  <i class="fas fa-map-marker-alt"></i> Delhi, India</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="review-rating">
+            <span>★</span><span>★</span><span>★</span><span>★</span
+            ><span style="color: #ddd">★</span>
+          </div>
+        </div>
+
+        <div class="review-title">Great Value for Money</div>
+
+        <div class="review-text">
+          Great hotel with excellent value for money. The room was spacious and
+          comfortable, breakfast was delicious, and the location was perfect for
+          exploring the city. The instant booking confirmation was a nice touch.
+          Only minor issue was the WiFi could be faster, but overall a fantastic
+          experience!
+        </div>
+
+        <div class="review-meta">
+          <div class="meta-item">
+            <i class="fas fa-door-open"></i> Double Room Deluxe
+          </div>
+          <div class="meta-item"><i class="fas fa-calendar"></i> 2 nights</div>
+          <button class="helpful-button" onclick="markHelpful(this)">
+            <i class="fas fa-thumbs-up"></i> Helpful (28)
+          </button>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">👨</div>
+            <div class="reviewer-details">
+              <h3>Amit Patel</h3>
+              <div class="review-date">
+                <i class="fas fa-calendar"></i> 3 months ago
+                <span style="margin-left: 15px">
+                  <i class="fas fa-map-marker-alt"></i> Bangalore, India</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="review-rating">
+            <span>★</span><span>★</span><span>★</span><span>★</span
+            ><span>★</span>
+          </div>
+        </div>
+
+        <div class="review-title">Perfect for Business Travelers!</div>
+
+        <div class="review-text">
+          As a frequent business traveler, I've stayed in many hotels, but
+          Blissful Abodes stands out. The work desk in the room is perfect for
+          meetings, high-speed WiFi is reliable, and the 24/7 room service is
+          excellent. The real-time booking system makes planning easy. Will
+          definitely return!
+        </div>
+
+        <div class="review-meta">
+          <div class="meta-item">
+            <i class="fas fa-door-open"></i> Executive Suite
+          </div>
+          <div class="meta-item"><i class="fas fa-calendar"></i> 5 nights</div>
+          <button class="helpful-button" onclick="markHelpful(this)">
+            <i class="fas fa-thumbs-up"></i> Helpful (35)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let selectedRating = 0;
+
+  function setRating(rating) {
+    selectedRating = rating;
+    document.getElementById("rating").value = rating;
+
+    const stars = document.querySelectorAll("#ratingSelector .star");
+    stars.forEach((star, index) => {
+      if (index < rating) {
+        star.classList.add("active");
+      } else {
+        star.classList.remove("active");
+      }
+    });
+  }
+
+  function submitReview(event) {
+    event.preventDefault();
+
+    if (selectedRating === 0) {
+      showToast("Please select a rating", "warning");
+      return;
+    }
+
+    const formData = new FormData(event.target);
+    showToast("Submitting your review...", "info");
+
+    setTimeout(() => {
+      showToast("Thank you for your review!", "success");
+      event.target.reset();
+      document
+        .querySelectorAll("#ratingSelector .star")
+        .forEach((s) => s.classList.remove("active"));
+      selectedRating = 0;
+    }, 1500);
+  }
+
+  function filterReviews(rating) {
+    const buttons = document.querySelectorAll(".filter-button");
+    buttons.forEach((btn) => btn.classList.remove("active"));
+    event.target.classList.add("active");
+
+    showToast(
+      `Filtering reviews by ${rating === "all" ? "all ratings" : rating + " stars"}...`,
+      "info",
+    );
+  }
+
+  function markHelpful(button) {
+    button.classList.toggle("liked");
+    const count = parseInt(button.textContent.match(/\d+/)[0]);
+    button.innerHTML = `<i class="fas fa-thumbs-up"></i> Helpful (${button.classList.contains("liked") ? count + 1 : count - 1})`;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            {% block title %}Blissful Abodes - Luxury Hotel Booking{% endblock
+            %}
+        </title>
+
+        <!-- Fonts -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Font Awesome -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+
+        <!-- CSS -->
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/style.css') }}"
+        />
+
+        <style>
+            /* Floating Chat Button */
+            .floating-chat-btn {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                z-index: 1000;
+                transition: all 0.3s ease;
+                text-decoration: none;
+            }
+
+            .floating-chat-btn:hover {
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+                transform: scale(1.1);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+                color: white;
+            }
+
+            @media (max-width: 768px) {
+                .floating-chat-btn {
+                    bottom: 20px;
+                    right: 20px;
+                    width: 50px;
+                    height: 50px;
+                    font-size: 20px;
+                }
+            }
+        </style>
+
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body>
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="container">
+                <a href="{{ url_for('index') }}" class="logo">
+                    <i class="fas fa-hotel"></i>
+                    <span>Blissful Abodes</span>
+                </a>
+
+                <div class="nav-links" id="navLinks">
+                    <a href="{{ url_for('index') }}"
+                        ><i class="fas fa-home"></i> Home</a
+                    >
+                    <a href="{{ url_for('rooms') }}"
+                        ><i class="fas fa-door-open"></i> Rooms</a
+                    >
+
+                    {% if session.user_id %}
+                    <a href="{{ url_for('chatbot') }}"
+                        ><i class="fas fa-comments"></i> Chat Assistant</a
+                    >
+                    <a href="{{ url_for('dashboard') }}"
+                        ><i class="fas fa-tachometer-alt"></i> Dashboard</a
+                    >
+
+                    {% if session.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}"
+                        ><i class="fas fa-cog"></i> Admin</a
+                    >
+                    {% elif session.role == 'staff' %}
+                    <a href="{{ url_for('staff_dashboard') }}"
+                        ><i class="fas fa-concierge-bell"></i> Staff</a
+                    >
+                    {% endif %}
+
+                    <a href="{{ url_for('my_bookings') }}"
+                        ><i class="fas fa-calendar-check"></i> My Bookings</a
+                    >
+                    <div class="user-menu">
+                        <span class="user-greeting">
+                            <i class="fas fa-user-circle"></i> {{
+                            session.user_info.name }}
+                        </span>
+                        <a href="{{ url_for('logout') }}" class="btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Register
+                    </a>
+                    {% endif %}
+                </div>
+
+                <button class="nav-toggle" id="navToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+                {{ message }}
+                <button class="flash-close">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %} {% endwith %}
+
+        <!-- Main Content -->
+        <main>{% block content %}{% endblock %}</main>
+
+        <!-- Floating Chat Button -->
+        {% if session.user_id %}
+        <a
+            href="{{ url_for('chatbot') }}?context={{ request.endpoint or 'general' }}"
+            class="floating-chat-btn"
+            title="Chat Assistant - Context: {{ request.endpoint|title }}"
+        >
+            <i class="fas fa-comments"></i>
+        </a>
+        {% endif %}
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h3><i class="fas fa-hotel"></i> Blissful Abodes</h3>
+                        <p>
+                            Luxury hotel booking platform powered by AWS cloud
+                            services.
+                        </p>
+                        <div class="aws-badges">
+                            <span class="aws-badge"
+                                ><i class="fab fa-aws"></i> EC2</span
+                            >
+                            <span class="aws-badge"
+                                ><i class="fab fa-aws"></i> DynamoDB</span
+                            >
+                            <span class="aws-badge"
+                                ><i class="fab fa-aws"></i> SNS</span
+                            >
+                            <span class="aws-badge"
+                                ><i class="fab fa-aws"></i> IAM</span
+                            >
+                        </div>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Quick Links</h4>
+                        <a href="{{ url_for('index') }}">Home</a>
+                        <a href="{{ url_for('rooms') }}">Rooms</a>
+                        <a href="{{ url_for('register') }}">Register</a>
+                        <a href="{{ url_for('login') }}">Login</a>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Contact Us</h4>
+                        <p>
+                            <i class="fas fa-envelope"></i>
+                            support@blissfulabodes.com
+                        </p>
+                        <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                        <p>
+                            <i class="fas fa-map-marker-alt"></i> 123 Luxury
+                            Lane, Suite 100
+                        </p>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Connect</h4>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-facebook"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>
+                        &copy; 2024 Blissful Abodes. All rights reserved. | AWS
+                        Capstone Project
+                    </p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- JavaScript -->
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        {% block extra_js %}{% endblock %}
+    </body>
+</html>

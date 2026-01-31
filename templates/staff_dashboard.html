@@ -1,0 +1,1090 @@
+{% extends "layout.html" %} {% block title %}Staff Dashboard - Blissful Abodes{%
+endblock %} {% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .staff-dashboard {
+        min-height: 100vh;
+        background: #f5f7fa;
+    }
+
+    /* Header Section */
+    .staff-header {
+        background: linear-gradient(135deg, #2d9cdb, #1a365d);
+        color: white;
+        padding: 50px 20px 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .staff-header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .staff-header h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 2.8rem;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .staff-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 30px;
+    }
+
+    .current-time {
+        font-size: 1rem;
+        opacity: 0.85;
+        margin-top: 10px;
+    }
+
+    /* Today's Summary Stats */
+    .today-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        opacity: 0.95;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Main Container */
+    .dashboard-container {
+        max-width: 1400px;
+        margin: -20px auto 0;
+        padding: 0 20px 60px;
+    }
+
+    /* Section Card */
+    .section-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        color: #1a365d;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i {
+        color: #2d9cdb;
+    }
+
+    /* Room Status Grid */
+    .room-status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .room-status-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .room-status-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .room-status-card.available {
+        background: #e3f7e7;
+        border-color: #28a745;
+    }
+
+    .room-status-card.occupied {
+        background: #f8d7da;
+        border-color: #dc3545;
+    }
+
+    .room-status-card.cleaning {
+        background: #fff3cd;
+        border-color: #ffc107;
+    }
+
+    .room-status-card.maintenance {
+        background: #d1ecf1;
+        border-color: #17a2b8;
+    }
+
+    .room-number {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a365d;
+        margin-bottom: 8px;
+    }
+
+    .room-status-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .room-status-card.available .room-status-label {
+        color: #28a745;
+    }
+
+    .room-status-card.occupied .room-status-label {
+        color: #dc3545;
+    }
+
+    .room-status-card.cleaning .room-status-label {
+        color: #ffc107;
+    }
+
+    .room-status-card.maintenance .room-status-label {
+        color: #17a2b8;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-input {
+        flex: 1;
+        min-width: 250px;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: #2d9cdb;
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.1);
+    }
+
+    .filter-select {
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        background: white;
+        min-width: 150px;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #2d9cdb;
+    }
+
+    /* Data Table */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .data-table th {
+        background: #f8f9fa;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #1a365d;
+        border-bottom: 2px solid #e0e0e0;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .data-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+
+    .data-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .data-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-available {
+        background: #e3f7e7;
+        color: #28a745;
+    }
+
+    .status-occupied {
+        background: #f8d7da;
+        color: #dc3545;
+    }
+
+    .status-cleaning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-maintenance {
+        background: #d1ecf1;
+        color: #17a2b8;
+    }
+
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-completed {
+        background: #e0e7ff;
+        color: #4c51bf;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+    }
+
+    .btn-view {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .btn-view:hover {
+        background: #1976d2;
+        color: white;
+    }
+
+    .btn-update {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+
+    .btn-update:hover {
+        background: #f57c00;
+        color: white;
+    }
+
+    .btn-confirm {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .btn-confirm:hover {
+        background: #2e7d32;
+        color: white;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2d9cdb, #1a365d);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.3);
+    }
+
+    /* Check-in/out Lists */
+    .checkin-list {
+        display: grid;
+        gap: 15px;
+    }
+
+    .checkin-card {
+        background: #f8f9fa;
+        border-left: 4px solid #2d9cdb;
+        padding: 20px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .checkin-card:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .checkin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .guest-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1a365d;
+    }
+
+    .checkin-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .detail-item i {
+        color: #2d9cdb;
+        width: 20px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #666;
+        margin-bottom: 10px;
+        font-size: 1.3rem;
+    }
+
+    .empty-state p {
+        color: #999;
+    }
+
+    /* Tabs */
+    .dashboard-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-tab {
+        padding: 15px 30px;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #666;
+        cursor: pointer;
+        border-radius: 10px 10px 0 0;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dashboard-tab:hover {
+        background: #f8f9fa;
+        color: #1a365d;
+    }
+
+    .dashboard-tab.active {
+        color: #1a365d;
+        background: white;
+    }
+
+    .dashboard-tab.active::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #2d9cdb;
+        border-radius: 3px;
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Guest Info Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 30px;
+        position: relative;
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        color: #1a365d;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #999;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 10px 0;
+    }
+
+    .info-group {
+        margin-bottom: 20px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        color: #333;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    /* Legend */
+    .room-legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .legend-color.available {
+        background: #28a745;
+    }
+
+    .legend-color.occupied {
+        background: #dc3545;
+    }
+
+    .legend-color.cleaning {
+        background: #ffc107;
+    }
+
+    .legend-color.maintenance {
+        background: #17a2b8;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .room-status-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .staff-header h1 {
+            font-size: 2rem;
+        }
+
+        .today-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .dashboard-tabs {
+            overflow-x: auto;
+        }
+
+        .dashboard-tab {
+            white-space: nowrap;
+        }
+
+        .data-table {
+            font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 10px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+        }
+
+        .filter-input,
+        .filter-select {
+            width: 100%;
+        }
+
+        .room-status-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="staff-dashboard">
+    <!-- Staff Header with Today's Summary Stats -->
+    <div class="staff-header">
+        <div class="staff-header-content">
+            <h1><i class="fas fa-briefcase"></i> Staff Dashboard</h1>
+            <p>Manage daily operations and guest services</p>
+            <div class="current-time">
+                <i class="fas fa-clock"></i> {{ now.strftime('%A, %B %d, %Y -
+                %I:%M %p') if now else 'Today' }}
+            </div>
+
+            <!-- Today's Summary Stats -->
+            <div class="today-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% set today_checkins =
+                        branch_bookings|selectattr('check_in', 'equalto',
+                        now.strftime('%Y-%m-%d') if now else '')|list %} {{
+                        today_checkins|length }}
+                    </div>
+                    <div class="stat-label">Check-ins Today</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% set today_checkouts =
+                        branch_bookings|selectattr('check_out', 'equalto',
+                        now.strftime('%Y-%m-%d') if now else '')|list %} {{
+                        today_checkouts|length }}
+                    </div>
+                    <div class="stat-label">Check-outs Today</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-door-closed"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% set occupied =
+                        branch_rooms|selectattr('availability', 'in',
+                        ['unavailable', 'occupied'])|list %} {{ occupied|length
+                        }}
+                    </div>
+                    <div class="stat-label">Occupied Rooms</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% set available =
+                        branch_rooms|selectattr('availability', 'equalto',
+                        'available')|list %} {{ available|length }}
+                    </div>
+                    <div class="stat-label">Available Rooms</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Navigation Tabs -->
+        <div class="dashboard-tabs">
+            <button class="dashboard-tab active" data-tab="overview">
+                <i class="fas fa-tachometer-alt"></i> Overview
+            </button>
+            <button class="dashboard-tab" data-tab="rooms">
+                <i class="fas fa-door-open"></i> Room Status
+            </button>
+            <button class="dashboard-tab" data-tab="checkins">
+                <i class="fas fa-sign-in-alt"></i> Today's Check-ins
+            </button>
+            <button class="dashboard-tab" data-tab="checkouts">
+                <i class="fas fa-sign-out-alt"></i> Today's Check-outs
+            </button>
+            <button class="dashboard-tab" data-tab="bookings">
+                <i class="fas fa-calendar-alt"></i> All Bookings
+            </button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overviewTab">
+            <!-- Room Status Grid -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-th-large"></i>
+                        Room Status Grid
+                    </h2>
+                    <button class="btn-primary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- Legend -->
+                <div class="room-legend">
+                    <div class="legend-item">
+                        <div class="legend-color available"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color occupied"></div>
+                        <span>Occupied</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color cleaning"></div>
+                        <span>Cleaning</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color maintenance"></div>
+                        <span>Maintenance</span>
+                    </div>
+                </div>
+
+                {% if branch_rooms %}
+                <div class="room-status-grid">
+                    {% for room in branch_rooms %} {% set status_class =
+                    'available' if room.availability == 'available' else
+                    'occupied' if room.availability in ['unavailable',
+                    'occupied'] else 'cleaning' if room.availability ==
+                    'cleaning' else 'maintenance' %}
+                    <div
+                        class="room-status-card {{ status_class }}"
+                        onclick="viewRoomDetails('{{ room.room_id }}', '{{ room.name }}', '{{ room.availability }}')"
+                    >
+                        <div class="room-number">{{ room.name[:15] }}</div>
+                        <div class="room-status-label">
+                            <i
+                                class="fas fa-circle"
+                                style="font-size: 0.5rem"
+                            ></i>
+                            {{ 'Available' if room.availability == 'available'
+                            else 'Occupied' if room.availability in
+                            ['unavailable', 'occupied'] else
+                            room.availability|capitalize }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <h3>No Rooms Available</h3>
+                    <p>Contact admin to add rooms to this branch.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Stats Summary -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Quick Summary
+                    </h2>
+                </div>
+                <div
+                    style="
+                        display: grid;
+                        grid-template-columns: repeat(
+                            auto-fit,
+                            minmax(200px, 1fr)
+                        );
+                        gap: 20px;
+                    "
+                >
+                    <div
+                        style="
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 12px;
+                            border-left: 4px solid #2d9cdb;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 2rem;
+                                font-weight: 700;
+                                color: #1a365d;
+                                margin-bottom: 5px;
+                            "
+                        >
+                            {{ branch_rooms|length }}
+                        </div>
+                        <div style="color: #666; font-weight: 600">
+                            Total Rooms
+                        </div>
+                    </div>
+                    <div
+                        style="
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 12px;
+                            border-left: 4px solid #28a745;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 2rem;
+                                font-weight: 700;
+                                color: #1a365d;
+                                margin-bottom: 5px;
+                            "
+                        >
+                            {{ branch_bookings|selectattr('status', 'equalto',
+                            'confirmed')|list|length }}
+                        </div>
+                        <div style="color: #666; font-weight: 600">
+                            Active Bookings
+                        </div>
+                    </div>
+                    <div
+                        style="
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 12px;
+                            border-left: 4px solid #ffc107;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 2rem;
+                                font-weight: 700;
+                                color: #1a365d;
+                                margin-bottom: 5px;
+                            "
+                        >
+                            {{ branch_bookings|selectattr('status', 'equalto',
+                            'pending')|list|length }}
+                        </div>
+                        <div style="color: #666; font-weight: 600">
+                            Pending Bookings
+                        </div>
+                    </div>
+                    <div
+                        style="
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 12px;
+                            border-left: 4px solid #dc3545;
+                        "
+                    >
+                        <div
+                            style="
+                                font-size: 2rem;
+                                font-weight: 700;
+                                color: #1a365d;
+                                margin-bottom: 5px;
+                            "
+                        >
+                            {{ (branch_rooms|length - available|length) if
+                            branch_rooms else 0 }}
+                        </div>
+                        <div style="color: #666; font-weight: 600">
+                            Rooms in Use
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room Status Tab -->
+        <div class="tab-content" id="roomsTab">
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-door-open"></i>
+                        Room Management
+                    </h2>
+                    <button class="btn-primary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <input
+                        type="text"
+                        class="filter-input"
+                        id="roomSearch"
+                        placeholder="Search by room name or ID..."
+                    />
+                    <select class="filter-select" id="roomStatusFilter">
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="occupied">Occupied</option>
+                        <option value="unavailable">Unavailable</option>
+                        <option value="cleaning">Cleaning</option>
+                        <option value="maintenance">Maintenance</option>
+                    </select>
+                </div>
+
+                {% if branch_rooms %}
+                <div style="overflow-x: auto">
+                    <table class="data-table" id="roomsTable">
+                        <thead>
+                            <tr>
+                                <th>Room Name</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Price</th>
+                                <th>Capacity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for room in branch_rooms %}
+                            <tr
+                                data-room="{{ room.name }}"
+                                data-status="{{ room.availability }}"
+                            >
+                                <td style="font-weight: 600; color: #1a365d">
+                                    {{ room.name }}
+                                </td>
+                                <td>
+                                    {{ room.room_type|default('Standard') }}
+                                </td>
+                                <td>{{ room.location[:30] }}</td>
+                                <td style="color: #d4af37; font-weight: 600">
+                                    ₹{{ "{:,.0f}".format(room.price|float) }}
+                                </td>
+                                <td>
+                                    <i class="fas fa-users"></i> {{
+                                    room.capacity|default(2) }}
+                                </td>
+                                <td>
+                                    {% set status_class = 'available' if
+                                    room.availability == 'available' else
+                                    'occupied' if room.availability in
+                                    ['unavailable', 'occupied'] else 'cleaning'
+                                    if room.availability == 'cleaning' else
+                                    'maintenance' %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

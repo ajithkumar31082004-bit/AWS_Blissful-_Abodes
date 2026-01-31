@@ -1,0 +1,366 @@
+{% extends "layout.html" %} {% block title %}Login - Blissful Abodes{% endblock
+%} {% block extra_css %}
+<style>
+  .login-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  }
+
+  .login-container {
+    max-width: 450px;
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .login-header {
+    background: linear-gradient(135deg, #1a365d, #2d9cdb);
+    color: white;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .login-header h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .login-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+
+  .login-content {
+    padding: 40px;
+  }
+
+  .alert {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  .alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+
+  .alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .alert i {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .form-group {
+    margin-bottom: 25px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: #1a365d;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #2d9cdb;
+    box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.1);
+  }
+
+  .remember-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+  }
+
+  .remember-section label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+    font-weight: normal;
+  }
+
+  .remember-section a {
+    color: #2d9cdb;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .remember-section a:hover {
+    text-decoration: underline;
+  }
+
+  .login-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #1a365d, #2d9cdb);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(26, 54, 93, 0.4);
+  }
+
+  .login-btn:active {
+    transform: translateY(0);
+  }
+
+  .signup-section {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .signup-section p {
+    color: #666;
+    margin-bottom: 12px;
+  }
+
+  .signup-section a {
+    color: #2d9cdb;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .signup-section a:hover {
+    text-decoration: underline;
+  }
+
+  .security-note {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #e3f7e7;
+    border-radius: 10px;
+    margin-top: 25px;
+    border-left: 4px solid #28a745;
+    font-size: 0.9rem;
+    color: #155724;
+  }
+
+  .security-note i {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .test-accounts {
+    background: #f8f9ff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 25px;
+  }
+
+  .test-accounts h4 {
+    color: #1a365d;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+  }
+
+  .test-account-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.85rem;
+  }
+
+  .test-account-item:last-child {
+    border-bottom: none;
+  }
+
+  .test-account-item strong {
+    color: #1a365d;
+  }
+
+  .test-account-item code {
+    background: #f0f0f0;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  @media (max-width: 768px) {
+    .login-header h1 {
+      font-size: 1.5rem;
+    }
+
+    .login-content {
+      padding: 25px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="login-page">
+  <div class="login-container">
+    <!-- Header -->
+    <div class="login-header">
+      <h1>🔐 Login</h1>
+      <p>Welcome back to Blissful Abodes</p>
+    </div>
+
+    <!-- Content -->
+    <div class="login-content">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %} {% if category ==
+      'danger' %}
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ message }}
+      </div>
+      {% elif category == 'warning' %}
+      <div class="alert alert-warning">
+        <i class="fas fa-info-circle"></i>
+        {{ message }}
+      </div>
+      {% elif category == 'success' %}
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        {{ message }}
+      </div>
+      {% endif %} {% endfor %} {% endif %} {% endwith %}
+
+      <!-- Login Form -->
+      <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">
+            <i class="fas fa-envelope"></i> Email Address
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="you@example.com"
+            required
+            autofocus
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password"> <i class="fas fa-lock"></i> Password </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
+        <!-- Remember & Forgot -->
+        <div class="remember-section">
+          <label>
+            <input type="checkbox" name="remember_me" />
+            Remember me
+          </label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <!-- Login Button -->
+        <button type="submit" class="login-btn">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+
+        <!-- Security Note -->
+        <div class="security-note">
+          <i class="fas fa-shield-alt"></i>
+          <div>
+            <strong>Secure Login</strong>
+            <p style="margin: 5px 0 0; font-size: 0.9rem">
+              Your connection is secure. AWS-powered encryption.
+            </p>
+          </div>
+        </div>
+
+
+        <!-- Sign Up Link -->
+        <div class="signup-section">
+          <p>Don't have an account?</p>
+          <a href="{{ url_for('register') }}">
+            <i class="fas fa-user-plus"></i> Create one here
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Form validation
+  document.getElementById("loginForm").addEventListener("submit", function (e) {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      e.preventDefault();
+      alert("Please enter both email and password");
+      return false;
+    }
+
+    // Show loading state
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+    btn.disabled = true;
+
+    // Re-enable after 5 seconds if form submission fails
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }, 5000);
+  });
+</script>
+{% endblock %}
