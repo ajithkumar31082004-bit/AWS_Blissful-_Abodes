@@ -11,6 +11,7 @@ from flask import (
     make_response,
 )
 from flask_babel import Babel, gettext
+from decimal import Decimal
 
 # i18n
 LANGUAGES = {"en": "English", "hi": "Hindi"}
@@ -1927,6 +1928,9 @@ def rooms():
         for room in rooms_list:
             if not room.get("image") or room.get("image") == "default-room.jpg":
                 room["image"] = ""
+            # Convert Decimal price to float
+            if "price" in room:
+                room["price"] = convert_decimal_to_float(room["price"])
 
         # Get branch info if branch_id provided
         selected_branch = None
@@ -2011,11 +2015,7 @@ def book_room(room_id):
                 check_out_date = datetime.strptime(
                     booking_data["check_out"], "%Y-%m-%d"
                 )
-                nights = (check_out_date - check_in_date).days
-                booking_data["nights"] = nights
-
-                # Use dynamic pricing engine
-                # Convert Decimal to float for calculations
+                nights = (
                 room_price = room.get("price", 0)
                 base_price = float(room_price) if room_price else 0.0
                 dynamic_price = calculate_dynamic_price(
