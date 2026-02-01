@@ -2026,7 +2026,11 @@ def book_room(room_id):
                 check_out_date = datetime.strptime(
                     booking_data["check_out"], "%Y-%m-%d"
                 )
-                nights = (
+                nights = (check_out_date - check_in_date).days
+                booking_data["nights"] = nights
+
+                # Use dynamic pricing engine
+                # Convert Decimal to float for calculations
                 room_price = room.get("price", 0)
                 base_price = float(room_price) if room_price else 0.0
                 dynamic_price = calculate_dynamic_price(
