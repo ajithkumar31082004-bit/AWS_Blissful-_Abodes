@@ -2113,6 +2113,10 @@ def book_room(room_id):
             flash("Room not found", "danger")
             return redirect(url_for("rooms"))
 
+        # Convert Decimal price to float for template
+        if "price" in room:
+            room["price"] = convert_decimal_to_float(room["price"])
+
         return render_template(
             "book_room.html", room=room, user=session.get("user_info", {})
         )
