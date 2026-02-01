@@ -2040,8 +2040,8 @@ def book_room(room_id):
                     room_id,
                     room.get("branch_id", ""),
                 )
-                booking_data["total_price"] = dynamic_price
-                booking_data["base_price"] = base_price * nights
+                booking_data["total_price"] = Decimal(str(dynamic_price))
+                booking_data["base_price"] = Decimal(str(base_price * nights))
                 booking_data["pricing_applied"] = True
 
                 print(
@@ -2050,7 +2050,9 @@ def book_room(room_id):
             except Exception as e:
                 print(f"Error calculating booking price: {e}")
                 # Fallback to basic pricing
-                booking_data["total_price"] = float(room.get("price", 0)) * nights
+                booking_data["total_price"] = Decimal(
+                    str(float(room.get("price", 0)) * nights)
+                )
                 booking_data["pricing_applied"] = False
 
             # Validate dates
