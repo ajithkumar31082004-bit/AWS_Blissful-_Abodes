@@ -103,6 +103,17 @@ def get_service_icon(service_type):
     return icons.get(service_type, "concierge-bell")
 
 
+def convert_decimal_to_float(value):
+    """Convert Decimal to float, handling None and already-float values"""
+    if value is None:
+        return 0.0
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, (int, float)):
+        return float(value)
+    return 0.0
+
+
 # Import database and notification modules
 try:
     from db import (
