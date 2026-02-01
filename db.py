@@ -894,20 +894,31 @@ def add_booking(booking_data):
 
 
 def get_user_bookings(user_id):
+    print(f"DEBUG get_user_bookings: Querying for user_id={user_id}")
     if DYNAMODB_AVAILABLE:
         try:
             table = get_table(BOOKINGS_TABLE)
             if table:
+                print(f"DEBUG: Querying UserBookingsIndex for user_id={user_id}")
                 response = table.query(
                     IndexName="UserBookingsIndex",
                     KeyConditionExpression=Key("user_id").eq(user_id),
                 )
                 bookings = response.get("Items", [])
+                print(
+                    f"DEBUG: Found {len(bookings)} bookings in DynamoDB for user {user_id}"
+                )
                 return [normalize_booking(b) for b in bookings]
         except Exception as e:
             print(f"Error getting user bookings from DynamoDB: {e}")
+            import traceback
+
+            traceback.print_exc()
 
     # Fallback to mock database
+    print(
+        f"DEBUG: Falling back to mock database (DYNAMODB_AVAILABLE={DYNAMODB_AVAILABLE})"
+    )
     bookings = []
     for booking in mock_bookings:
         if booking.get("user_id") == user_id:
