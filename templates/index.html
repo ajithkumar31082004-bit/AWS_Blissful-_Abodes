@@ -314,8 +314,7 @@ Hotel Booking{% endblock %} {% block extra_css %}
                             margin-bottom: 10px;
                         "
                     >
-                        {{ branch.branch_name if branch.branch_name else
-                        branch.get('branch_name', 'Branch') }}
+                        {{ branch.get('name', 'Branch') }}
                     </h3>
                     <p
                         style="
@@ -327,8 +326,7 @@ Hotel Booking{% endblock %} {% block extra_css %}
                         "
                     >
                         <i class="fas fa-map-marker-alt"></i>
-                        {{ branch.location.city if branch.location else
-                        branch.get('location', {}).get('city', 'India') }}
+                        {{ branch.get('city', 'India') }}
                     </p>
                     <div
                         style="
@@ -433,8 +431,7 @@ Hotel Booking{% endblock %} {% block extra_css %}
                     <option value="">{{ _('All Branches') }}</option>
                     {% if branches %} {% for branch in branches %}
                     <option value="{{ branch.branch_id }}">
-                        {{ branch.branch_name if branch.branch_name else
-                        branch.get('branch_name', 'Branch') }}
+                        {{ branch.get('name', branch.branch_id) }}
                     </option>
                     {% endfor %} {% endif %}
                 </select>
