@@ -219,6 +219,9 @@ Abodes{% endblock %} {% block extra_css %}
     </div>
 
     <div class="action-buttons">
+      <button onclick="downloadReceipt()" class="action-btn btn-primary-action" style="background: linear-gradient(135deg, #28a745, #20c997);">
+        <i class="fas fa-download"></i> Download Receipt
+      </button>
       <a
         href="{{ url_for('my_bookings') }}"
         class="action-btn btn-primary-action"
@@ -235,6 +238,8 @@ Abodes{% endblock %} {% block extra_css %}
   </div>
 </div>
 {% endblock %} {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Display booking confirmation message
@@ -243,5 +248,45 @@ Abodes{% endblock %} {% block extra_css %}
     // Optional: Auto-scroll to top
     window.scrollTo(0, 0);
   });
+
+  function downloadReceipt() {
+      const element = document.querySelector('.success-container');
+      const actionButtons = document.querySelector('.action-buttons');
+      
+      // Hide buttons temporarily for the screenshot
+      actionButtons.style.display = 'none';
+      
+      showToast("Generating receipt...", "info");
+
+      html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+      }).then(canvas => {
+          // Show buttons again
+          actionButtons.style.display = 'flex';
+          
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 297; // A4 height in mm
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 0;
+
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          pdf.save('Booking_Receipt_{{ booking_id[:12]|upper }}.pdf');
+          
+          showToast("Receipt downloaded successfully!", "success");
+      }).catch(err => {
+          // Show buttons again in case of error
+          actionButtons.style.display = 'flex';
+          console.error('Error generating receipt:', err);
+          showToast("Failed to generate receipt", "error");
+      });
+  }
 </script>
 {% endblock %}
