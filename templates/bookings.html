@@ -402,24 +402,12 @@ endblock %} {% block extra_css %}
 
           <div class="booking-price">
             <div class="price-row">
-              <span>Room Rate:</span>
-              <span>₹5,999/night</span>
-            </div>
-            <div class="price-row">
               <span>Nights:</span>
-              <span>7 nights</span>
+              <span>{{ booking.nights }} night{% if booking.nights != 1 %}s{% endif %}</span>
             </div>
             <div class="price-row">
-              <span>Subtotal:</span>
-              <span>₹41,993</span>
-            </div>
-            <div class="price-row">
-              <span>Taxes & Fees:</span>
-              <span>₹7,558</span>
-            </div>
-            <div class="price-row">
-              <span>Total:</span>
-              <span>₹49,551</span>
+              <span>Total Amount:</span>
+              <span>₹{{ "{:,.0f}".format(booking.total_price|float) }}</span>
             </div>
           </div>
 
