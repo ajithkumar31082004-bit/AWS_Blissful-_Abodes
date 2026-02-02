@@ -2023,10 +2023,11 @@ def book_room(room_id):
 
             user_info = session.get("user_info", {})
 
-            # Only guests can book rooms - staff and admin cannot
-            if user_info.get("role") in ["staff", "admin"]:
+            # Only guests can book rooms - all other roles cannot
+            user_role = user_info.get("role", "")
+            if user_role != "guest":
                 flash(
-                    "Staff and Admin cannot book rooms. Only guests can make bookings.",
+                    f"{user_role.title()} users cannot book rooms. Only guests can make bookings.",
                     "warning",
                 )
                 return redirect(url_for("rooms"))
