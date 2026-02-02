@@ -1019,7 +1019,7 @@ def index():
     try:
         if DB_AVAILABLE:
             # Get all active branches
-            branches = get_all_branches(status="active")
+            branches = get_all_branches(status=None)
 
             # Get featured rooms from all branches
             all_rooms = get_all_rooms()
