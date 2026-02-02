@@ -428,19 +428,22 @@ endblock %} {% block extra_css %}
           <div class="booking-actions">
             <button
               class="action-btn btn-view"
-              onclick="viewBookingDetails('{{ booking.booking_id }}')"
+              data-booking-id="{{ booking.booking_id }}"
+              onclick="viewBookingDetails(this.getAttribute('data-booking-id'))"
             >
               <i class="fas fa-eye"></i> View Details
             </button>
             <button
               class="action-btn btn-review"
-              onclick="openReviewModal('{{ booking.room_id }}')"
+              data-room-id="{{ booking.room_id }}"
+              onclick="openReviewModal(this.getAttribute('data-room-id'))"
             >
               <i class="fas fa-star"></i> Leave Review
             </button>
             <button
               class="action-btn btn-cancel"
-              onclick="cancelBooking('{{ booking.booking_id }}')"
+              data-booking-id="{{ booking.booking_id }}"
+              onclick="cancelBooking(this.getAttribute('data-booking-id'))"
             >
               <i class="fas fa-times"></i> Cancel
             </button>
@@ -489,7 +492,8 @@ endblock %} {% block extra_css %}
           <label
             for="star{{ i }}"
             style="font-size: 2rem; cursor: pointer; color: #ddd"
-            onclick="setRating({{ i }})"
+            data-rating="{{ i }}"
+            onclick="setRating(this.getAttribute('data-rating'))"
           >
             ⭐
           </label>
