@@ -581,13 +581,21 @@ endblock %} {% block extra_css %}
                 <div class="charts-container">
                     <div class="chart-card">
                         <h3>User Growth</h3>
-                        <canvas id="userGrowthChart" style="max-height: 300px;"></canvas>
+                        <canvas 
+                            id="userGrowthChart" 
+                            style="max-height: 300px;"
+                            data-total-users="{% if analytics and analytics.get('users') %}{{ analytics.get('users', {}).get('total', 50) }}{% else %}50{% endif %}"
+                        ></canvas>
                         <small style="display: block; text-align: center; margin-top: 10px; color: #999;">Powered by AWS Analytics</small>
                     </div>
 
                     <div class="chart-card">
                         <h3>Booking Trends</h3>
-                        <canvas id="bookingTrendsChart" style="max-height: 300px;"></canvas>
+                        <canvas 
+                            id="bookingTrendsChart" 
+                            style="max-height: 300px;"
+                            data-total-bookings="{% if analytics and analytics.get('bookings') %}{{ analytics.get('bookings', {}).get('total', 28) }}{% else %}28{% endif %}"
+                        ></canvas>
                         <small style="display: block; text-align: center; margin-top: 10px; color: #999;">Real-time data from DynamoDB</small>
                     </div>
                 </div>
@@ -2527,7 +2535,7 @@ endblock %} {% block extra_css %}
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                     datasets: [{
                         label: 'Total Users',
-                        data: [12, 19, 25, 32, 45, {% if analytics and analytics.get('users') %}{{ analytics.get('users', {}).get('total', 50) }}{% else %}50{% endif %}],
+                        data: [12, 19, 25, 32, 45, parseInt(userCtx.dataset.totalUsers || 50)],
                         borderColor: '#2d9cdb',
                         backgroundColor: 'rgba(45, 156, 219, 0.1)',
                         tension: 0.4,
@@ -2564,7 +2572,7 @@ endblock %} {% block extra_css %}
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                     datasets: [{
                         label: 'Bookings',
-                        data: [12, 19, 15, 25, 22, 30, {% if analytics and analytics.get('bookings') %}{{ analytics.get('bookings', {}).get('total', 28) }}{% else %}28{% endif %}],
+                        data: [12, 19, 15, 25, 22, 30, parseInt(bookingCtx.dataset.totalBookings || 28)],
                         backgroundColor: [
                             'rgba(212, 175, 55, 0.8)',
                             'rgba(45, 156, 219, 0.8)',
