@@ -426,6 +426,16 @@ endblock %} {% block extra_css %}
           </div>
 
           <div class="booking-actions">
+            <!-- Download Receipt Button -->
+            <button
+              class="action-btn"
+              style="background: linear-gradient(135deg, #28a745, #20c997); color: white;"
+              data-booking-id="{{ booking.booking_id }}"
+              onclick="downloadReceipt(this.getAttribute('data-booking-id'))"
+            >
+              <i class="fas fa-download"></i> Receipt
+            </button>
+
             <button
               class="action-btn btn-view"
               data-booking-id="{{ booking.booking_id }}"
@@ -447,6 +457,78 @@ endblock %} {% block extra_css %}
             >
               <i class="fas fa-times"></i> Cancel
             </button>
+          </div>
+
+          <!-- Hidden Receipt Template for PDF Generation -->
+          <div id="receipt-{{ booking.booking_id }}" style="width: 800px; background: white; padding: 40px; position: fixed; top: 0; left: -10000px; font-family: 'Helvetica', sans-serif; color: #333; box-sizing: border-box; z-index: -1;">
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #1a365d; padding-bottom: 20px; margin-bottom: 30px;">
+              <div>
+                <h1 style="color: #1a365d; margin: 0; font-size: 28px;">Blissful Abodes</h1>
+                <p style="margin: 5px 0; color: #666;">Luxury Hotel Booking</p>
+                <div style="margin-top: 10px; font-size: 13px; color: #888;">
+                  123 Cloud Avenue, AWS Region<br>
+                  Digital India
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <h2 style="color: #d4af37; margin: 0; font-size: 24px;">CONFIRMED</h2>
+                <p style="margin: 5px 0;"><strong>Receipt #:</strong> {{ booking.booking_id[:8]|upper }}</p>
+                <p style="margin: 5px 0;"><strong>Date:</strong> {{ booking.booking_date if booking.booking_date else "N/A" }}</p>
+              </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div style="display: flex; gap: 40px; margin-bottom: 30px;">
+              <div style="flex: 1;">
+                <h3 style="color: #1a365d; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 16px;">GUEST DETAILS</h3>
+                <p style="margin: 5px 0;"><strong>Name:</strong> {{ user.name if user.name else user.get('name', 'Guest') }}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> {{ user.email }}</p>
+                <p style="margin: 5px 0;"><strong>Booking Status:</strong> {{ booking.status|capitalize }}</p>
+              </div>
+              <div style="flex: 1;">
+                <h3 style="color: #1a365d; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 16px;">STAY DETAILS</h3>
+                <p style="margin: 5px 0;"><strong>Room ID:</strong> {{ booking.room_id[:8]|upper }}</p>
+                <p style="margin: 5px 0;"><strong>Check-in:</strong> {{ booking.check_in }}</p>
+                <p style="margin: 5px 0;"><strong>Check-out:</strong> {{ booking.check_out }}</p>
+                <p style="margin: 5px 0;"><strong>Duration:</strong> {{ booking.nights }} Night(s)</p>
+              </div>
+            </div>
+
+            <!-- Pricing Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 50px;">
+              <thead>
+                <tr style="background: #f8f9fa; color: #1a365d;">
+                  <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Description</th>
+                  <th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #eee;">Room Rate ({{ booking.nights }} nights)</td>
+                  <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.subtotal|float if booking.subtotal else 0) }}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #eee;">Service Fee (10%)</td>
+                  <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.service_fee|float if booking.service_fee else 0) }}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px; border-bottom: 1px solid #eee;">GST (18%)</td>
+                  <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.gst|float if booking.gst else 0) }}</td>
+                </tr>
+                <tr style="font-weight: bold; font-size: 18px; color: #1a365d;">
+                  <td style="padding: 15px 12px; text-align: right;">TOTAL AMOUNT PAID</td>
+                  <td style="padding: 15px 12px; text-align: right; color: #d4af37;">₹{{ "{:,.2f}".format(booking.total_price|float if booking.total_price else 0) }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Footer -->
+            <div style="text-align: center; border-top: 1px solid #ddd; padding-top: 20px; color: #999; font-size: 12px;">
+              <p style="margin: 5px 0;">Thank you for choosing Blissful Abodes Hotels & Resorts.</p>
+              <p style="margin: 5px 0;">This is a computer generated receipt and does not require a physical signature.</p>
+              <p style="margin: 5px 0;">www.blissfulabodes.com | support@blissfulabodes.com</p>
+            </div>
           </div>
         </div>
       </div>
@@ -540,8 +622,43 @@ endblock %} {% block extra_css %}
     </form>
   </div>
 </div>
+</div>
+</div>
 {% endblock %} {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+  function downloadReceipt(bookingId) {
+    const element = document.getElementById('receipt-' + bookingId);
+    if (!element) return;
+
+    showToast("Generating receipt...", "info");
+
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const pdfWidth = 210; 
+        const pdfHeight = 297; 
+        const imgProps = pdf.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+        pdf.save('Blissful_Abodes_Receipt_' + bookingId.substring(0, 8).toUpperCase() + '.pdf');
+        
+        showToast("Receipt downloaded successfully!", "success");
+    }).catch(err => {
+        console.error('Error generating receipt:', err);
+        showToast("Failed to generate receipt", "error");
+    });
+  }
+
   function viewBookingDetails(bookingId) {
     showToast("Loading booking details...", "info");
     // In a real application, open a detailed view
