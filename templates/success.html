@@ -180,6 +180,20 @@ Abodes{% endblock %} {% block extra_css %}
           %}</span
         >
       </div>
+      {% if booking.subtotal %}
+      <div class="info-row">
+        <span class="info-label">Subtotal:</span>
+        <span class="info-value">₹{{ "{:,.0f}".format(booking.subtotal|float) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Service Fee (10%):</span>
+        <span class="info-value">₹{{ "{:,.0f}".format(booking.service_fee|float) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">GST (18%):</span>
+        <span class="info-value">₹{{ "{:,.0f}".format(booking.gst|float) }}</span>
+      </div>
+      {% endif %}
       <div class="info-row">
         <span class="info-label">Total Amount:</span>
         <span class="info-value" style="color: #d4af37"

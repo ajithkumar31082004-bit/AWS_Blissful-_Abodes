@@ -2080,12 +2080,29 @@ def book_room(room_id):
                     room_id,
                     room.get("branch_id", ""),
                 )
-                booking_data["total_price"] = Decimal(str(dynamic_price))
+
+                # Calculate subtotal (room price * nights)
+                subtotal = dynamic_price
+
+                # Calculate service fee (10% of subtotal)
+                service_fee = subtotal * 0.10
+
+                # Calculate GST (18% of subtotal + service fee)
+                gst = (subtotal + service_fee) * 0.18
+
+                # Calculate final total
+                total_with_fees = subtotal + service_fee + gst
+
+                # Store all pricing details
                 booking_data["base_price"] = Decimal(str(base_price * nights))
+                booking_data["subtotal"] = Decimal(str(subtotal))
+                booking_data["service_fee"] = Decimal(str(service_fee))
+                booking_data["gst"] = Decimal(str(gst))
+                booking_data["total_price"] = Decimal(str(total_with_fees))
                 booking_data["pricing_applied"] = True
 
                 print(
-                    f"Dynamic Pricing: Base={base_price * nights}, Final={dynamic_price}, Nights={nights}"
+                    f"Pricing: Base={base_price * nights}, Subtotal={subtotal}, Service Fee={service_fee}, GST={gst}, Total={total_with_fees}, Nights={nights}"
                 )
             except Exception as e:
                 print(f"Error calculating booking price: {e}")

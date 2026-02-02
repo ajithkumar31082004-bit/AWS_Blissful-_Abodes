@@ -405,6 +405,20 @@ endblock %} {% block extra_css %}
               <span>Nights:</span>
               <span>{{ booking.nights }} night{% if booking.nights != 1 %}s{% endif %}</span>
             </div>
+            {% if booking.subtotal %}
+            <div class="price-row">
+              <span>Subtotal:</span>
+              <span>₹{{ "{:,.0f}".format(booking.subtotal|float) }}</span>
+            </div>
+            <div class="price-row">
+              <span>Service Fee (10%):</span>
+              <span>₹{{ "{:,.0f}".format(booking.service_fee|float) }}</span>
+            </div>
+            <div class="price-row">
+              <span>GST (18%):</span>
+              <span>₹{{ "{:,.0f}".format(booking.gst|float) }}</span>
+            </div>
+            {% endif %}
             <div class="price-row">
               <span>Total Amount:</span>
               <span>₹{{ "{:,.0f}".format(booking.total_price|float) }}</span>
