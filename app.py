@@ -1838,7 +1838,7 @@ def rooms():
         guests = request.args.get("guests", "1")
 
         # Get all branches for filter dropdown
-        branches = get_all_branches(status="active")
+        branches = get_all_branches(status=None)
 
         # Get all rooms first (don't filter by availability - show all)
         if branch_id:

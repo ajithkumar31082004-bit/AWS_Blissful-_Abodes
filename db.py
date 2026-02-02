@@ -1314,16 +1314,20 @@ def get_all_branches(status="active"):
         try:
             table = get_table(BRANCHES_TABLE)
             if table:
+                # Use scan instead of query since StatusIndex may not exist
+                response = table.scan()
+                branches = response.get("Items", [])
+
+                # Filter by status if provided
                 if status:
-                    response = table.query(
-                        IndexName="StatusIndex",
-                        KeyConditionExpression=Key("status").eq(status),
-                    )
-                else:
-                    response = table.scan()
-                return response.get("Items", [])
+                    branches = [b for b in branches if b.get("status") == status]
+
+                return branches
         except Exception as e:
             print(f"Error getting branches from DynamoDB: {e}")
+            import traceback
+
+            traceback.print_exc()
 
     # Fallback to mock database
     if status:
