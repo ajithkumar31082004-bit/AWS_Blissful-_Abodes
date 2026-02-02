@@ -250,13 +250,16 @@ Abodes{% endblock %} {% block extra_css %}
   });
 
   function downloadReceipt() {
-      const element = document.querySelector('.success-container');
-      const actionButtons = document.querySelector('.action-buttons');
+      // Use the hidden receipt template for full details
+      const element = document.getElementById('receipt-template');
       
-      // Hide buttons temporarily for the screenshot
-      actionButtons.style.display = 'none';
+      // Temporarily move it into view but keep it invisible to user if possible, 
+      // or just trust html2canvas to render off-screen elements (it usually needs them added to DOM)
+      // We'll clone it and append to body with visible styles if needed, but 'element' is already in DOM.
+      // html2canvas works best if the element is in the document flow.
+      // The style "top: -10000px" is already effectively hiding it.
       
-      showToast("Generating receipt...", "info");
+      showToast("Generating detailed receipt...", "info");
 
       html2canvas(element, {
           scale: 2,
@@ -264,29 +267,96 @@ Abodes{% endblock %} {% block extra_css %}
           logging: false,
           backgroundColor: '#ffffff'
       }).then(canvas => {
-          // Show buttons again
-          actionButtons.style.display = 'flex';
-          
           const imgData = canvas.toDataURL('image/png');
           const { jsPDF } = window.jspdf;
+          // Create PDF (A4)
           const pdf = new jsPDF('p', 'mm', 'a4');
           
-          const imgWidth = 210; // A4 width in mm
-          const pageHeight = 297; // A4 height in mm
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let heightLeft = imgHeight;
-          let position = 0;
-
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          pdf.save('Booking_Receipt_{{ booking_id[:12]|upper }}.pdf');
+          const pdfWidth = 210; 
+          const pdfHeight = 297; 
+          const imgProps = pdf.getImageProperties(imgData);
+          const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
           
-          showToast("Receipt downloaded successfully!", "success");
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+          pdf.save('Blissful_Abodes_Receipt_{{ booking_id[:8]|upper }}.pdf');
+          
+          showToast("Detailed receipt downloaded!", "success");
       }).catch(err => {
-          // Show buttons again in case of error
-          actionButtons.style.display = 'flex';
           console.error('Error generating receipt:', err);
           showToast("Failed to generate receipt", "error");
       });
   }
 </script>
+
+<!-- Hidden Receipt Template for PDF Generation -->
+<div id="receipt-template" style="width: 800px; background: white; padding: 40px; position: fixed; top: 0; left: -10000px; font-family: 'Helvetica', sans-serif; color: #333; box-sizing: border-box; z-index: -1;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #1a365d; padding-bottom: 20px; margin-bottom: 30px;">
+    <div>
+      <h1 style="color: #1a365d; margin: 0; font-size: 28px;">Blissful Abodes</h1>
+      <p style="margin: 5px 0; color: #666;">Luxury Hotel Booking</p>
+      <div style="margin-top: 10px; font-size: 13px; color: #888;">
+        123 Cloud Avenue, AWS Region<br>
+        Digital India
+      </div>
+    </div>
+    <div style="text-align: right;">
+      <h2 style="color: #d4af37; margin: 0; font-size: 24px;">CONFIRMED</h2>
+      <p style="margin: 5px 0;"><strong>Receipt #:</strong> {{ booking_id[:8]|upper }}</p>
+      <p style="margin: 5px 0;"><strong>Date:</strong> {{ booking.booking_date if booking.booking_date else "Today" }}</p>
+    </div>
+  </div>
+
+  <!-- Info Grid -->
+  <div style="display: flex; gap: 40px; margin-bottom: 30px;">
+    <div style="flex: 1;">
+      <h3 style="color: #1a365d; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 16px;">GUEST DETAILS</h3>
+      <p style="margin: 5px 0;"><strong>Name:</strong> {{ user.name if user.name else user.get('name', 'Guest') }}</p>
+      <p style="margin: 5px 0;"><strong>Email:</strong> {{ user.email }}</p>
+      <p style="margin: 5px 0;"><strong>Booking Status:</strong> Confirmed</p>
+    </div>
+    <div style="flex: 1;">
+      <h3 style="color: #1a365d; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 16px;">STAY DETAILS</h3>
+      <p style="margin: 5px 0;"><strong>Room:</strong> {{ room.name }}</p>
+      <p style="margin: 5px 0;"><strong>Check-in:</strong> {{ booking.check_in }}</p>
+      <p style="margin: 5px 0;"><strong>Check-out:</strong> {{ booking.check_out }}</p>
+      <p style="margin: 5px 0;"><strong>Duration:</strong> {{ booking.nights }} Night(s)</p>
+    </div>
+  </div>
+
+  <!-- Pricing Table -->
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 50px;">
+    <thead>
+      <tr style="background: #f8f9fa; color: #1a365d;">
+        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Description</th>
+        <th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #eee;">Room Rate ({{ booking.nights }} nights)</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.subtotal|float) }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #eee;">Service Fee (10%)</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.service_fee|float) }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #eee;">GST (18%)</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.gst|float) }}</td>
+      </tr>
+      <tr style="font-weight: bold; font-size: 18px; color: #1a365d;">
+        <td style="padding: 15px 12px; text-align: right;">TOTAL AMOUNT PAID</td>
+        <td style="padding: 15px 12px; text-align: right; color: #d4af37;">₹{{ "{:,.2f}".format(booking.total_price|float) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Footer -->
+  <div style="text-align: center; border-top: 1px solid #ddd; padding-top: 20px; color: #999; font-size: 12px;">
+    <p style="margin: 5px 0;">Thank you for choosing Blissful Abodes Hotels & Resorts.</p>
+    <p style="margin: 5px 0;">This is a computer generated receipt and does not require a physical signature.</p>
+    <p style="margin: 5px 0;">www.blissfulabodes.com | support@blissfulabodes.com</p>
+  </div>
+</div>
 {% endblock %}
