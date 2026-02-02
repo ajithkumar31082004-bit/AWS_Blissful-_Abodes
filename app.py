@@ -2106,15 +2106,26 @@ def book_room(room_id):
             # Send confirmation email and schedule reminders
             user_email = session["user_info"].get("email")
             try:
-                send_booking_confirmation(user_email, booking_data)
+                print(f"Attempting to send booking confirmation to {user_email}")
+                print(
+                    f"Booking data: {booking_data.get('booking_id')}, Check-in: {booking_data.get('check_in')}"
+                )
+
+                result = send_booking_confirmation(user_email, booking_data)
+                print(f"Booking confirmation result: {result}")
+
                 schedule_booking_reminders(
                     booking_data["booking_id"],
                     session["user_id"],
                     booking_data["check_in"],
                     user_email,
                 )
+                print(f"Scheduled booking reminders for {user_email}")
             except Exception as e:
                 print(f"SNS notification error: {e}")
+                import traceback
+
+                traceback.print_exc()
 
             flash("Booking confirmed! Check your email for details.", "success")
             return redirect(
