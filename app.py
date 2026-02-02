@@ -1102,6 +1102,28 @@ def login():
                 "role": user_role,
                 "branch_id": user.get("branch_id"),
             }
+
+            # Send SNS notification to admins about login
+            try:
+                from sns_notifier import send_notification
+                from datetime import datetime
+
+                subject = f"{user_role.title()} Login - Blissful Abodes"
+                message = f"""
+User logged in to Blissful Abodes:
+
+Name: {user.get('name', 'Unknown')}
+Email: {user.get('email', 'Unknown')}
+Role: {user_role.upper()}
+Login Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+This is an automated notification sent to subscribed admins.
+                """
+                send_notification(subject, message)
+                print(f"✓ Sent login notification for {user.get('email')}")
+            except Exception as e:
+                print(f"Error sending login notification: {e}")
+
             flash(f'Welcome back, {user.get("name")}!', "success")
 
             # Redirect based on role
@@ -1162,8 +1184,29 @@ def register():
             # Add user to database
             add_user(user_data)
 
-            # No automatic SNS subscription - admins subscribe manually
-            # Notifications will only be sent to pre-configured admin emails
+            # Send SNS notification to admins about new registration
+            try:
+                from sns_notifier import send_notification
+
+                subject = (
+                    f"New {user_data['role'].title()} Registration - Blissful Abodes"
+                )
+                message = f"""
+New user registered on Blissful Abodes:
+
+Name: {user_data['name']}
+Email: {user_data['email']}
+Role: {user_data['role'].upper()}
+Age: {user_data['age']}
+Registration Time: {user_data['created_at']}
+
+This is an automated notification sent to subscribed admins.
+                """
+                send_notification(subject, message)
+                print(f"✓ Sent registration notification for {user_data['email']}")
+            except Exception as e:
+                print(f"Error sending registration notification: {e}")
+
             flash("Registration successful! You can now login.", "success")
 
             # Return to login page
