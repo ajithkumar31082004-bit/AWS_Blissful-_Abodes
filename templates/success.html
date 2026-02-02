@@ -158,14 +158,40 @@ Abodes{% endblock %} {% block extra_css %}
         <span class="info-label">Status:</span>
         <span class="info-value">✓ Confirmed</span>
       </div>
+      {% if booking %}
+      <div class="info-row">
+        <span class="info-label">Check-in:</span>
+        <span class="info-value">{{ booking.check_in }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Check-out:</span>
+        <span class="info-value">{{ booking.check_out }}</span>
+      </div>
+      {% if room %}
+      <div class="info-row">
+        <span class="info-label">Room:</span>
+        <span class="info-value">{{ room.name }}</span>
+      </div>
+      {% endif %}
+      <div class="info-row">
+        <span class="info-label">Nights:</span>
+        <span class="info-value"
+          >{{ booking.nights }} night{% if booking.nights != 1 %}s{% endif
+          %}</span
+        >
+      </div>
+      <div class="info-row">
+        <span class="info-label">Total Amount:</span>
+        <span class="info-value" style="color: #d4af37"
+          >₹{{ "{:,.0f}".format(booking.total_price|float) }}</span
+        >
+      </div>
+      {% else %}
       <div class="info-row">
         <span class="info-label">Confirmation Email:</span>
         <span class="info-value">{{ user.email }}</span>
       </div>
-      <div class="info-row">
-        <span class="info-label">Total Amount:</span>
-        <span class="info-value" style="color: #d4af37">₹49,551</span>
-      </div>
+      {% endif %}
     </div>
 
     <div class="confirmation-note">

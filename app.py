@@ -2153,9 +2153,38 @@ def book_room(room_id):
 @login_required
 def booking_success(booking_id):
     """Booking confirmation page"""
-    return render_template(
-        "success.html", booking_id=booking_id, user=session.get("user_info", {})
-    )
+    try:
+        # Get the booking details
+        booking = get_booking(booking_id)
+        if not booking:
+            flash("Booking not found", "danger")
+            return redirect(url_for("my_bookings"))
+
+        # Get room details
+        room = None
+        if booking.get("room_id"):
+            all_rooms = get_all_rooms()
+            room = next(
+                (r for r in all_rooms if r.get("room_id") == booking.get("room_id")),
+                None,
+            )
+
+        return render_template(
+            "success.html",
+            booking_id=booking_id,
+            booking=booking,
+            room=room,
+            user=session.get("user_info", {}),
+        )
+    except Exception as e:
+        print(f"Error loading booking success: {e}")
+        return render_template(
+            "success.html",
+            booking_id=booking_id,
+            booking=None,
+            room=None,
+            user=session.get("user_info", {}),
+        )
 
 
 @app.route("/my-bookings")
