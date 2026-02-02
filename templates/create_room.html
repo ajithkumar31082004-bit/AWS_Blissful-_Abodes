@@ -267,14 +267,20 @@
 
         <div class="form-group">
           <label for="location">Location <span class="required">*</span></label>
-          <input
-            type="text"
+          <select
             id="location"
             name="location"
             required
-            placeholder="e.g., New York, NY"
-          />
-          <div class="help-text">Enter the city and state</div>
+            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
+          >
+            <option value="">-- Select Location --</option>
+            <option value="Mumbai, Maharashtra">Mumbai, Maharashtra</option>
+            <option value="Delhi, NCR">Delhi, NCR</option>
+            <option value="Bangalore, Karnataka">Bangalore, Karnataka</option>
+            <option value="Goa">Goa</option>
+            <option value="Chennai, Tamil Nadu">Chennai, Tamil Nadu</option>
+          </select>
+          <div class="help-text">Select the branch location</div>
         </div>
 
         <div class="form-row">
@@ -312,25 +318,60 @@
         </div>
 
         <div class="form-group">
-          <label for="amenities">Amenities (Comma-separated)</label>
-          <textarea
-            id="amenities"
-            name="amenities"
-            placeholder="e.g., WiFi, TV, Mini Bar, King Bed"
-          ></textarea>
-          <div class="help-text">Separate multiple amenities with commas</div>
+          <label>Amenities</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="WiFi" style="width: auto;">
+              <span>📶 WiFi</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="TV" style="width: auto;">
+              <span>📺 TV</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="AC" style="width: auto;">
+              <span>❄️ Air Conditioning</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Mini Bar" style="width: auto;">
+              <span>🍷 Mini Bar</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Balcony" style="width: auto;">
+              <span>🌳 Balcony</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Jacuzzi" style="width: auto;">
+              <span>🛁 Jacuzzi</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="King Bed" style="width: auto;">
+              <span>🛏️ King Bed</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Room Service" style="width: auto;">
+              <span>🍽️ Room Service</span>
+            </label>
+          </div>
+          <div class="help-text">Select all amenities that apply</div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="room_type">Room Type</label>
-            <input
-              type="text"
+            <select
               id="room_type"
               name="room_type"
-              placeholder="single / double / family / couple / vip"
-            />
-            <div class="help-text">Used for defaults (hotspots, tours, images)</div>
+              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
+            >
+              <option value="">-- Select Type --</option>
+              <option value="single">Single Room</option>
+              <option value="double">Double Room</option>
+              <option value="family">Family Suite</option>
+              <option value="couple">Couple/Romantic</option>
+              <option value="vip">VIP/Presidential</option>
+            </select>
+            <div class="help-text">Select the room category</div>
           </div>
           <div class="form-group">
             <label for="virtual_tour_360_url">360° Tour Image URL (optional)</label>
