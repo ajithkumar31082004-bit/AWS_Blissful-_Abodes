@@ -1859,16 +1859,12 @@ def rooms():
             filtered_rooms = []
             for room in all_rooms:
                 room_branch_id = room.get("branch_id")
-                room_location = room.get("location", "").lower()
 
-                # Include if branch_id matches
+                # Only include if branch_id exactly matches
                 if room_branch_id == branch_id:
                     filtered_rooms.append(room)
-                # Or if location matches branch city (for backward compatibility)
-                elif branch_city and branch_city.lower() in room_location:
-                    filtered_rooms.append(room)
 
-            all_rooms = filtered_rooms if filtered_rooms else all_rooms_with_branch
+            all_rooms = filtered_rooms
             print(
                 f"DEBUG: Found {len(all_rooms)} rooms for branch {branch_id} (city: {branch_city})"
             )
