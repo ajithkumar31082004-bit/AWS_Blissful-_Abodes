@@ -420,9 +420,9 @@ def init_sample_rooms():
 
         print(f"Current rooms in database: {len(existing_rooms)}")
 
-        # Only populate if less than 10 rooms exist
-        if len(existing_rooms) < 10:
-            print("Initializing 100+ sample rooms...")
+        # Only populate if NO rooms exist (prevent auto-increasing)
+        if len(existing_rooms) == 0:
+            print("Initializing 50 sample rooms...")
             try:
                 from populate_rooms import populate_rooms
 
@@ -462,8 +462,8 @@ def create_inline_sample_rooms():
 
         room_count = 0
 
-        # Single Rooms (30)
-        for i in range(1, 31):
+        # Single Rooms (20 instead of 30)
+        for i in range(1, 21):
             city = cities[i % len(cities)]
             room = {
                 "room_id": str(uuid.uuid4()),
@@ -481,8 +481,8 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Double Rooms (30)
-        for i in range(1, 31):
+        # Double Rooms (15 instead of 30)
+        for i in range(1, 16):
             city = cities[(i + 1) % len(cities)]
             room = {
                 "room_id": str(uuid.uuid4()),
@@ -508,8 +508,8 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Family Suites (20)
-        for i in range(1, 21):
+        # Family Suites (10 instead of 20)
+        for i in range(1, 11):
             beds = 3 + (i % 3)
             city = cities[(i + 2) % len(cities)]
             room = {
@@ -537,15 +537,13 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Couple/Romantic Rooms (10)
+        # Couple/Romantic Rooms (5 instead of 10)
         romantic_names = [
             "Honeymoon Suite",
             "Romantic Retreat",
             "Lovers Paradise",
-            "Intimate Escape",
-            "Romance Suite",
         ]
-        for i in range(1, 11):
+        for i in range(1, 6):
             city = cities[(i + 3) % len(cities)]
             room = {
                 "room_id": str(uuid.uuid4()),
@@ -573,15 +571,8 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # VIP/Presidential Suites (10)
-        vip_names = [
-            "Presidential Suite",
-            "Executive Penthouse",
-            "Royal Chamber",
-            "Celebrity Suite",
-            "Platinum Residence",
-        ]
-        for i in range(1, 11):
+            # VIP/Presidential Suites (0 - removed to keep total at 50)
+            # Removed to maintain exactly 50 rooms
             city = cities[(i + 4) % len(cities)]
             room = {
                 "room_id": str(uuid.uuid4()),
@@ -1175,10 +1166,16 @@ def register():
             if user_data["role"] == "guest":
                 try:
                     subscribe_email(user_data["email"])
+                    print(f"Subscribed {user_data['email']} to SNS topic")
+                    flash(
+                        "Registration successful! Please check your email to confirm SNS subscription for booking notifications.",
+                        "success",
+                    )
                 except Exception as e:
                     print(f"SNS subscription error: {e}")
+                    flash("Registration successful! You can now login.", "success")
 
-            flash("Registration successful! You can now login as a guest.", "success")
+            # Flash message already set above based on SNS subscription
             return redirect(url_for("login"))
 
         except ValueError as e:
@@ -1991,6 +1988,15 @@ def book_room(room_id):
                 return redirect(url_for("login"))
 
             user_info = session.get("user_info", {})
+
+            # Only guests can book rooms - staff and admin cannot
+            if user_info.get("role") in ["staff", "admin"]:
+                flash(
+                    "Staff and Admin cannot book rooms. Only guests can make bookings.",
+                    "warning",
+                )
+                return redirect(url_for("rooms"))
+
             if not user_info.get("name") or not user_info.get("email"):
                 flash("Please complete your profile before booking", "warning")
                 return redirect(url_for("login"))
