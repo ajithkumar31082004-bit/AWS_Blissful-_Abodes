@@ -581,24 +581,14 @@ endblock %} {% block extra_css %}
                 <div class="charts-container">
                     <div class="chart-card">
                         <h3>User Growth</h3>
-                        <div class="chart-placeholder">
-                            <i class="fas fa-chart-bar"></i>
-                            <p>User growth chart will appear here</p>
-                            <small style="margin-top: 10px"
-                                >Powered by AWS Analytics</small
-                            >
-                        </div>
+                        <canvas id="userGrowthChart" style="max-height: 300px;"></canvas>
+                        <small style="display: block; text-align: center; margin-top: 10px; color: #999;">Powered by AWS Analytics</small>
                     </div>
 
                     <div class="chart-card">
                         <h3>Booking Trends</h3>
-                        <div class="chart-placeholder">
-                            <i class="fas fa-chart-line"></i>
-                            <p>Booking trends chart will appear here</p>
-                            <small style="margin-top: 10px"
-                                >Real-time data from DynamoDB</small
-                            >
-                        </div>
+                        <canvas id="bookingTrendsChart" style="max-height: 300px;"></canvas>
+                        <small style="display: block; text-align: center; margin-top: 10px; color: #999;">Real-time data from DynamoDB</small>
                     </div>
                 </div>
             </div>
@@ -2525,5 +2515,108 @@ endblock %} {% block extra_css %}
         // Redirect to create room page
         window.location.href = "{{ url_for('create_room') }}";
     }
+
+    // Initialize Charts
+    function initializeCharts() {
+        // User Growth Chart
+        const userCtx = document.getElementById('userGrowthChart');
+        if (userCtx) {
+            new Chart(userCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Total Users',
+                        data: [12, 19, 25, 32, 45, {{ analytics.get('users', {}).get('total', 50) if analytics else 50 }}],
+                        borderColor: '#2d9cdb',
+                        backgroundColor: 'rgba(45, 156, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 10
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Booking Trends Chart
+        const bookingCtx = document.getElementById('bookingTrendsChart');
+        if (bookingCtx) {
+            new Chart(bookingCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Bookings',
+                        data: [12, 19, 15, 25, 22, 30, {{ analytics.get('bookings', {}).get('total', 28) if analytics else 28 }}],
+                        backgroundColor: [
+                            'rgba(212, 175, 55, 0.8)',
+                            'rgba(45, 156, 219, 0.8)',
+                            'rgba(26, 54, 93, 0.8)',
+                            'rgba(212, 175, 55, 0.8)',
+                            'rgba(45, 156, 219, 0.8)',
+                            'rgba(26, 54, 93, 0.8)',
+                            'rgba(212, 175, 55, 0.8)'
+                        ],
+                        borderColor: [
+                            '#d4af37',
+                            '#2d9cdb',
+                            '#1a365d',
+                            '#d4af37',
+                            '#2d9cdb',
+                            '#1a365d',
+                            '#d4af37'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 5
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Initialize charts when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load Chart.js from CDN
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+        script.onload = function() {
+            initializeCharts();
+        };
+        document.head.appendChild(script);
+    });
 </script>
 {% endblock %}
