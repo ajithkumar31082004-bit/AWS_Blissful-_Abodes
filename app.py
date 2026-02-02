@@ -1165,17 +1165,32 @@ def register():
             # Subscribe to SNS for notifications (for guests)
             if user_data["role"] == "guest":
                 try:
-                    subscribe_email(user_data["email"])
-                    print(f"Subscribed {user_data['email']} to SNS topic")
-                    flash(
-                        "Registration successful! Please check your email to confirm SNS subscription for booking notifications.",
-                        "success",
-                    )
+                    print(f"Attempting to subscribe {user_data['email']} to SNS...")
+                    subscription_arn = subscribe_email(user_data["email"])
+                    print(f"SNS subscription result: {subscription_arn}")
+
+                    if subscription_arn and subscription_arn != "mock-subscription-arn":
+                        print(
+                            f"✓ Successfully subscribed {user_data['email']} to SNS topic"
+                        )
+                        flash(
+                            "Registration successful! Please check your email to confirm SNS subscription for booking notifications.",
+                            "success",
+                        )
+                    else:
+                        print(f"Mock SNS subscription for {user_data['email']}")
+                        flash("Registration successful! You can now login.", "success")
                 except Exception as e:
                     print(f"SNS subscription error: {e}")
-                    flash("Registration successful! You can now login.", "success")
+                    import traceback
 
-            # Flash message already set above based on SNS subscription
+                    traceback.print_exc()
+                    flash("Registration successful! You can now login.", "success")
+            else:
+                # Non-guest users don't get SNS subscription
+                flash("Registration successful! You can now login.", "success")
+
+            # Return to login page
             return redirect(url_for("login"))
 
         except ValueError as e:
