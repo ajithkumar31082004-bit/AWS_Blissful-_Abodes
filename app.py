@@ -3216,153 +3216,188 @@ def process_chat_message(user, message, context="general"):
     """Process user message and generate bot response based on page context"""
     message_lower = message.lower()
 
-    # Context-aware responses
-    if context == "rooms":
-        # On rooms page - focus on booking
-        if any(word in message_lower for word in ["hi", "hello", "hey", "help"]):
-            return {
-                "message": f"Hello {user.get('name', 'Guest')}! I see you're browsing our rooms. 🏨\n\nI can help you:\n• Find the perfect room\n• Check availability\n• Book a room\n• Compare room types\n\nWhat would you like to know?",
-                "type": "text",
-            }
-        elif any(
-            word in message_lower for word in ["available", "availability", "free"]
-        ):
-            return {
-                "message": "Let me help you check availability! 📅\n\nPlease provide:\n1. Check-in date\n2. Check-out date\n3. Number of guests\n\nOr use the 'Quick Book' button to see all available rooms!",
-                "type": "booking",
-            }
+    # helper for checking multiple keywords
+    def contains_any(keywords):
+        return any(word in message_lower for word in keywords)
 
-    elif context == "bookings":
-        # On bookings page - focus on booking management
-        if any(word in message_lower for word in ["hi", "hello", "hey", "help"]):
-            return {
-                "message": f"Hello {user.get('name', 'Guest')}! I see you're viewing your bookings. 📅\n\nI can help you:\n• View booking details\n• Modify bookings\n• Cancel bookings\n• Leave a review\n\nWhat do you need?",
-                "type": "text",
-            }
-        elif any(word in message_lower for word in ["cancel", "modify", "change"]):
-            return {
-                "message": "I can help with booking changes! 📝\n\nPlease provide your booking ID and what you'd like to change. You can also report an issue if you need immediate assistance.",
-                "type": "report",
-            }
+    # --- 1. GREETINGS ---
+    if contains_any(
+        ["hi", "hello", "hey", "greetings", "morning", "evening", "afternoon"]
+    ):
+        context_greeting = ""
+        if context == "rooms":
+            context_greeting = " I see you're looking for a room. Need recommendations?"
+        elif context == "bookings":
+            context_greeting = " checking your reservations?"
+        elif context == "reviews":
+            context_greeting = " looking to share your feedback?"
 
-    elif context == "reviews":
-        # On reviews page - focus on feedback
-        if any(word in message_lower for word in ["hi", "hello", "hey", "help"]):
-            return {
-                "message": f"Hello {user.get('name', 'Guest')}! Ready to share your experience? ⭐\n\nI can help you:\n• Submit a review\n• Rate your stay\n• Provide feedback\n\nClick 'Submit Review' to get started!",
-                "type": "text",
-            }
+        return {
+            "message": f"Hello {user.get('name', 'Guest')}! Welcome to Blissful Abodes Assistant. 👋{context_greeting}\n\nI can help you with:\n• 🏨 Booking a Room\n• 📅 Managing Reservations\n• ℹ️ Hotel Amenities & Policies\n• ⭐ Reviews & Feedback\n\nHow can I help you today?",
+            "type": "text",
+        }
 
-    elif context == "dashboard":
-        # On dashboard - general assistance
-        if any(word in message_lower for word in ["hi", "hello", "hey", "help"]):
-            return {
-                "message": f"Welcome back, {user.get('name', 'Guest')}! 👋\n\nFrom your dashboard, I can help you:\n• Make new bookings\n• View booking history\n• Request services\n• Leave reviews\n\nWhat would you like to do?",
-                "type": "text",
-            }
+    # --- 2. AMENITIES & FACILITIES ---
+    if contains_any(
+        [
+            "pool",
+            "swim",
+            "gym",
+            "fitness",
+            "wifi",
+            "internet",
+            "parking",
+            "breakfast",
+            "food",
+            "restaurant",
+            "spa",
+        ]
+    ):
+        response = "Here's what we offer regarding your query: 🏨\n\n"
+        if contains_any(["pool", "swim"]):
+            response += "• 🏊‍♂️ **Swimming Pool**: We have a temperature-controlled infinity pool open from 6 AM to 10 PM.\n"
+        if contains_any(["gym", "fitness", "workout"]):
+            response += "• 🏋️ **Gym**: Our state-of-the-art fitness center is open 24/7 for guests.\n"
+        if contains_any(["wifi", "internet"]):
+            response += "• 📶 **Wi-Fi**: High-speed complimentary Wi-Fi is available throughout the property.\n"
+        if contains_any(["parking", "car"]):
+            response += (
+                "• 🚗 **Parking**: We offer free secure valet parking for all guests.\n"
+            )
+        if contains_any(["breakfast", "food", "restaurant", "dining"]):
+            response += "• 🍽️ **Dining**: We have an in-house multi-cuisine restaurant and 24/7 room service. Breakfast is complimentary with most plans.\n"
+        if contains_any(["spa", "massage"]):
+            response += "• 💆 **Spa**: Our luxury spa offers various treatments from 9 AM to 8 PM.\n"
 
-    # Standard intent detection (works on all pages)
+        return {"message": response, "type": "text"}
 
-    # Check for booking intent
-    if any(
-        word in message_lower
-        for word in ["book", "booking", "reserve", "reservation", "room"]
+    # --- 3. POLICIES (Check-in, Cancellation, etc.) ---
+    if contains_any(
+        [
+            "check in",
+            "check-in",
+            "check out",
+            "check-out",
+            "time",
+            "policy",
+            "rules",
+            "cancel",
+            "refund",
+            "pet",
+            "dog",
+            "cat",
+        ]
+    ):
+        response = "Here are our key policies: 📋\n\n"
+        if contains_any(["check in", "check-in", "check out", "check-out", "time"]):
+            response += "• 🕒 **Check-in/Out**: Check-in time is 2:00 PM and Check-out time is 11:00 AM.\n"
+        if contains_any(["cancel", "refund"]):
+            response += "• 🔄 **Cancellation**: Free cancellation up to 24 hours before check-in. Late cancellations may incur a one-night charge.\n"
+        if contains_any(["pet", "dog", "cat", "animal"]):
+            response += "• 🐾 **Pets**: We are a pet-friendly hotel! A small cleaning fee may apply.\n"
+        if contains_any(["smoke", "smoking"]):
+            response += "• 🚭 **Smoking**: All rooms are non-smoking. Designated smoking areas are available.\n"
+        if contains_any(["children", "kids", "baby"]):
+            response += (
+                "• 👶 **Children**: Kids under 5 stay free using existing bedding.\n"
+            )
+
+        return {"message": response, "type": "text"}
+
+    # --- 4. LOCATION & CONTACT ---
+    if contains_any(
+        [
+            "where",
+            "location",
+            "address",
+            "map",
+            "contact",
+            "phone",
+            "email",
+            "call",
+            "reach",
+        ]
     ):
         return {
-            "message": "I can help you book a room! 🏨\n\nPlease provide:\n1. Check-in date\n2. Check-out date\n3. Room type preference\n4. Number of guests\n\nOr click 'Quick Book' to see available rooms.",
+            "message": "📍 **Location & Contact**:\n\nWe are located at:\n123 Cloud Avenue, Tech Park District\nAWS Region, Digital India\n\n📞 **Phone**: +91 98765 43210\n📧 **Email**: support@blissfulabodes.com\n\nWe are centrally located near major attractions and the airport!",
+            "type": "text",
+        }
+
+    # --- 5. BOOKING INTENT ---
+    if contains_any(
+        [
+            "book",
+            "reservation",
+            "reserve",
+            "room",
+            "stay",
+            "price",
+            "cost",
+            "rate",
+            "availability",
+            "available",
+        ]
+    ):
+        if context == "rooms":
+            return {
+                "message": "You're in the right place! 🏨\n\nYou can:\n1. Select your dates in the search bar above\n2. Filter by room type\n3. Click 'Book Now' on your preferred room\n\nNeed help checking availability for specific dates?",
+                "type": "booking",
+            }
+        return {
+            "message": "I can help you book a stay! 🏨\n\nPlease provide:\n1. Check-in Date\n2. Check-out Date\n3. Number of Guests\n\nOr simply click the button below to start:",
             "type": "booking",
         }
 
-    # Check for review intent
-    elif any(
-        word in message_lower for word in ["review", "feedback", "rating", "rate"]
+    # --- 6. EXISTING BOOKING MANAGEMENT ---
+    if contains_any(
+        ["my booking", "cancel booking", "modify", "change booking", "status"]
     ):
         return {
-            "message": "I'd love to hear your feedback! ⭐\n\nPlease share:\n1. Your booking/room number\n2. Your rating (1-5 stars)\n3. Your detailed review\n\nOr use the 'Submit Review' button.",
+            "message": "You can manage your bookings in the 'My Bookings' section. 📅\n\nThere you can:\n• View booking status\n• Download receipts\n• Cancel or modify reservations\n\nWould you like me to take you there?",
+            "type": "report",  # Keeping generic type for specific actions
+        }
+
+    # --- 7. REVIEWS & FEEDBACK ---
+    if contains_any(
+        ["review", "rating", "feedback", "star", "complain", "issue", "report"]
+    ):
+        if contains_any(
+            ["complain", "issue", "report", "problem", "mad", "angry", "bad"]
+        ):
+            return {
+                "message": "I'm very sorry to hear you're facing an issue. 😟\n\nPlease describe the problem in detail using the 'Report Issue' button so our team can resolve it immediately.",
+                "type": "report",
+            }
+        return {
+            "message": "We value your feedback! ⭐\n\nYou can rate your stay and write a review after your checkout. Use the 'Submit Review' button to share your experience!",
             "type": "review",
         }
 
-    # Check for report/complaint intent
-    elif any(
-        word in message_lower
-        for word in [
-            "report",
-            "complaint",
-            "issue",
-            "problem",
-            "help",
-            "cancel",
-            "modify",
-        ]
+    # --- 8. EXTRA SERVICES ---
+    if contains_any(
+        ["service", "taxi", "cab", "tour", "clean", "laundry", "doctor", "help"]
     ):
         return {
-            "message": "I'm sorry to hear you're experiencing an issue. 😟\n\nPlease describe the problem in detail, and our admin team will address it promptly. You can also use the 'Submit Report' button.",
-            "type": "report",
-        }
-
-    # Check for extra services intent
-    elif any(
-        word in message_lower
-        for word in [
-            "service",
-            "spa",
-            "food",
-            "restaurant",
-            "laundry",
-            "taxi",
-            "tour",
-            "extra",
-        ]
-    ):
-        return {
-            "message": "We offer various extra services: 🎯\n\n🍽️ Room Service\n💆 Spa & Wellness\n🍔 Restaurant & Dining\n👔 Laundry Service\n🚖 Transportation\n🗺️ City Tours\n\nPlease specify which service you need, and I'll notify our staff immediately!",
+            "message": "We offer a range of premium services: 🛎️\n\n• Room Service & Dining\n• Spa & Wellness\n• Laundry & Dry Cleaning\n• Airport Transfers & Taxi\n• City Tours\n• Doctor on Call\n\nClick 'Request Service' to book any of these.",
             "type": "extra_service",
         }
 
-    # Check for help intent
-    elif any(word in message_lower for word in ["help", "support", "assist"]):
-        context_help = ""
-        if context == "rooms":
-            context_help = "\n\n💡 Since you're browsing rooms, I can help you find and book the perfect accommodation!"
-        elif context == "bookings":
-            context_help = "\n\n💡 Since you're viewing bookings, I can help you manage your reservations!"
-        elif context == "reviews":
-            context_help = (
-                "\n\n💡 Ready to share your experience? I can help you submit a review!"
-            )
+    # --- 9. FALLBACK / DEFAULT ---
+    # Try to keep the conversation going based on context
+    fallback_msg = "I'm not sure I understood that correctly. 🤔\n\nI can help with:"
+    options = "\n• 🏨 Booking a Room\n• ℹ️ Hotel Information & Amenities\n• 📅 Managing Reservations\n• ⭐ Reviews & Feedback"
 
-        return {
-            "message": f"I'm here to help! 🤝\n\nI can assist you with:\n\n🏨 Room Bookings\n⭐ Reviews & Feedback\n📋 Reports & Issues\n🎯 Extra Services (Spa, Food, Tours, etc.){context_help}\n\nWhat would you like help with?",
-            "type": "text",
-        }
+    if context == "rooms":
+        fallback_msg = "I'm not sure, but I can help you find a room! 🏨"
+        options = "\n• Check Availability\n• View Room Types\n• Pricing & Offers"
+    elif context == "bookings":
+        fallback_msg = "I'm here to help with your bookings. 📅"
+        options = "\n• View Confirmation\n• Cancel/Modify\n• Download Receipt"
 
-    # Check for greeting
-    elif any(word in message_lower for word in ["hi", "hello", "hey", "greetings"]):
-        context_greeting = ""
-        if context == "rooms":
-            context_greeting = (
-                " I see you're browsing our rooms. Looking to book a stay?"
-            )
-        elif context == "bookings":
-            context_greeting = (
-                " I see you're checking your bookings. Need help with anything?"
-            )
-        elif context == "reviews":
-            context_greeting = " Ready to share your experience with us?"
-
-        return {
-            "message": f"Hello {user.get('name', 'Guest')}! Welcome to Blissful Abodes Assistant. 👋{context_greeting}\n\nHow can I help you today?",
-            "type": "text",
-        }
-
-    # Default response
-    else:
-        return {
-            "message": "I understand you said: "
-            + message
-            + "\n\nI can help you with:\n• Room Bookings 🏨\n• Reviews ⭐\n• Reports/Issues 📋\n• Extra Services 🎯\n\nPlease let me know what you need!",
-            "type": "text",
-        }
+    return {
+        "message": f"{fallback_msg}{options}\n\nPlease try asking in a different way or use the quick buttons.",
+        "type": "text",
+    }
 
 
 def notify_admin_of_request(chat_request, user):
