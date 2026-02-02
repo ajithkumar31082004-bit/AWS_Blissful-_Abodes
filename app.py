@@ -1162,33 +1162,9 @@ def register():
             # Add user to database
             add_user(user_data)
 
-            # Subscribe to SNS for notifications (for guests)
-            if user_data["role"] == "guest":
-                try:
-                    print(f"Attempting to subscribe {user_data['email']} to SNS...")
-                    subscription_arn = subscribe_email(user_data["email"])
-                    print(f"SNS subscription result: {subscription_arn}")
-
-                    if subscription_arn and subscription_arn != "mock-subscription-arn":
-                        print(
-                            f"✓ Successfully subscribed {user_data['email']} to SNS topic"
-                        )
-                        flash(
-                            "Registration successful! Please check your email to confirm SNS subscription for booking notifications.",
-                            "success",
-                        )
-                    else:
-                        print(f"Mock SNS subscription for {user_data['email']}")
-                        flash("Registration successful! You can now login.", "success")
-                except Exception as e:
-                    print(f"SNS subscription error: {e}")
-                    import traceback
-
-                    traceback.print_exc()
-                    flash("Registration successful! You can now login.", "success")
-            else:
-                # Non-guest users don't get SNS subscription
-                flash("Registration successful! You can now login.", "success")
+            # No automatic SNS subscription - admins subscribe manually
+            # Notifications will only be sent to pre-configured admin emails
+            flash("Registration successful! You can now login.", "success")
 
             # Return to login page
             return redirect(url_for("login"))
