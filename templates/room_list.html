@@ -361,10 +361,10 @@ endblock %} {% block extra_css %}
                         value="{{ branch.branch_id }}"
                         {% if filters.branch_id == branch.branch_id %}selected{% endif %}
                     >
-                        {% if branch.branch_name %}
-                            {{ branch.branch_name }}
-                        {% elif branch.get('branch_name') %}
-                            {{ branch.get('branch_name') }}
+                        {% if branch.name %}
+                            {{ branch.name }}
+                        {% elif branch.get('name') %}
+                            {{ branch.get('name') }}
                         {% else %}
                             {{ branch.branch_id }}
                         {% endif %}
@@ -401,28 +401,20 @@ endblock %} {% block extra_css %}
                 "
             >
                 <strong style="color: #1a365d; display: block; margin-bottom: 5px;">
-                    {% if selected_branch.branch_name %}
-                        {{ selected_branch.branch_name }}
-                    {% elif selected_branch.get('branch_name') %}
-                        {{ selected_branch.get('branch_name') }}
+                    {% if selected_branch.name %}
+                        {{ selected_branch.name }}
+                    {% elif selected_branch.get('name') %}
+                        {{ selected_branch.get('name') }}
                     {% else %}
                         {{ selected_branch.branch_id }}
                     {% endif %}
                 </strong>
                 <span style="color: #666; display: block;">
                     <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>
-                    {% if selected_branch.location %}
-                        {% if selected_branch.location.city %}
-                            {{ selected_branch.location.city }}
-                        {% elif selected_branch.location.get('city') %}
-                            {{ selected_branch.location.get('city') }}
-                        {% endif %}
-                    {% elif selected_branch.get('location') %}
-                        {% if selected_branch.get('location').city %}
-                            {{ selected_branch.get('location').city }}
-                        {% elif selected_branch.get('location').get('city') %}
-                            {{ selected_branch.get('location').get('city') }}
-                        {% endif %}
+                    {% if selected_branch.city %}
+                        {{ selected_branch.city }}
+                    {% elif selected_branch.get('city') %}
+                        {{ selected_branch.get('city') }}
                     {% endif %}
                 </span>
             </div>
