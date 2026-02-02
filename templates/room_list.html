@@ -437,7 +437,8 @@ endblock %} {% block extra_css %}
                 />
                 <div class="price-display">
                     <span>₹0</span>
-                    <span id="maxPrice">₹100000</span>
+                    <span>-</span>
+                    <span id="maxPrice">₹1,00,000</span>
                 </div>
             </div>
         </div>
@@ -457,8 +458,8 @@ endblock %} {% block extra_css %}
                     step="1"
                 />
                 <div class="price-display">
-                    <span>Min:</span>
-                    <span id="maxCapacity">1 guests</span>
+                    <span>Minimum Capacity:</span>
+                    <span id="maxCapacity">1+ guests</span>
                 </div>
             </div>
         </div>
@@ -756,7 +757,8 @@ endblock %} {% block extra_css %}
         // Price range filter
         if (priceRange) {
             priceRange.addEventListener("input", function () {
-                maxPriceDisplay.textContent = "₹" + this.value;
+                const formattedPrice = new Intl.NumberFormat('en-IN').format(this.value);
+                maxPriceDisplay.textContent = "₹" + formattedPrice;
                 filterRooms();
             });
         }
@@ -764,7 +766,7 @@ endblock %} {% block extra_css %}
         // Capacity range filter
         if (capacityRange) {
             capacityRange.addEventListener("input", function () {
-                maxCapacityDisplay.textContent = this.value + " guests";
+                maxCapacityDisplay.textContent = this.value + "+ guests";
                 filterRooms();
             });
         }
