@@ -786,14 +786,34 @@ def get_all_rooms(branch_id=None):
         try:
             table = get_table(ROOMS_TABLE)
             if table:
+                items = []
                 response = table.scan()
-                items = response.get("Items", [])
+                items.extend(response.get("Items", []))
+
+                # Handle pagination
+                while "LastEvaluatedKey" in response:
+                    try:
+                        response = table.scan(
+                            ExclusiveStartKey=response["LastEvaluatedKey"]
+                        )
+                        items.extend(response.get("Items", []))
+                    except Exception as e:
+                        print(f"Error during pagination scan: {e}")
+                        break
+
                 # Filter by branch_id if provided
                 if branch_id:
                     items = [r for r in items if r.get("branch_id") == branch_id]
                 return items
         except Exception as e:
             print(f"Error getting all rooms from DynamoDB: {e}")
+            # If we are strictly in AWS mode, we should perhaps return the partial list or raise.
+            # But returning mock_rooms (which is empty) causes the init script to think DB is empty.
+            # Safer to return what we have or empty list, NOT failover to mock_rooms if we wanted real data.
+            # But to be safe against the 're-population' bug, let's return a non-empty list if possible, or re-raise
+            if "Table not found" not in str(e):
+                # If it's a connection error, we don't want to trigger population
+                return []
 
     # Filter mock rooms by branch_id if provided
     if branch_id:
