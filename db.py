@@ -56,11 +56,6 @@ mock_waitlist = []  # Waitlist entries
 mock_services = []  # Available services
 mock_service_bookings = []  # Service bookings
 mock_notifications = []  # Notification queue
-mock_tasks = []  # Added for Staff/Housekeeping
-mock_inventory = []  # Added for Branch Staff/Manager
-mock_attendance = []  # Added for Branch Staff
-mock_financials = []  # Added for Manager/Admin/Super Admin
-mock_coupons = []  # Added for Admin/Super Admin
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -1561,69 +1556,6 @@ def redeem_loyalty_points(user_id, points_to_redeem):
             break
 
     return True, new_points, tier
-
-
-def init_loyalty_for_user(user_id):
-    """Initialize loyalty program for a new user"""
-    if DYNAMODB_AVAILABLE:
-        try:
-            table = dynamodb.Table(LOYALTY_TABLE)
-            table.put_item(
-                Item={
-                    "user_id": user_id,
-                    "points": 0,
-                    "tier": "Silver",
-                    "total_spent": 0,
-                    "last_updated": datetime.now().isoformat(),
-                }
-            )
-        except Exception as e:
-            print(f"Error initializing loyalty for user: {e}")
-
-    # Fallback to mock
-    mock_loyalty.append(
-        {
-            "user_id": user_id,
-            "points": 0,
-            "tier": "Silver",
-            "total_spent": 0,
-            "last_updated": datetime.now().isoformat(),
-        }
-    )
-    return True
-
-
-def get_branch_tasks(branch_id, status=None):
-    """Get tasks for a specific branch"""
-    tasks = [t for t in mock_tasks if t.get("branch_id") == branch_id]
-    if status:
-        tasks = [t for t in tasks if t.get("status") == status]
-    return tasks
-
-
-def add_branch_task(task_data):
-    """Add a new task for a branch"""
-    if "task_id" not in task_data:
-        task_data["task_id"] = str(uuid.uuid4())
-    if "created_at" not in task_data:
-        task_data["created_at"] = datetime.now().isoformat()
-    mock_tasks.append(task_data)
-    return task_data
-
-
-def get_branch_inventory(branch_id):
-    """Get inventory for a specific branch"""
-    return [i for i in mock_inventory if i.get("branch_id") == branch_id]
-
-
-def update_inventory_status(branch_id, item_name, quantity_change):
-    """Update inventory quantity"""
-    for item in mock_inventory:
-        if item.get("branch_id") == branch_id and item.get("name") == item_name:
-            item["quantity"] = max(0, item.get("quantity", 0) + quantity_change)
-            item["updated_at"] = datetime.now().isoformat()
-            return item
-    return None
 
 
 # Initialize Indian branches

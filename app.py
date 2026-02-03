@@ -291,76 +291,124 @@ def init_db():
 def init_default_users():
     """Initialize default staff, branch managers, and super admin accounts"""
     try:
+        # Get branches for assignment
+        branches = get_all_branches(status="active")
+        branch_ids = [b.get("branch_id") for b in branches if b.get("branch_id")]
+
         default_users = [
             {
-                "user_id": "super-admin-001",
-                "name": "Arjun Sharma",
-                "email": "ceo@blissfulabodes.com",
-                "password": hash_password("superadmin123"),
-                "age": 45,
-                "role": "super_admin",
-                "branch_id": None,
-                "created_at": datetime.now().isoformat(),
-            },
-            {
-                "user_id": "admin-mum-001",
-                "name": "Amit Shah",
-                "email": "amit.shah@blissfulabodes.com",
-                "password": hash_password("admin123"),
+                "user_id": str(uuid.uuid4()),
+                "name": "Super Admin",
+                "email": "superadmin@blissfulabodes.com",
+                "password": hash_password("password123"),
                 "age": 40,
-                "role": "admin",
-                "branch_id": "BLISS-MUM",
+                "role": "super_admin",
+                "branch_id": None,  # Super admin has access to all branches
                 "created_at": datetime.now().isoformat(),
             },
             {
-                "user_id": "manager-mum-001",
+                "user_id": str(uuid.uuid4()),
                 "name": "Rajesh Kumar",
-                "email": "rajesh.mumbai@blissfulabodes.com",
-                "password": hash_password("manager123"),
+                "email": "rajesh.kumar@blissfulabodes.com",
+                "password": hash_password("password123"),
                 "age": 38,
                 "role": "branch_manager",
-                "branch_id": "BLISS-MUM",
+                "branch_id": "BLISS-MUM",  # Mumbai Branch Manager
                 "created_at": datetime.now().isoformat(),
             },
             {
-                "user_id": "ssr-mum-001",
-                "name": "Suresh Raina",
-                "email": "suresh.senior@blissfulabodes.com",
-                "password": hash_password("senior123"),
+                "user_id": str(uuid.uuid4()),
+                "name": "Priya Sharma",
+                "email": "priya.sharma@blissfulabodes.com",
+                "password": hash_password("password123"),
+                "age": 35,
+                "role": "branch_manager",
+                "branch_id": "BLISS-DEL",  # Delhi Branch Manager
+                "created_at": datetime.now().isoformat(),
+            },
+            {
+                "user_id": str(uuid.uuid4()),
+                "name": "Arjun Reddy",
+                "email": "arjun.reddy@blissfulabodes.com",
+                "password": hash_password("password123"),
                 "age": 32,
-                "role": "branch_staff",
-                "branch_id": "BLISS-MUM",
+                "role": "branch_manager",
+                "branch_id": "BLISS-BLR",  # Bangalore Branch Manager
                 "created_at": datetime.now().isoformat(),
             },
             {
-                "user_id": "staff-mum-001",
-                "name": "Vijay Verma",
-                "email": "vijay.staff@blissfulabodes.com",
-                "password": hash_password("staff123"),
-                "age": 28,
-                "role": "staff",
-                "branch_id": "BLISS-MUM",
-                "created_at": datetime.now().isoformat(),
-            },
-            {
-                "user_id": "guest-001",
-                "name": "Rahul Khanna",
-                "email": "rahul.khanna@gmail.com",
-                "password": hash_password("guest123"),
+                "user_id": str(uuid.uuid4()),
+                "name": "Maria Fernandes",
+                "email": "maria.fernandes@blissfulabodes.com",
+                "password": hash_password("password123"),
                 "age": 30,
-                "role": "guest",
+                "role": "branch_manager",
+                "branch_id": "BLISS-GOA",  # Goa Branch Manager
+                "created_at": datetime.now().isoformat(),
+            },
+            {
+                "user_id": str(uuid.uuid4()),
+                "name": "Rajesh Krishnan",
+                "email": "rajesh.krishnan@blissfulabodes.com",
+                "password": hash_password("password123"),
+                "age": 36,
+                "role": "branch_manager",
+                "branch_id": "BLISS-CHE",  # Chennai Branch Manager
+                "created_at": datetime.now().isoformat(),
+            },
+            {
+                "user_id": str(uuid.uuid4()),
+                "name": "Mumbai Staff 1",
+                "email": "staff.mumbai1@blissfulabodes.com",
+                "password": hash_password("password123"),
+                "age": 28,
+                "role": "branch_staff",
+                "branch_id": "BLISS-MUM",  # Mumbai Branch Staff
+                "created_at": datetime.now().isoformat(),
+            },
+            {
+                "user_id": str(uuid.uuid4()),
+                "name": "Delhi Staff 1",
+                "email": "staff.delhi1@blissfulabodes.com",
+                "password": hash_password("password123"),
+                "age": 26,
+                "role": "branch_staff",
+                "branch_id": "BLISS-DEL",  # Delhi Branch Staff
+                "created_at": datetime.now().isoformat(),
+            },
+            # Legacy accounts for backward compatibility
+            {
+                "user_id": str(uuid.uuid4()),
+                "name": "Admin User",
+                "email": "admin@example.com",
+                "password": hash_password("password123"),
+                "age": 35,
+                "role": "admin",  # Legacy role
                 "branch_id": None,
+                "created_at": datetime.now().isoformat(),
+            },
+            {
+                "user_id": str(uuid.uuid4()),
+                "name": "Staff User 1",
+                "email": "staff1@example.com",
+                "password": hash_password("password123"),
+                "age": 30,
+                "role": "staff",  # Legacy role
+                "branch_id": branch_ids[0] if branch_ids else None,
                 "created_at": datetime.now().isoformat(),
             },
         ]
 
         for user in default_users:
-            existing_user = get_user_by_email(user["email"])
+            existing_user = get_user(user["email"])
             if not existing_user:
                 add_user(user)
-                if user["role"] == "guest":
-                    init_loyalty_for_user(user["user_id"])
-                print(f"Created default {user['role']}: {user['email']}")
+                role_desc = (
+                    f"{user['role']} ({user.get('branch_id', 'all branches')})"
+                    if user.get("branch_id")
+                    else user["role"]
+                )
+                print(f"Created default {role_desc}: {user['email']}")
     except Exception as e:
         print(f"Error initializing default users: {e}")
 
@@ -1507,16 +1555,10 @@ def super_admin_dashboard():
             r for r in all_chat_requests if r.get("request_type") == "report"
         ]
 
-        # Calculate total revenue across all branches
-        total_consolidated_revenue = sum(
-            stats["total_revenue"] for stats in branch_analytics.values()
-        )
-
         return render_template(
             "super_admin_dashboard.html",
             analytics=analytics,
             branch_analytics=branch_analytics,
-            total_revenue=total_consolidated_revenue,
             branches=branches,
             pending_requests=pending_requests,
             service_requests=service_requests,
@@ -1701,7 +1743,6 @@ def branch_staff_dashboard():
             service_requests=service_requests,
             report_requests=report_requests,
             user=session.get("user_info", {}),
-            today_iso=today.isoformat(),
         )
     except Exception as e:
         print(f"Error loading branch staff dashboard: {e}")
