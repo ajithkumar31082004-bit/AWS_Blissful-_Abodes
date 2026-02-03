@@ -712,18 +712,41 @@ def get_rooms(location=None, availability="available", branch_id=None):
             if table:
                 if availability:
                     # Filter by availability
-                    if location:
-                        response = table.query(
-                            IndexName="AvailabilityIndex",
-                            KeyConditionExpression=Key("availability").eq(availability)
-                            & Key("location").begins_with(location),
-                        )
-                    else:
-                        response = table.query(
-                            IndexName="AvailabilityIndex",
-                            KeyConditionExpression=Key("availability").eq(availability),
-                        )
-                    items = response.get("Items", [])
+                    try:
+                        if location:
+                            response = table.query(
+                                IndexName="AvailabilityIndex",
+                                KeyConditionExpression=Key("availability").eq(
+                                    availability
+                                )
+                                & Key("location").begins_with(location),
+                            )
+                        else:
+                            response = table.query(
+                                IndexName="AvailabilityIndex",
+                                KeyConditionExpression=Key("availability").eq(
+                                    availability
+                                ),
+                            )
+                        items = response.get("Items", [])
+                    except ClientError as e:
+                        if e.response["Error"]["Code"] == "ValidationException":
+                            # Fallback to scan if index doesn't exist
+                            print(
+                                f"Index 'AvailabilityIndex' not found, falling back to scan: {e}"
+                            )
+                            response = table.scan(
+                                FilterExpression=Attr("availability").eq(availability)
+                            )
+                            items = response.get("Items", [])
+                            if location:
+                                items = [
+                                    r
+                                    for r in items
+                                    if location.lower() in r.get("location", "").lower()
+                                ]
+                        else:
+                            raise e
                 else:
                     # Get all rooms regardless of availability
                     response = table.scan()
