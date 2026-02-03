@@ -1,998 +1,156 @@
-{% extends "layout.html" %} {% block title %}Guest Dashboard - Blissful Abodes{%
-endblock %} {% block extra_css %}
+{% extends "layout.html" %}
+
+{% block title %}Guest Dashboard - Blissful Abodes India{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}">
 <style>
-    .dashboard-header {
-        background: linear-gradient(135deg, #1a365d, #2d9cdb);
-        color: white;
-        padding: 60px 20px;
-        border-radius: 0 0 30px 30px;
-        margin-bottom: 40px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    }
-
-    .welcome-message {
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    .welcome-message h1 {
-        font-family: "Playfair Display", serif;
-        font-size: 2.8rem;
-        margin-bottom: 10px;
-        font-weight: 700;
-    }
-
-    .welcome-message p {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 30px;
-    }
-
-    /* Enhanced Stats Cards */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 25px;
-        margin-top: 30px;
-    }
-
-    .stat-card {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        padding: 25px;
-        border-radius: 20px;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.25);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-        margin-bottom: 15px;
-    }
-
-    .stat-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-
-    .stat-label {
-        font-size: 0.95rem;
-        opacity: 0.9;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .dashboard-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 20px 60px;
-    }
-
-    .section-card {
-        background: white;
-        border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .section-title {
-        font-size: 1.8rem;
-        color: #1a365d;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .section-title i {
-        color: #2d9cdb;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #1a365d, #2d9cdb);
-        color: white;
-        padding: 12px 28px;
-        border-radius: 10px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.3);
-    }
-
-    .btn-text {
-        color: #2d9cdb;
-        text-decoration: none;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.3s ease;
-    }
-
-    .btn-text:hover {
-        color: #1a365d;
-        gap: 10px;
-    }
-
-    /* Booking Cards */
-    .bookings-grid {
-        display: grid;
-        gap: 20px;
-    }
-
-    .booking-card {
-        border: 2px solid #f0f0f0;
-        border-radius: 15px;
-        padding: 25px;
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        gap: 25px;
-        align-items: center;
-        transition: all 0.3s ease;
-    }
-
-    .booking-card:hover {
-        border-color: #2d9cdb;
-        box-shadow: 0 10px 20px rgba(45, 156, 219, 0.1);
-        transform: translateY(-2px);
-    }
-
-    .booking-icon {
-        width: 70px;
-        height: 70px;
-        background: linear-gradient(135deg, #d4af37, #f7d154);
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.8rem;
-    }
-
-    .booking-details h3 {
-        font-size: 1.3rem;
-        color: #1a365d;
-        margin-bottom: 10px;
-    }
-
-    .booking-meta {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
-    }
-
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #666;
-        font-size: 0.95rem;
-    }
-
-    .booking-status {
-        padding: 8px 20px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-
-    .status-confirmed {
-        background: #e3f7e7;
-        color: #28a745;
-    }
-
-    .status-completed {
-        background: #e0e7ff;
-        color: #4c51bf;
-    }
-
-    .status-cancelled {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    /* Past Bookings Table */
-    .bookings-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-
-    .bookings-table th {
-        background: #f8f9fa;
-        padding: 15px;
-        text-align: left;
-        font-weight: 600;
-        color: #1a365d;
-        border-bottom: 2px solid #e0e0e0;
-    }
-
-    .bookings-table td {
-        padding: 15px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .bookings-table tr:hover {
-        background: #f8f9fa;
-    }
-
-    /* Reviews Section */
-    .reviews-grid {
-        display: grid;
-        gap: 20px;
-    }
-
-    .review-card {
-        background: #f8f9fa;
-        border-radius: 15px;
-        padding: 20px;
-        border-left: 4px solid #2d9cdb;
-    }
-
-    .review-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-
-    .review-room {
-        font-weight: 600;
-        color: #1a365d;
-        font-size: 1.1rem;
-    }
-
-    .review-rating {
-        color: #f7d154;
-        font-size: 1.2rem;
-    }
-
-    .review-text {
-        color: #555;
-        line-height: 1.6;
-        margin-bottom: 10px;
-    }
-
-    .review-date {
-        color: #999;
-        font-size: 0.85rem;
-    }
-
-    /* Favorites Grid */
-    .favorites-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 25px;
-        margin-top: 20px;
-    }
-
-    .favorite-card {
-        background: white;
-        border-radius: 15px;
+    .loyalty-progress {
+        background: rgba(255,255,255,0.2);
+        height: 12px;
+        border-radius: 6px;
+        margin: 15px 0;
         overflow: hidden;
-        border: 2px solid #f0f0f0;
-        transition: all 0.3s ease;
-        position: relative;
     }
-
-    .favorite-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-        border-color: #2d9cdb;
-    }
-
-    .favorite-image {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-    }
-
-    .favorite-content {
-        padding: 20px;
-    }
-
-    .favorite-name {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #1a365d;
-        margin-bottom: 8px;
-    }
-
-    .favorite-location {
-        color: #666;
-        font-size: 0.9rem;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .favorite-price {
-        color: #d4af37;
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 15px;
-    }
-
-    .favorite-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    .btn-remove-favorite {
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-remove-favorite:hover {
-        background: #c82333;
-    }
-
-    .btn-book-now {
-        flex: 1;
-        background: #28a745;
-        color: white;
-        text-decoration: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        text-align: center;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-book-now:hover {
-        background: #218838;
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    .empty-icon {
-        font-size: 4rem;
-        color: #ddd;
-        margin-bottom: 20px;
-    }
-
-    .empty-state h3 {
-        color: #666;
-        margin-bottom: 15px;
-        font-size: 1.3rem;
-    }
-
-    .empty-state p {
-        color: #999;
-        margin-bottom: 25px;
-    }
-
-    /* Search & Filter */
-    .filter-bar {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 15px;
-        margin-bottom: 20px;
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .filter-input {
-        flex: 1;
-        min-width: 200px;
-        padding: 12px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
-        font-size: 0.95rem;
-    }
-
-    .filter-input:focus {
-        outline: none;
-        border-color: #2d9cdb;
-    }
-
-    .filter-select {
-        padding: 12px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
-        font-size: 0.95rem;
-        cursor: pointer;
-    }
-
-    .badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin-right: 5px;
-    }
-
-    .badge-primary {
-        background: #e3f2fd;
-        color: #1976d2;
-    }
-
-    .badge-success {
-        background: #e3f7e7;
-        color: #28a745;
-    }
-
-    .badge-warning {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    /* Loyalty Tier Badge */
-    .loyalty-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: linear-gradient(135deg, #d4af37, #f7d154);
-        color: white;
-        padding: 8px 20px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-
-    .loyalty-badge.platinum {
-        background: linear-gradient(135deg, #868f96, #596164);
-    }
-
-    .loyalty-badge.gold {
-        background: linear-gradient(135deg, #d4af37, #f7d154);
-    }
-
-    .loyalty-badge.silver {
-        background: linear-gradient(135deg, #bcc6cc, #868f96);
-    }
-
-    /* Tabs */
-    .tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 25px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .tab {
-        padding: 12px 25px;
-        background: none;
-        border: none;
-        color: #666;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 1rem;
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s ease;
-    }
-
-    .tab.active {
-        color: #2d9cdb;
-        border-bottom-color: #2d9cdb;
-    }
-
-    .tab-content {
-        display: none;
-    }
-
-    .tab-content.active {
-        display: block;
-    }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-        .booking-card {
-            grid-template-columns: 1fr;
-            text-align: center;
-        }
-
-        .favorites-grid {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        }
-    }
-
-    @media (max-width: 768px) {
-        .dashboard-header {
-            padding: 40px 20px;
-        }
-
-        .welcome-message h1 {
-            font-size: 2rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        }
-
-        .section-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-        }
-
-        .bookings-table {
-            font-size: 0.85rem;
-        }
-
-        .bookings-table th,
-        .bookings-table td {
-            padding: 10px;
-        }
+    .loyalty-bar {
+        background: var(--secondary-gradient);
+        height: 100%;
     }
 </style>
-{% endblock %} {% block content %}
-<!-- Dashboard Header with Stats -->
-<div class="dashboard-header">
-    <div class="welcome-message">
-        <h1>Welcome back, {{ user.name }}! 👋</h1>
-        <p>
-            Manage your bookings, explore new rooms, and enjoy exclusive guest
-            benefits.
-        </p>
+{% endblock %}
 
-        <!-- Enhanced Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-calendar-check"></i>
+{% block content %}
+<div class="dashboard-page">
+    <div class="dashboard-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <h1>Namaste, {{ user.name }}! 🙏</h1>
+                    <p>Welcome back to your premium sanctuary. You have <strong>{{ stats.upcoming if stats else 0 }}</strong> upcoming luxury stays.</p>
+                    
+                    <div class="stats-grid mt-4">
+                        <div class="stat-card" style="padding: 15px;">
+                            <div class="stat-label" style="font-size: 0.7rem;">Upcoming</div>
+                            <div class="stat-value" style="font-size: 1.5rem;">{{ stats.upcoming if stats else 0 }}</div>
+                        </div>
+                        <div class="stat-card" style="padding: 15px;">
+                            <div class="stat-label" style="font-size: 0.7rem;">Past Stays</div>
+                            <div class="stat-value" style="font-size: 1.5rem;">{{ stats.past if stats else 0 }}</div>
+                        </div>
+                        <div class="stat-card" style="padding: 15px;">
+                            <div class="stat-label" style="font-size: 0.7rem;">Total Spent</div>
+                            <div class="stat-value" style="font-size: 1.5rem;">₹{{ "{:,.0f}".format(stats.total_spent if stats and stats.total_spent else 0) }}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-value">
-                    {{ stats.upcoming if stats else 0 }}
-                </div>
-                <div class="stat-label">Upcoming Bookings</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <div class="stat-value">{{ stats.past if stats else 0 }}</div>
-                <div class="stat-label">Past Bookings</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-rupee-sign"></i>
-                </div>
-                <div class="stat-value">
-                    ₹{{ "{:,.0f}".format(stats.total_spent if stats and
-                    stats.total_spent else 0) }}
-                </div>
-                <div class="stat-label">Total Spent</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-crown"></i>
-                </div>
-                <div class="stat-value">
-                    {{ loyalty_points if loyalty_points else 0 }}
-                </div>
-                <div class="stat-label">
-                    Loyalty Points
-                    <span
-                        class="loyalty-badge {{ loyalty_tier|lower if loyalty_tier else 'silver' }}"
-                        style="margin-left: 10px; font-size: 0.8rem"
-                    >
-                        {{ loyalty_tier if loyalty_tier else 'Silver' }}
-                    </span>
+                <div class="col-md-5">
+                    <div class="glass-card" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                        <div class="d-flex justify-content-between">
+                            <h4>Blissful Loyalty</h4>
+                            <span class="badge" style="background: var(--secondary-gradient); color: #1a365d;">{{ loyalty_tier if loyalty_tier else 'Silver' }} Member</span>
+                        </div>
+                        <div class="stat-value text-white mt-3">{{ loyalty_points if loyalty_points else 0 }} Points</div>
+                        <div class="loyalty-progress">
+                            <div class="loyalty-bar" style="width: {{ (loyalty_points % 5000) / 50 }}%;"></div>
+                        </div>
+                        <small>Earn 500 more points for <strong>Gold</strong> tier!</small>
+                        <button class="btn-primary w-100 mt-3" style="background: white; color: var(--primary);">REDEEM REWARDS</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Dashboard Content -->
-<div class="dashboard-container">
-    <!-- Upcoming Bookings Section -->
-    <div class="section-card">
-        <div class="section-header">
-            <h2 class="section-title">
-                <i class="fas fa-calendar-alt"></i>
-                Upcoming Stays
-            </h2>
-            <a href="{{ url_for('rooms') }}" class="btn-primary">
-                <i class="fas fa-plus"></i> Book New Room
-            </a>
-        </div>
-
-        {% if upcoming_bookings %}
-        <div class="bookings-grid">
-            {% for booking in upcoming_bookings[:3] %}
-            <div class="booking-card">
-                <div class="booking-icon">
-                    <i class="fas fa-bed"></i>
-                </div>
-
-                <div class="booking-details">
-                    <h3>
-                        {{ booking.room_name if booking.room_name else 'Room ' +
-                        booking.room_id[:8]|upper }}
-                    </h3>
-                    <div class="booking-meta">
-                        <div class="meta-item">
-                            <i class="fas fa-calendar-check"></i>
-                            <span>{{ booking.check_in }}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-calendar-times"></i>
-                            <span>{{ booking.check_out }}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-rupee-sign"></i>
-                            <span
-                                >₹{{ "{:,.0f}".format(booking.total_price|float)
-                                }}</span
-                            >
-                        </div>
+    <div class="dashboard-content container">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Upcoming Bookings -->
+                <div class="dashboard-section fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">Upcoming Stays</h2>
+                        <a href="{{ url_for('rooms') }}" class="btn-primary btn-small"><i class="fas fa-plus"></i> NEW BOOKING</a>
                     </div>
-                    <div style="margin-top: 10px">
-                        <span class="badge badge-primary"
-                            >ID: {{ booking.booking_id[:10] }}</span
-                        >
-                    </div>
-                </div>
-
-                <div class="booking-status status-confirmed">
-                    <i class="fas fa-check-circle"></i> {{ booking.status|title
-                    }}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% if upcoming_bookings|length > 3 %}
-        <div style="text-align: center; margin-top: 20px">
-            <a href="{{ url_for('my_bookings') }}" class="btn-text">
-                View All {{ upcoming_bookings|length }} Upcoming Bookings
-                <i class="fas fa-arrow-right"></i>
-            </a>
-        </div>
-        {% endif %} {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-calendar-plus"></i>
-            </div>
-            <h3>No upcoming bookings</h3>
-            <p>Start planning your next luxury stay!</p>
-            <a href="{{ url_for('rooms') }}" class="btn-primary">
-                <i class="fas fa-search"></i> Browse Available Rooms
-            </a>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- Past Bookings Table -->
-    <div class="section-card">
-        <div class="section-header">
-            <h2 class="section-title">
-                <i class="fas fa-history"></i>
-                Past Bookings
-            </h2>
-        </div>
-
-        <!-- Search & Filter Bar -->
-        <div class="filter-bar">
-            <input
-                type="text"
-                class="filter-input"
-                id="searchBookings"
-                placeholder="Search by room name or booking ID..."
-            />
-            <select class="filter-select" id="filterStatus">
-                <option value="">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
-        </div>
-
-        {% if past_bookings %}
-        <div style="overflow-x: auto">
-            <table class="bookings-table" id="pastBookingsTable">
-                <thead>
-                    <tr>
-                        <th>Room</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Booking ID</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in past_bookings %}
-                    <tr
-                        data-status="{{ booking.status }}"
-                        data-room="{{ booking.room_name if booking.room_name else 'Room ' + booking.room_id[:8] }}"
-                        data-id="{{ booking.booking_id }}"
-                    >
-                        <td>
-                            <strong
-                                >{{ booking.room_name if booking.room_name else
-                                'Room ' + booking.room_id[:8]|upper }}</strong
-                            >
-                        </td>
-                        <td>{{ booking.check_in }}</td>
-                        <td>{{ booking.check_out }}</td>
-                        <td>
-                            <strong
-                                >₹{{ "{:,.0f}".format(booking.total_price|float)
-                                }}</strong
-                            >
-                        </td>
-                        <td>
-                            <span
-                                class="booking-status {% if booking.status == 'completed' %}status-completed{% else %}status-cancelled{% endif %}"
-                            >
-                                {{ booking.status|title }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge badge-primary"
-                                >{{ booking.booking_id[:10] }}</span
-                            >
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-hotel"></i>
-            </div>
-            <h3>No past bookings</h3>
-            <p>Your booking history will appear here</p>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- My Reviews Section -->
-    <div class="section-card">
-        <div class="section-header">
-            <h2 class="section-title">
-                <i class="fas fa-star"></i>
-                My Reviews
-            </h2>
-            <a href="{{ url_for('my_bookings') }}" class="btn-text">
-                Write a Review <i class="fas fa-pen"></i>
-            </a>
-        </div>
-
-        {% if reviews %}
-        <div class="reviews-grid">
-            {% for review in reviews[:5] %}
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-room">
-                        {{ review.room_name if review.room_name else 'Room ' +
-                        review.room_id[:8]|upper }}
-                    </div>
-                    <div class="review-rating">
-                        {% for i in range(review.rating|int) %}
-                        <i class="fas fa-star"></i>
-                        {% endfor %} {% for i in range(5 - review.rating|int) %}
-                        <i class="far fa-star"></i>
+                    
+                    {% if upcoming_bookings %}
+                        {% for booking in upcoming_bookings %}
+                        <div class="glass-card mb-3">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="stat-icon" style="background: var(--accent-gradient);"><i class="fas fa-hotel"></i></div>
+                                </div>
+                                <div class="col">
+                                    <h4>{{ booking.room_name }}</h4>
+                                    <p class="mb-0 text-muted"><i class="fas fa-map-marker-alt"></i> {{ booking.branch_name if booking.branch_name else 'Premium Branch' }}</p>
+                                    <small class="text-primary">{{ booking.check_in }} — {{ booking.check_out }}</small>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="d-flex flex-column gap-2">
+                                        <button class="btn-primary btn-small">VIEW VOUCHER</button>
+                                        <button class="btn-text btn-small">MODIFY</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {% endfor %}
-                    </div>
+                    {% else %}
+                        <div class="glass-card text-center p-5">
+                            <i class="fas fa-calendar-plus fa-3x mb-3 text-muted"></i>
+                            <h3>No upcoming stays yet</h3>
+                            <p>Discover our bespoke collections across 5 major Indian cities.</p>
+                            <a href="{{ url_for('rooms') }}" class="btn-primary mt-3">EXPLORE ROOMS</a>
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="review-text">
-                    <strong
-                        >{{ review.title if review.title else 'Great Stay'
-                        }}</strong
-                    ><br />
-                    {{ review.text if review.text else review.comment }}
-                </div>
-                <div class="review-date">
-                    <i class="fas fa-clock"></i> {{ review.created_at[:10] if
-                    review.created_at else 'Recently' }}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-comment-dots"></i>
-            </div>
-            <h3>No reviews yet</h3>
-            <p>Share your experience after your stay!</p>
-        </div>
-        {% endif %}
-    </div>
 
-    <!-- Favorite Rooms Grid -->
-    <div class="section-card">
-        <div class="section-header">
-            <h2 class="section-title">
-                <i class="fas fa-heart"></i>
-                Favorite Rooms
-            </h2>
-        </div>
+                <!-- Itinerary Visualization (if multi-city) -->
+                {% if upcoming_bookings|length > 1 %}
+                <div class="dashboard-section fade-in">
+                    <h2 class="section-title">Travel Itinerary</h2>
+                    <div class="glass-card mt-3">
+                        <div class="d-flex gap-4 overflow-x-auto p-2">
+                            {% for booking in upcoming_bookings %}
+                            <div class="text-center" style="min-width: 150px;">
+                                <div class="stat-icon m-auto mb-2" style="width: 40px; height: 40px; font-size: 1rem;"><i class="fas fa-plane"></i></div>
+                                <small class="d-block">{{ booking.check_in }}</small>
+                                <strong>{{ booking.branch_name }}</strong>
+                            </div>
+                            {% if not loop.last %}<div class="align-self-center"><i class="fas fa-arrow-right text-muted"></i></div>{% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
 
-        {% if favorite_rooms %}
-        <div class="favorites-grid">
-            {% for room in favorite_rooms %}
-            <div class="favorite-card">
-                <img
-                    src="{{ room.image if room.image else url_for('placeholder_image') }}"
-                    alt="{{ room.name }}"
-                    class="favorite-image"
-                    onerror="this.src='{{ url_for('placeholder_image') }}'"
-                />
-                <div class="favorite-content">
-                    <div class="favorite-name">{{ room.name }}</div>
-                    <div class="favorite-location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        {{ room.location }}
-                    </div>
-                    <div class="favorite-price">
-                        ₹{{ "{:,.0f}".format(room.price|float) }}/night
-                    </div>
-                    <div class="favorite-actions">
-                        <button
-                            class="btn-remove-favorite"
-                            onclick="removeFavorite('{{ room.room_id }}')"
-                        >
-                            <i class="fas fa-times"></i> Remove
-                        </button>
-                        <a
-                            href="{{ url_for('book_room', room_id=room.room_id) }}"
-                            class="btn-book-now"
-                        >
-                            <i class="fas fa-calendar"></i> Book
+            <div class="col-md-4">
+                <!-- Branch Quick Navigation -->
+                <div class="glass-card mb-4">
+                    <h3>Explore Branches 🇮🇳</h3>
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{{ url_for('rooms', branch_id='BLISS-MUM') }}" class="btn btn-outline-primary text-left p-3 d-flex justify-content-between">
+                            <span>Mumbai (Corporate)</span> <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{{ url_for('rooms', branch_id='BLISS-DEL') }}" class="btn btn-outline-primary text-left p-3 d-flex justify-content-between">
+                            <span>Delhi (Heritage)</span> <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{{ url_for('rooms', branch_id='BLISS-GOA') }}" class="btn btn-outline-primary text-left p-3 d-flex justify-content-between">
+                            <span>Goa (Resort)</span> <i class="fas fa-chevron-right"></i>
                         </a>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-heart-broken"></i>
-            </div>
-            <h3>No favorite rooms yet</h3>
-            <p>Save your favorite rooms for quick access!</p>
-            <a href="{{ url_for('rooms') }}" class="btn-primary">
-                <i class="fas fa-search"></i> Browse Rooms
-            </a>
-        </div>
-        {% endif %}
-    </div>
 
-    <!-- Account Settings Link -->
-    <div
-        class="section-card"
-        style="
-            background: linear-gradient(135deg, #1a365d, #2d9cdb);
-            color: white;
-        "
-    >
-        <div
-            style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            "
-        >
-            <div>
-                <h2 style="font-size: 1.8rem; margin-bottom: 10px">
-                    <i class="fas fa-user-cog"></i> Account Settings
-                </h2>
-                <p style="opacity: 0.9; margin: 0">
-                    Update your profile, change password, and manage preferences
-                </p>
+                <!-- India Specific Payment Support -->
+                <div class="glass-card">
+                    <h3>Payment Methods</h3>
+                    <div class="d-flex gap-3 mt-3 opacity-50 grayscale">
+                        <i class="fab fa-cc-visa fa-2x"></i>
+                        <i class="fab fa-cc-mastercard fa-2x"></i>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/512px-UPI-Logo-vector.svg.png" height="20" alt="UPI">
+                    </div>
+                    <p class="small text-muted mt-3">All payments are secured with 18% GST invoice generation.</p>
+                </div>
             </div>
-            <a
-                href="{{ url_for('account_settings') }}"
-                class="btn-primary"
-                style="background: white; color: #1a365d"
-            >
-                <i class="fas fa-cog"></i> Manage Account
-            </a>
         </div>
     </div>
 </div>
-
-<script>
-    // Search & Filter Functionality
-    document.addEventListener("DOMContentLoaded", function () {
-        const searchInput = document.getElementById("searchBookings");
-        const filterStatus = document.getElementById("filterStatus");
-        const table = document.getElementById("pastBookingsTable");
-
-        if (searchInput && table) {
-            function filterTable() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const statusFilter = filterStatus.value.toLowerCase();
-                const rows = table.querySelectorAll("tbody tr");
-
-                rows.forEach((row) => {
-                    const room = row.dataset.room.toLowerCase();
-                    const id = row.dataset.id.toLowerCase();
-                    const status = row.dataset.status.toLowerCase();
-
-                    const matchesSearch =
-                        room.includes(searchTerm) || id.includes(searchTerm);
-                    const matchesStatus =
-                        !statusFilter || status === statusFilter;
-
-                    row.style.display =
-                        matchesSearch && matchesStatus ? "" : "none";
-                });
-            }
-
-            searchInput.addEventListener("input", filterTable);
-            filterStatus.addEventListener("change", filterTable);
-        }
-    });
-
-    // Remove Favorite Function
-    function removeFavorite(roomId) {
-        if (!confirm("Remove this room from favorites?")) return;
-
-        fetch(`/guest/favorites/remove/${roomId}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert("Error: " + data.error);
-                }
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-                alert("Failed to remove favorite");
-            });
-    }
-</script>
 {% endblock %}

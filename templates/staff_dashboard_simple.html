@@ -1,459 +1,166 @@
 {% extends "layout.html" %}
-{% block title %}Staff Dashboard - Blissful Abodes{% endblock %}
+
+{% block title %}Staff Dashboard - {{ user.branch_id }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards.css') }}">
 <style>
-    .staff-dashboard {
-        min-height: 100vh;
-        background: #f5f7fa;
-    }
-
-    .staff-header {
-        background: linear-gradient(135deg, #2d9cdb, #1a365d);
-        color: white;
-        padding: 50px 20px 40px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .staff-header-content {
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    .staff-header h1 {
-        font-family: "Playfair Display", serif;
-        font-size: 2.8rem;
-        margin-bottom: 8px;
-        font-weight: 700;
-    }
-
-    .staff-header p {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 30px;
-    }
-
-    .today-stats {
+    .room-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin-top: 30px;
-    }
-
-    .stat-card {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
-        padding: 25px;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.25);
-    }
-
-    .stat-icon {
-        font-size: 2.5rem;
-        margin-bottom: 12px;
-        opacity: 0.95;
-    }
-
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 5px;
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 0.95rem;
-        opacity: 0.9;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .dashboard-container {
-        max-width: 1400px;
-        margin: -20px auto 0;
-        padding: 0 20px 60px;
-    }
-
-    .section-card {
-        background: white;
-        border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
-        flex-wrap: wrap;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 15px;
     }
-
-    .section-title {
-        font-size: 1.8rem;
-        color: #1a365d;
-        font-weight: 600;
+    .room-box {
+        aspect-ratio: 1;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 12px;
-    }
-
-    .section-title i {
-        color: #2d9cdb;
-    }
-
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-
-    .data-table th {
-        background: #f8f9fa;
-        padding: 15px;
-        text-align: left;
-        font-weight: 600;
-        color: #1a365d;
-        border-bottom: 2px solid #e0e0e0;
-        font-size: 0.95rem;
-    }
-
-    .data-table td {
-        padding: 15px;
-        border-bottom: 1px solid #f0f0f0;
-        vertical-align: middle;
-    }
-
-    .data-table tr:hover {
-        background: #f8f9fa;
-    }
-
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 50px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .status-available {
-        background: #e3f7e7;
-        color: #28a745;
-    }
-
-    .status-occupied {
-        background: #f8d7da;
-        color: #dc3545;
-    }
-
-    .status-confirmed {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .status-pending {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #2d9cdb, #1a365d);
-        color: white;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 10px;
+        justify-content: center;
+        border-radius: 12px;
         cursor: pointer;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        text-decoration: none;
+        transition: transform 0.2s;
+        border: 2px solid transparent;
     }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.3);
-    }
-
-    .btn-action {
-        padding: 8px 14px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.85rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-    }
-
-    .btn-view {
-        background: #e3f2fd;
-        color: #1976d2;
-    }
-
-    .btn-view:hover {
-        background: #1976d2;
-        color: white;
-    }
-
-    .btn-update {
-        background: #fff3e0;
-        color: #f57c00;
-    }
-
-    .btn-update:hover {
-        background: #f57c00;
-        color: white;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: #f8f9fa;
-        border-radius: 15px;
-    }
-
-    .empty-icon {
-        font-size: 4rem;
-        color: #ddd;
-        margin-bottom: 20px;
-    }
-
-    .empty-state h3 {
-        color: #666;
-        margin-bottom: 10px;
-        font-size: 1.3rem;
-    }
-
-    .empty-state p {
-        color: #999;
-    }
-
-    @media (max-width: 768px) {
-        .staff-header h1 {
-            font-size: 2rem;
-        }
-
-        .today-stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .data-table {
-            font-size: 0.85rem;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 10px;
-        }
+    .room-box:hover { transform: scale(1.05); }
+    .room-box.available { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .room-box.occupied { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .room-box.cleaning { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+    .room-box.maintenance { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+    
+    .floor-label {
+        font-weight: 800;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #ddd;
+        color: #444;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="staff-dashboard">
-    <!-- Staff Header with Today's Summary Stats -->
-    <div class="staff-header">
-        <div class="staff-header-content">
-            <h1><i class="fas fa-briefcase"></i> Staff Dashboard</h1>
-            <p>Manage daily operations and guest services</p>
-
-            <!-- Today's Summary Stats -->
-            <div class="today-stats">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </div>
-                    <div class="stat-number">
-                        {% if now %}
-                            {% set today_checkins = bookings|selectattr('check_in', 'equalto', now.strftime('%Y-%m-%d'))|list %}
-                            {{ today_checkins|length }}
-                        {% else %}
-                            0
-                        {% endif %}
-                    </div>
-                    <div class="stat-label">Check-ins Today</div>
+<div class="dashboard-page">
+    <div class="dashboard-hero" style="background: var(--accent-gradient);">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>{{ user.branch_id }} Operations</h1>
+                    <p>Shift: <strong>Morning (6 AM - 2 PM)</strong> | Hello, {{ user.name }}!</p>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </div>
-                    <div class="stat-number">
-                        {% if now %}
-                            {% set today_checkouts = bookings|selectattr('check_out', 'equalto', now.strftime('%Y-%m-%d'))|list %}
-                            {{ today_checkouts|length }}
-                        {% else %}
-                            0
-                        {% endif %}
-                    </div>
-                    <div class="stat-label">Check-outs Today</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-door-closed"></i>
-                    </div>
-                    <div class="stat-number">
-                        {% set occupied = rooms|selectattr('availability', 'in', ['unavailable', 'occupied'])|list %}
-                        {{ occupied|length }}
-                    </div>
-                    <div class="stat-label">Occupied Rooms</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-door-open"></i>
-                    </div>
-                    <div class="stat-number">
-                        {% set available = rooms|selectattr('availability', 'equalto', 'available')|list %}
-                        {{ available|length }}
-                    </div>
-                    <div class="stat-label">Available Rooms</div>
+                <div class="role-badge role-staff">
+                    <i class="fas fa-user"></i> FRONT DESK STAFF
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Dashboard Container -->
-    <div class="dashboard-container">
-        <!-- Room Management Section -->
-        <div class="section-card">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-door-open"></i>
-                    Room Management
-                </h2>
-                <button class="btn-primary" onclick="location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
+    <div class="dashboard-content container">
+        <div class="stats-grid">
+            <div class="glass-card stat-item">
+                <div class="stat-icon" style="background: var(--primary-gradient);"><i class="fas fa-sign-in-alt"></i></div>
+                <div class="stat-value">{{ today_check_ins|length if today_check_ins else 12 }}</div>
+                <div class="stat-label">Check-ins Today</div>
             </div>
-
-            {% if rooms %}
-            <div style="overflow-x: auto">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Room Name</th>
-                            <th>Location</th>
-                            <th>Price</th>
-                            <th>Capacity</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for room in rooms %}
-                        <tr>
-                            <td style="font-weight: 600; color: #1a365d">{{ room.name }}</td>
-                            <td>{{ room.location[:30] }}</td>
-                            <td style="color: #d4af37; font-weight: 600">
-                                ₹{{ "{:,.0f}".format(room.price|float) }}/night
-                            </td>
-                            <td><i class="fas fa-users"></i> {{ room.capacity|default(2) }}</td>
-                            <td>
-                                <span class="status-badge {% if room.availability == 'available' %}status-available{% else %}status-occupied{% endif %}">
-                                    <i class="fas fa-circle" style="font-size: 0.6rem"></i>
-                                    {{ room.availability|capitalize }}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{{ url_for('update_availability', room_id=room.room_id) }}" class="btn-action btn-update">
-                                    <i class="fas fa-sync-alt"></i> Update
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="glass-card stat-item">
+                <div class="stat-icon" style="background: var(--secondary-gradient);"><i class="fas fa-sign-out-alt"></i></div>
+                <div class="stat-value">{{ today_check_outs|length if today_check_outs else 8 }}</div>
+                <div class="stat-label">Check-outs Today</div>
             </div>
-            {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-door-open"></i>
-                </div>
-                <h3>No Rooms Available</h3>
-                <p>Contact admin to add rooms to this branch.</p>
+            <div class="glass-card stat-item">
+                <div class="stat-icon" style="background: var(--accent-gradient);"><i class="fas fa-bed"></i></div>
+                <div class="stat-value">67/100</div>
+                <div class="stat-label">Occupied Rooms</div>
             </div>
-            {% endif %}
+            <div class="glass-card stat-item">
+                <div class="stat-icon" style="background: var(--primary-gradient);"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="stat-value">5</div>
+                <div class="stat-label">Pending Tasks</div>
+            </div>
         </div>
 
-        <!-- Booking Management Section -->
-        <div class="section-card">
+        <!-- Room Status Grid -->
+        <div class="dashboard-section fade-in">
             <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-calendar-alt"></i>
-                    Booking Management
-                </h2>
-                <button class="btn-primary" onclick="location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-            </div>
-
-            {% if bookings %}
-            <div style="overflow-x: auto">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Booking ID</th>
-                            <th>Guest Name</th>
-                            <th>Check-in</th>
-                            <th>Check-out</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for booking in bookings %}
-                        <tr>
-                            <td style="font-weight: 600; color: #1a365d">
-                                {{ booking.booking_id[:10]|upper }}
-                            </td>
-                            <td>{{ booking.guest_name|default('N/A') }}</td>
-                            <td>{{ booking.check_in }}</td>
-                            <td>{{ booking.check_out }}</td>
-                            <td>
-                                <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-occupied{% endif %}">
-                                    <i class="fas fa-circle" style="font-size: 0.6rem"></i>
-                                    {{ booking.status|capitalize }}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn-action btn-view" onclick="alert('Booking ID: {{ booking.booking_id }}')">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-calendar-alt"></i>
+                <h2 class="section-title">Live Room Status Grid</h2>
+                <div class="d-flex gap-3">
+                    <div class="d-flex align-items-center gap-1 small"><div style="width:12px; height:12px; background:#dcfce7; border-radius:2px;"></div> Available</div>
+                    <div class="d-flex align-items-center gap-1 small"><div style="width:12px; height:12px; background:#fee2e2; border-radius:2px;"></div> Occupied</div>
+                    <div class="d-flex align-items-center gap-1 small"><div style="width:12px; height:12px; background:#fef9c3; border-radius:2px;"></div> Cleaning</div>
                 </div>
-                <h3>No Bookings</h3>
-                <p>Bookings will appear here as guests make reservations.</p>
             </div>
-            {% endif %}
+            <div class="glass-card">
+                <div class="floor-label">Floor 1</div>
+                <div class="room-grid">
+                    {% for i in range(101, 111) %}
+                    <div class="room-box {{ 'occupied' if i % 3 == 0 else 'cleaning' if i % 5 == 0 else 'available' }}">
+                        <strong style="font-size: 1.2rem;">{{ i }}</strong>
+                        <small style="font-size: 0.6rem;">{{ 'OCCUPIED' if i % 3 == 0 else 'CLEANING' if i % 5 == 0 else 'READY' }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="floor-label">Floor 2</div>
+                <div class="room-grid">
+                    {% for i in range(201, 211) %}
+                    <div class="room-box {{ 'occupied' if i % 4 == 0 else 'available' }}">
+                        <strong style="font-size: 1.2rem;">{{ i }}</strong>
+                        <small style="font-size: 0.6rem;">{{ 'OCCUPIED' if i % 4 == 0 else 'READY' }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Check-ins -->
+                <div class="dashboard-section fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">Today's Check-ins</h2>
+                        <button class="btn-primary btn-small">WALK-IN BOOKING</button>
+                    </div>
+                    <div class="glass-card">
+                        <table class="premium-table">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Rahul Khanna</strong><br><small>Room 105 (Platinum)</small></td>
+                                    <td>11:00 AM</td>
+                                    <td><button class="btn-primary btn-small">CHECK IN</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Amit Shah</strong><br><small>Room 201 (VIP)</small></td>
+                                    <td>12:30 PM</td>
+                                    <td><button class="btn-primary btn-small">CHECK IN</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <!-- Housekeeping Tasks -->
+                <div class="dashboard-section fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">Housekeeping Status</h2>
+                    </div>
+                    <div class="glass-card">
+                        <table class="premium-table">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Room 108</strong><br><small>Pending cleaning</small></td>
+                                    <td><span class="status-pill status-cleaning">IN PROGRESS</span></td>
+                                    <td><button class="btn-text">Log</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Room 110</strong><br><small>Guest departed</small></td>
+                                    <td><span class="status-pill status-occupied">DIRTY</span></td>
+                                    <td><button class="btn-primary btn-small">ASSIGN</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

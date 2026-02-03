@@ -44,20 +44,30 @@ endblock %} {% block content %}
               >
             </div>
 
-            <!-- Location -->
+            <!-- Branch Selection -->
             <div class="mb-3">
-              <label for="location" class="form-label">
-                <i class="fas fa-map-marker-alt"></i> Location *
+              <label for="branch_id" class="form-label">
+                <i class="fas fa-map-marker-alt"></i> Branch *
               </label>
-              <input
-                type="text"
-                class="form-control"
-                id="location"
-                name="location"
-                value="{{ room.location }}"
-                required
-              />
-              <small class="text-muted">e.g., Mumbai, Maharashtra</small>
+              <select class="form-select" id="branch_id" name="branch_id" required>
+                <option value="">-- Select Branch --</option>
+                {% for branch in branches %}
+                <option
+                  value="{{ branch.branch_id }}"
+                  {% if room.branch_id == branch.branch_id %}selected{% endif %}
+                >
+                  {{ branch.get('name', branch.branch_id) }} ({{ branch.get('city', 'India') }})
+                </option>
+                {% endfor %}
+                {% if not branches %}
+                <option value="BLISS-MUM" {% if room.branch_id == 'BLISS-MUM' %}selected{% endif %}>Blissful Abodes Mumbai</option>
+                <option value="BLISS-DEL" {% if room.branch_id == 'BLISS-DEL' %}selected{% endif %}>Blissful Abodes Delhi</option>
+                <option value="BLISS-BLR" {% if room.branch_id == 'BLISS-BLR' %}selected{% endif %}>Blissful Abodes Bangalore</option>
+                <option value="BLISS-GOA" {% if room.branch_id == 'BLISS-GOA' %}selected{% endif %}>Blissful Abodes Goa</option>
+                <option value="BLISS-CHE" {% if room.branch_id == 'BLISS-CHE' %}selected{% endif %}>Blissful Abodes Chennai</option>
+                {% endif %}
+              </select>
+              <small class="text-muted">Select the branch for this room</small>
             </div>
 
             <!-- Price and Capacity Row -->

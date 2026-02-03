@@ -266,21 +266,28 @@
         </div>
 
         <div class="form-group">
-          <label for="location">Location <span class="required">*</span></label>
+          <label for="branch_id">Branch <span class="required">*</span></label>
           <select
-            id="location"
-            name="location"
+            id="branch_id"
+            name="branch_id"
             required
             style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
           >
-            <option value="">-- Select Location --</option>
-            <option value="Mumbai, Maharashtra">Mumbai, Maharashtra</option>
-            <option value="Delhi, NCR">Delhi, NCR</option>
-            <option value="Bangalore, Karnataka">Bangalore, Karnataka</option>
-            <option value="Goa">Goa</option>
-            <option value="Chennai, Tamil Nadu">Chennai, Tamil Nadu</option>
+            <option value="">-- Select Branch --</option>
+            {% for branch in branches %}
+            <option value="{{ branch.branch_id }}">
+              {{ branch.get('name', branch.branch_id) }} ({{ branch.get('city', 'India') }})
+            </option>
+            {% endfor %}
+            {% if not branches %}
+            <option value="BLISS-MUM">Blissful Abodes Mumbai</option>
+            <option value="BLISS-DEL">Blissful Abodes Delhi</option>
+            <option value="BLISS-BLR">Blissful Abodes Bangalore</option>
+            <option value="BLISS-GOA">Blissful Abodes Goa</option>
+            <option value="BLISS-CHE">Blissful Abodes Chennai</option>
+            {% endif %}
           </select>
-          <div class="help-text">Select the branch location</div>
+          <div class="help-text">Select the branch where this room is located</div>
         </div>
 
         <div class="form-row">

@@ -286,7 +286,7 @@ Hotel Booking{% endblock %} {% block extra_css %}
                     transition: transform 0.3s ease;
                     cursor: pointer;
                 "
-                onclick="window.location.href='{{ url_for('branch_detail', branch_id=branch.branch_id) }}'"
+                onclick="window.location.href='{{ url_for('branch_detail', branch_id=branch.branch_id) }}';"
             >
                 <div
                     class="branch-image"

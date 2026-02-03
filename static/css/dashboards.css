@@ -1,0 +1,234 @@
+:root {
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-dark: rgba(0, 0, 0, 0.05);
+  --border-glass: rgba(255, 255, 255, 0.2);
+  --primary-gradient: linear-gradient(135deg, #1a365d, #2d9cdb);
+  --secondary-gradient: linear-gradient(135deg, #d4af37, #f7d154);
+  --accent-gradient: linear-gradient(135deg, #2d9cdb, #5ab5e8);
+  --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.dashboard-page {
+  background: #f0f2f5;
+  min-height: 100vh;
+  padding-top: 80px;
+}
+
+.dashboard-hero {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 60px 40px;
+  border-radius: 0 0 50px 50px;
+  margin-bottom: -100px;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.dashboard-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 40px 60px;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+  padding: 30px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+}
+
+/* Grid Layouts */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  color: var(--gray);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Tables */
+.premium-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.premium-table th {
+  padding: 15px 20px;
+  text-align: left;
+  color: var(--gray);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.premium-table tr {
+  transition: transform 0.2s;
+}
+
+.premium-table tr:hover {
+  transform: scale(1.01);
+}
+
+.premium-table td {
+  padding: 20px;
+  background: white;
+}
+
+.premium-table td:first-child {
+  border-radius: 15px 0 0 15px;
+}
+.premium-table td:last-child {
+  border-radius: 0 15px 15px 0;
+}
+
+/* Status Badges */
+.status-pill {
+  padding: 6px 15px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-available {
+  background: #e6f7ed;
+  color: #28a745;
+}
+.status-occupied {
+  background: #fef1f2;
+  color: #dc3545;
+}
+.status-cleaning {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+.status-maintenance {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+/* Dashboard Sections */
+.dashboard-section {
+  margin-bottom: 40px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: var(--primary);
+  position: relative;
+  padding-left: 20px;
+}
+
+.section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 30px;
+  background: var(--secondary);
+  border-radius: 5px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* User Hierarchy Badges */
+.role-badge {
+  padding: 5px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-super-admin {
+  background: #1a365d;
+  color: white;
+}
+.role-admin {
+  background: #2d9cdb;
+  color: white;
+}
+.role-manager {
+  background: #d4af37;
+  color: #1a365d;
+}
+.role-staff {
+  background: #6c757d;
+  color: white;
+}
