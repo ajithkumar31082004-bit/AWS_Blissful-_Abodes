@@ -2638,11 +2638,26 @@ def get_pricing_rules(branch_id=None, rule_type=None):
     try:
         table = dynamodb.Table(PRICING_RULES_TABLE)
         if branch_id:
-            response = table.query(
-                IndexName="BranchRulesIndex",
-                KeyConditionExpression=Key("branch_id").eq(branch_id),
-            )
-            rules = response.get("Items", [])
+            try:
+                response = table.query(
+                    IndexName="BranchRulesIndex",
+                    KeyConditionExpression=Key("branch_id").eq(branch_id),
+                )
+                rules = response.get("Items", [])
+            except Exception as e:
+                # Fallback to scan if index is missing
+                if "ValidationException" in str(
+                    e
+                ) or "The table does not have the specified index" in str(e):
+                    print(
+                        "DEBUG: BranchRulesIndex missing, falling back to SCAN for pricing rules"
+                    )
+                    response = table.scan(
+                        FilterExpression=Attr("branch_id").eq(branch_id)
+                    )
+                    rules = response.get("Items", [])
+                else:
+                    raise e
         else:
             response = table.scan()
             rules = response.get("Items", [])
