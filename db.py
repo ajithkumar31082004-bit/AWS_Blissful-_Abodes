@@ -935,6 +935,19 @@ def get_user_bookings(user_id):
                 return [normalize_booking(b) for b in bookings]
         except Exception as e:
             print(f"Error getting user bookings from DynamoDB: {e}")
+
+            # Fallback to scan if index is missing
+            if "ValidationException" in str(
+                e
+            ) or "The table does not have the specified index" in str(e):
+                print("DEBUG: Index missing, falling back to SCAN for user bookings")
+                try:
+                    response = table.scan(FilterExpression=Attr("user_id").eq(user_id))
+                    bookings = response.get("Items", [])
+                    return [normalize_booking(b) for b in bookings]
+                except Exception as scan_e:
+                    print(f"Error scanning bookings: {scan_e}")
+
             import traceback
 
             traceback.print_exc()
@@ -1096,6 +1109,16 @@ def get_user_reviews(user_id):
             return response.get("Items", [])
         except Exception as e:
             print(f"Error getting user reviews from DynamoDB: {e}")
+
+            # Fallback to scan if index is missing
+            if "ValidationException" in str(
+                e
+            ) or "The table does not have the specified index" in str(e):
+                try:
+                    response = table.scan(FilterExpression=Attr("user_id").eq(user_id))
+                    return response.get("Items", [])
+                except Exception as scan_e:
+                    print(f"Error scanning reviews: {scan_e}")
 
     # Fallback to mock database
     reviews = []
