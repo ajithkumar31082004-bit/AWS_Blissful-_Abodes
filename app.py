@@ -430,8 +430,8 @@ def init_sample_rooms():
 
         print(f"Current rooms in database: {len(existing_rooms)}")
 
-        # Only populate if NO rooms exist (prevent auto-increasing)
-        if len(existing_rooms) == 0:
+        # Only populate if we have fewer than 50 rooms
+        if len(existing_rooms) < 50:
             print("Initializing 50 sample rooms...")
             try:
                 from populate_rooms import populate_rooms
