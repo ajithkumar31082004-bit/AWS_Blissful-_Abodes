@@ -1,5 +1,6 @@
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+from botocore.exceptions import ClientError
 from decimal import Decimal
 import json
 import os
