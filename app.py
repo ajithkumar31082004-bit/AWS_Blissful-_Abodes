@@ -18,6 +18,7 @@ LANGUAGES = {"en": "English", "hi": "Hindi"}
 import boto3
 from datetime import datetime, timedelta
 import uuid
+import random
 from functools import wraps
 import os
 
@@ -453,13 +454,13 @@ def init_sample_rooms():
 def create_inline_sample_rooms():
     """Create sample rooms inline if populate_rooms.py is not available"""
     try:
-        # Check if rooms already exist
+        # Check if rooms already exist - limit to 150
         existing_rooms = get_all_rooms()
-        if len(existing_rooms) > 50:
+        if len(existing_rooms) >= 150:
             print(f"Rooms already exist ({len(existing_rooms)}), skipping population")
             return
 
-        print("Creating 100+ sample Indian rooms...")
+        print("Creating 150 sample rooms...")
 
         cities = [
             "Mumbai, Maharashtra",
@@ -467,22 +468,26 @@ def create_inline_sample_rooms():
             "Bangalore, Karnataka",
             "Goa",
             "Chennai, Tamil Nadu",
+            "Jaipur, Rajasthan",
+            "Kochi, Kerala",
+            "Hyderabad, Telangana"
         ]
 
         room_count = 0
 
-        # Single Rooms (20 instead of 30)
-        for i in range(1, 21):
+        # 1. Single Rooms (60 rooms)
+        for i in range(1, 61):
             city = cities[i % len(cities)]
+            price = random.randint(2000, 5000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"Single Room {i:03d}",
                 "location": city,
-                "price": float(3999 + ((i - 1) % 6) * 1000),
+                "price": float(price),
                 "capacity": 1,
                 "amenities": ["WiFi", "TV", "AC", "Work Desk", "Private Bathroom"],
-                "availability": "available" if i % 10 != 0 else "unavailable",
-                "image": get_room_image_url("single", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.2 else "unavailable",
+                "image": get_room_image_url("single", i - 1),
                 "room_type": "single",
                 "virtual_tour_360_url": get_360_tour_image("single", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -490,26 +495,22 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Double Rooms (15 instead of 30)
-        for i in range(1, 16):
+        # 2. Double Rooms (50 rooms)
+        for i in range(1, 51):
             city = cities[(i + 1) % len(cities)]
+            price = random.randint(5000, 10000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"Double Room {i:03d}",
                 "location": city,
-                "price": float(5999 + ((i - 1) % 10) * 1000),
+                "price": float(price),
                 "capacity": 2,
                 "amenities": [
-                    "Double Bed",
-                    "WiFi",
-                    "TV",
-                    "AC",
-                    "Mini Fridge",
-                    "Private Bathroom",
-                    "Coffee Maker",
+                    "Double Bed", "WiFi", "TV", "AC", "Mini Fridge", 
+                    "Private Bathroom", "Coffee Maker"
                 ],
-                "availability": "available" if i % 8 != 0 else "unavailable",
-                "image": get_room_image_url("double", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.2 else "unavailable",
+                "image": get_room_image_url("double", i - 1),
                 "room_type": "double",
                 "virtual_tour_360_url": get_360_tour_image("double", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -517,28 +518,23 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Family Suites (10 instead of 20)
-        for i in range(1, 11):
-            beds = 3 + (i % 3)
+        # 3. Family Suites (30 rooms)
+        for i in range(1, 31):
+            beds = 3 + (i % 2) # 3 or 4 beds
             city = cities[(i + 2) % len(cities)]
+            price = random.randint(10000, 20000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"Family Suite {i:03d} ({beds} Beds)",
                 "location": city,
-                "price": float(8999 + ((i - 1) % 10) * 1500 + (beds * 1000)),
+                "price": float(price),
                 "capacity": 2 * beds,
                 "amenities": [
-                    f"{beds} Queen Beds",
-                    "WiFi",
-                    "Multiple TVs",
-                    "AC",
-                    "Kitchenette",
-                    "Two Bathrooms",
-                    "Sofa Bed",
-                    "Dining Area",
+                    f"{beds} Queen Beds", "WiFi", "Multiple TVs", "AC", 
+                    "Kitchenette", "Two Bathrooms", "Dining Area"
                 ],
-                "availability": "available" if i % 7 != 0 else "unavailable",
-                "image": get_room_image_url("family", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.3 else "unavailable",
+                "image": get_room_image_url("family", i - 1),
                 "room_type": "family",
                 "virtual_tour_360_url": get_360_tour_image("family", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -546,33 +542,23 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Couple/Romantic Rooms (5 instead of 10)
-        romantic_names = [
-            "Honeymoon Suite",
-            "Romantic Retreat",
-            "Lovers Paradise",
-        ]
-        for i in range(1, 6):
+        # 4. Couple/Romantic Rooms (10 rooms)
+        romantic_names = ["Honeymoon Suite", "Romantic Retreat", "Lovers Paradise"]
+        for i in range(1, 11):
             city = cities[(i + 3) % len(cities)]
+            price = random.randint(12000, 25000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"{romantic_names[i % len(romantic_names)]} {i:02d}",
                 "location": city,
-                "price": float(12999 + ((i - 1) % 8) * 2000),
+                "price": float(price),
                 "capacity": 2,
                 "amenities": [
-                    "King Bed",
-                    "WiFi",
-                    "Smart TV",
-                    "AC",
-                    "Jacuzzi",
-                    "Champagne Bucket",
-                    "Romantic Decor",
-                    "Balcony",
-                    "Premium Toiletries",
+                    "King Bed", "WiFi", "Smart TV", "AC", "Jacuzzi", 
+                    "Romantic Decor", "Balcony", "Premium Toiletries"
                 ],
-                "availability": "available" if i % 6 != 0 else "unavailable",
-                "image": get_room_image_url("couple", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.2 else "unavailable",
+                "image": get_room_image_url("couple", i - 1),
                 "room_type": "couple",
                 "virtual_tour_360_url": get_360_tour_image("couple", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -580,50 +566,13 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-            # VIP/Presidential Suites (0 - removed to keep total at 50)
-            # Removed to maintain exactly 50 rooms
-            city = cities[(i + 4) % len(cities)]
-            room = {
-                "room_id": str(uuid.uuid4()),
-                "name": f"{vip_names[i % len(vip_names)]} {i:02d}",
-                "location": city,
-                "price": float(39999 + ((i - 1) % 10) * 7000),
-                "capacity": 4 + (i % 3),
-                "amenities": [
-                    "Multiple King Beds",
-                    "High-speed WiFi",
-                    "Multiple Smart TVs",
-                    "Smart Home System",
-                    "Private Jacuzzi",
-                    "Wet Bar",
-                    "Full Kitchen",
-                    "Dining Room",
-                    "Living Area",
-                    "Butler Service",
-                    "Panoramic Views",
-                ],
-                "availability": "available" if i % 5 != 0 else "unavailable",
-                "image": get_room_image_url("vip", i - 1),  # Open-source room image
-                "room_type": "vip",
-                "virtual_tour_360_url": get_360_tour_image("vip", i - 1),
-                "created_at": datetime.now().isoformat(),
-            }
-            add_room(room)
-            room_count += 1
-
-        print(f"✓ Successfully created {room_count}+ sample rooms")
-        print(f"  • Single Rooms: 30 (₹3,999 - ₹9,999)")
-        print(f"  • Double Rooms: 30 (₹5,999 - ₹15,999)")
-        print(f"  • Family Suites: 20 (₹8,999 - ₹24,999)")
-        print(f"  • Couple Rooms: 10 (₹12,999 - ₹29,999)")
-        print(f"  • VIP Suites: 10 (₹39,999 - ₹111,999)")
-        print(f"  TOTAL: {room_count}+ rooms across {len(cities)} Indian cities\n")
+        print(f"Successfully initialized {room_count} rooms in database")
 
     except Exception as e:
         print(f"Error creating inline sample rooms: {e}")
         import traceback
-
         traceback.print_exc()
+
 
 
 def get_room_image_url(room_type=None, room_index=0):
