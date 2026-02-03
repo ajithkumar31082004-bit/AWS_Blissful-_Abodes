@@ -28,6 +28,15 @@ from io import StringIO, BytesIO
 import csv
 import json
 
+# Excel Generation imports
+try:
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    OPENPYXL_AVAILABLE = True
+except ImportError:
+    OPENPYXL_AVAILABLE = False
+    print("Warning: openpyxl not installed. Excel generation will use CSV fallback.")
+
 # PDF Generation imports
 try:
     from reportlab.lib import colors
@@ -47,7 +56,7 @@ try:
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
-    print("Warning: reportlab not installed. PDF generation will use CSV fallback.")
+    print("Warning: reportlab not installed. PDF generation will be skipped.")
 
 
 app = Flask(__name__)
@@ -3516,548 +3525,135 @@ def autoprocess_completed_request(chat_request):
 @login_required
 @role_required(["admin", "super_admin"])
 def generate_system_report():
-    """Generate comprehensive system report as PDF"""
+    """Generate comprehensive system report as Excel"""
     try:
         # Get all system data
         analytics = get_analytics()
         users = get_all_users()
         rooms = get_all_rooms()
         bookings = get_all_bookings()
-        branches = get_all_branches()
 
         # Calculate revenue metrics
-        total_revenue = sum(
-            float(b.get("total_price", 0))
-            for b in bookings
-            if b.get("payment_status") == "paid"
-        )
-        pending_revenue = sum(
-            float(b.get("total_price", 0))
-            for b in bookings
-            if b.get("payment_status") == "pending"
-        )
+        total_revenue = sum(float(b.get("total_price", 0)) for b in bookings if b.get("payment_status") == "paid")
+        pending_revenue = sum(float(b.get("total_price", 0)) for b in bookings if b.get("payment_status") == "pending")
         avg_booking_value = total_revenue / len(bookings) if len(bookings) > 0 else 0
 
         # Calculate occupancy
-        available_rooms = len(
-            [r for r in rooms if r.get("availability") == "available"]
-        )
-        occupied_rooms = len(
-            [r for r in rooms if r.get("availability") == "unavailable"]
-        )
+        occupied_rooms = len([r for r in rooms if r.get("availability") == "unavailable"])
         occupancy_rate = (occupied_rooms / len(rooms) * 100) if len(rooms) > 0 else 0
 
         # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"blissful_abodes_report_{timestamp}.pdf"
+        filename = f"blissful_abodes_report_{timestamp}.xlsx"
 
-        if REPORTLAB_AVAILABLE:
-            # Generate PDF report
-            buffer = BytesIO()
-            doc = SimpleDocTemplate(
-                buffer, pagesize=letter, topMargin=0.5 * inch, bottomMargin=0.5 * inch
-            )
-
-            # Container for PDF elements
-            elements = []
-            styles = getSampleStyleSheet()
-
-            # Custom styles
-            title_style = ParagraphStyle(
-                "CustomTitle",
-                parent=styles["Heading1"],
-                fontSize=24,
-                textColor=colors.HexColor("#1a365d"),
-                spaceAfter=30,
-                alignment=TA_CENTER,
-            )
-
-            heading_style = ParagraphStyle(
-                "CustomHeading",
-                parent=styles["Heading2"],
-                fontSize=16,
-                textColor=colors.HexColor("#1a365d"),
-                spaceAfter=12,
-                spaceBefore=20,
-            )
-
-            # Title
-            elements.append(Paragraph("Blissful Abodes", title_style))
-            elements.append(Paragraph("System Report", title_style))
-            elements.append(
-                Paragraph(
-                    f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}",
-                    styles["Normal"],
-                )
-            )
-            elements.append(Spacer(1, 0.3 * inch))
-
-            # Executive Summary
-            elements.append(Paragraph("Executive Summary", heading_style))
+        if OPENPYXL_AVAILABLE:
+            wb = openpyxl.Workbook()
+            
+            # Summary Sheet
+            ws_summary = wb.active
+            ws_summary.title = "Summary"
+            
+            title_font = Font(name='Arial', size=14, bold=True, color='1A365D')
+            header_font = Font(name='Arial', size=11, bold=True, color='FFFFFF')
+            header_fill = PatternFill(start_color='1A365D', end_color='1A365D', fill_type='solid')
+            border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+            
+            ws_summary['A1'] = "BLISSFUL ABODES SYSTEM REPORT"
+            ws_summary['A1'].font = title_font
+            ws_summary['A2'] = f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            
             summary_data = [
                 ["Metric", "Value"],
-                ["Total Users", str(len(users))],
-                ["Total Rooms", str(len(rooms))],
-                ["Total Bookings", str(len(bookings))],
-                [
-                    "Active Bookings",
-                    str(len([b for b in bookings if b.get("status") == "confirmed"])),
-                ],
+                ["Total Users", len(users)],
+                ["Total Rooms", len(rooms)],
+                ["Total Bookings", len(bookings)],
                 ["Occupancy Rate", f"{occupancy_rate:.1f}%"],
                 ["Total Revenue", f"₹{total_revenue:,.2f}"],
                 ["Pending Revenue", f"₹{pending_revenue:,.2f}"],
                 ["Avg Booking Value", f"₹{avg_booking_value:,.2f}"],
             ]
+            
+            for r_idx, row in enumerate(summary_data, 4):
+                for c_idx, val in enumerate(row, 1):
+                    cell = ws_summary.cell(row=r_idx, column=c_idx, value=val)
+                    cell.border = border
+                    if r_idx == 4:
+                        cell.font = header_font
+                        cell.fill = header_fill
 
-            summary_table = Table(summary_data, colWidths=[3 * inch, 2 * inch])
-            summary_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a365d")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, 0), 12),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ]
-                )
-            )
-            elements.append(summary_table)
-            elements.append(Spacer(1, 0.3 * inch))
+            # Users Sheet
+            ws_users = wb.create_sheet("Users")
+            headers = ["Name", "Email", "Role", "Age"]
+            for c_idx, head in enumerate(headers, 1):
+                cell = ws_users.cell(row=1, column=c_idx, value=head)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.border = border
+            
+            for r_idx, user in enumerate(users, 2):
+                ws_users.cell(row=r_idx, column=1, value=user.get("name", "N/A")).border = border
+                ws_users.cell(row=r_idx, column=2, value=user.get("email", "N/A")).border = border
+                ws_users.cell(row=r_idx, column=3, value=user.get("role", "N/A")).border = border
+                ws_users.cell(row=r_idx, column=4, value=user.get("age", "N/A")).border = border
+            
+            # Rooms Sheet
+            ws_rooms = wb.create_sheet("Rooms")
+            headers = ["Room Name", "Location", "Price", "Status"]
+            for c_idx, head in enumerate(headers, 1):
+                cell = ws_rooms.cell(row=1, column=c_idx, value=head)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.border = border
+            
+            for r_idx, room in enumerate(rooms, 2):
+                ws_rooms.cell(row=r_idx, column=1, value=room.get("name", "N/A")).border = border
+                ws_rooms.cell(row=r_idx, column=2, value=room.get("location", "N/A")).border = border
+                ws_rooms.cell(row=r_idx, column=3, value=room.get("price", 0)).border = border
+                ws_rooms.cell(row=r_idx, column=4, value=room.get("availability", "N/A")).border = border
 
-            # Users Section
-            elements.append(Paragraph("Users Overview", heading_style))
-            users_by_role = analytics.get("users", {}).get("by_role", {})
-            user_data = [["Role", "Count"]]
-            for role, count in users_by_role.items():
-                user_data.append([role.title(), str(count)])
+            # Bookings Sheet
+            ws_bookings = wb.create_sheet("Bookings")
+            headers = ["Guest", "Room ID", "Check-in", "Check-out", "Price", "Status"]
+            for c_idx, head in enumerate(headers, 1):
+                cell = ws_bookings.cell(row=1, column=c_idx, value=head)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.border = border
+            
+            for r_idx, b in enumerate(bookings, 2):
+                ws_bookings.cell(row=r_idx, column=1, value=b.get("guest_name", "N/A")).border = border
+                ws_bookings.cell(row=r_idx, column=2, value=b.get("room_id", "N/A")).border = border
+                ws_bookings.cell(row=r_idx, column=3, value=b.get("check_in", "N/A")).border = border
+                ws_bookings.cell(row=r_idx, column=4, value=b.get("check_out", "N/A")).border = border
+                ws_bookings.cell(row=r_idx, column=5, value=float(b.get("total_price", 0))).border = border
+                ws_bookings.cell(row=r_idx, column=6, value=b.get("status", "N/A")).border = border
 
-            user_table = Table(user_data, colWidths=[3 * inch, 2 * inch])
-            user_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#28a745")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, 0), 12),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.lightgreen),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ]
-                )
-            )
-            elements.append(user_table)
-            elements.append(Spacer(1, 0.3 * inch))
-
-            # Rooms Section
-            elements.append(Paragraph("Rooms Overview", heading_style))
-            rooms_by_status = analytics.get("rooms", {}).get("by_availability", {})
-            room_data = [["Status", "Count"]]
-            for status, count in rooms_by_status.items():
-                room_data.append([status.title(), str(count)])
-
-            room_table = Table(room_data, colWidths=[3 * inch, 2 * inch])
-            room_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2d9cdb")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, 0), 12),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.lightblue),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ]
-                )
-            )
-            elements.append(room_table)
-            elements.append(Spacer(1, 0.3 * inch))
-
-            # Bookings Section
-            elements.append(Paragraph("Bookings Overview", heading_style))
-            bookings_by_status = analytics.get("bookings", {}).get("by_status", {})
-            booking_data = [["Status", "Count"]]
-            for status, count in bookings_by_status.items():
-                booking_data.append([status.title(), str(count)])
-
-            booking_table = Table(booking_data, colWidths=[3 * inch, 2 * inch])
-            booking_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#d4af37")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, 0), 12),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.Color(0.95, 0.95, 0.8)),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ]
-                )
-            )
-            elements.append(booking_table)
-            elements.append(PageBreak())
-
-            # Detailed Users List
-            elements.append(Paragraph("Detailed Users List", heading_style))
-            detailed_user_data = [["Name", "Email", "Role", "Age"]]
-            for user in users[:20]:  # Limit to first 20 users
-                detailed_user_data.append(
-                    [
-                        user.get("name", "N/A")[:30],
-                        user.get("email", "N/A")[:30],
-                        user.get("role", "N/A"),
-                        str(user.get("age", "N/A")),
-                    ]
-                )
-
-            detailed_user_table = Table(
-                detailed_user_data,
-                colWidths=[1.8 * inch, 2.2 * inch, 1 * inch, 0.8 * inch],
-            )
-            detailed_user_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a365d")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 9),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        (
-                            "ROWBACKGROUNDS",
-                            (0, 1),
-                            (-1, -1),
-                            [colors.white, colors.lightgrey],
-                        ),
-                    ]
-                )
-            )
-            elements.append(detailed_user_table)
-
-            if len(users) > 20:
-                elements.append(Spacer(1, 0.2 * inch))
-                elements.append(
-                    Paragraph(
-                        f"Note: Showing first 20 of {len(users)} total users",
-                        styles["Italic"],
-                    )
-                )
-
-            elements.append(PageBreak())
-
-            # Detailed Rooms List
-            elements.append(Paragraph("Detailed Rooms List", heading_style))
-            detailed_room_data = [["Room Name", "Location", "Price (₹)", "Status"]]
-            for room in rooms[:20]:  # Limit to first 20 rooms
-                detailed_room_data.append(
-                    [
-                        room.get("name", "N/A")[:25],
-                        room.get("location", "N/A")[:20],
-                        f"₹{room.get('price', 0):,.2f}",
-                        room.get("availability", "N/A"),
-                    ]
-                )
-
-            detailed_room_table = Table(
-                detailed_room_data,
-                colWidths=[2 * inch, 1.8 * inch, 1.2 * inch, 1 * inch],
-            )
-            detailed_room_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a365d")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("ALIGN", (2, 1), (2, -1), "RIGHT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 9),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        (
-                            "ROWBACKGROUNDS",
-                            (0, 1),
-                            (-1, -1),
-                            [colors.white, colors.lightgrey],
-                        ),
-                    ]
-                )
-            )
-            elements.append(detailed_room_table)
-
-            if len(rooms) > 20:
-                elements.append(Spacer(1, 0.2 * inch))
-                elements.append(
-                    Paragraph(
-                        f"Note: Showing first 20 of {len(rooms)} total rooms",
-                        styles["Italic"],
-                    )
-                )
-
-            elements.append(PageBreak())
-
-            # Recent Bookings Section
-            elements.append(Paragraph("Recent Bookings", heading_style))
-            recent_bookings = sorted(
-                bookings, key=lambda x: x.get("created_at", ""), reverse=True
-            )[:15]
-            booking_data = [
-                ["Guest", "Room ID", "Check-in", "Check-out", "Price", "Status"]
-            ]
-            for booking in recent_bookings:
-                booking_data.append(
-                    [
-                        booking.get("guest_name", "N/A")[:20],
-                        booking.get("room_id", "N/A")[:12],
-                        booking.get("check_in", "N/A")[:10],
-                        booking.get("check_out", "N/A")[:10],
-                        f"₹{float(booking.get('total_price', 0)):,.0f}",
-                        booking.get("status", "N/A"),
-                    ]
-                )
-
-            booking_table = Table(
-                booking_data,
-                colWidths=[
-                    1.3 * inch,
-                    1.1 * inch,
-                    0.9 * inch,
-                    0.9 * inch,
-                    0.9 * inch,
-                    0.9 * inch,
-                ],
-            )
-            booking_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a365d")),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("ALIGN", (4, 1), (4, -1), "RIGHT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 8),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        (
-                            "ROWBACKGROUNDS",
-                            (0, 1),
-                            (-1, -1),
-                            [colors.white, colors.lightgrey],
-                        ),
-                    ]
-                )
-            )
-            elements.append(booking_table)
-            elements.append(Spacer(1, 0.3 * inch))
-
-            # Revenue by Branch
-            if branches:
-                elements.append(Paragraph("Revenue by Branch", heading_style))
-                branch_revenue_data = [["Branch", "Location", "Bookings", "Revenue"]]
-                for branch in branches[:10]:
-                    branch_id = branch.get("branch_id")
-                    branch_bookings = [
-                        b for b in bookings if b.get("branch_id") == branch_id
-                    ]
-                    branch_rev = sum(
-                        float(b.get("total_price", 0))
-                        for b in branch_bookings
-                        if b.get("payment_status") == "paid"
-                    )
-                    branch_revenue_data.append(
-                        [
-                            branch.get("branch_name", "N/A")[:25],
-                            (
-                                branch.get("location", {}).get("city", "N/A")
-                                if isinstance(branch.get("location"), dict)
-                                else "N/A"
-                            ),
-                            str(len(branch_bookings)),
-                            f"₹{branch_rev:,.2f}",
-                        ]
-                    )
-
-                branch_rev_table = Table(
-                    branch_revenue_data,
-                    colWidths=[2 * inch, 1.5 * inch, 1 * inch, 1.5 * inch],
-                )
-                branch_rev_table.setStyle(
-                    TableStyle(
-                        [
-                            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#28a745")),
-                            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                            ("ALIGN", (2, 1), (3, -1), "RIGHT"),
-                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                            ("FONTSIZE", (0, 0), (-1, -1), 9),
-                            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                            ("BACKGROUND", (0, 1), (-1, -1), colors.lightgreen),
-                            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                        ]
-                    )
-                )
-                elements.append(branch_rev_table)
-
-            # Footer with generation info
-            elements.append(Spacer(1, 0.5 * inch))
-            footer_style = ParagraphStyle(
-                "Footer",
-                parent=styles["Normal"],
-                fontSize=8,
-                textColor=colors.grey,
-                alignment=TA_CENTER,
-            )
-            elements.append(
-                Paragraph(
-                    f"Report generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}",
-                    footer_style,
-                )
-            )
-            elements.append(
-                Paragraph("Blissful Abodes Hotel Management System", footer_style)
-            )
-            elements.append(
-                Paragraph(
-                    f"Total Records: {len(users)} Users, {len(rooms)} Rooms, {len(bookings)} Bookings",
-                    footer_style,
-                )
-            )
-
-            # Build PDF
-            doc.build(elements)
+            buffer = BytesIO()
+            wb.save(buffer)
             buffer.seek(0)
+            return send_file(buffer, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", as_attachment=True, download_name=filename)
 
-            return send_file(
-                buffer,
-                mimetype="application/pdf",
-                as_attachment=True,
-                download_name=filename,
-            )
-        else:
-            # Fallback to CSV if reportlab not available
-            output = StringIO()
-            writer = csv.writer(output)
-
-            # Summary
-            writer.writerow(["Blissful Abodes - System Report"])
-            writer.writerow(
-                [f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"]
-            )
-            writer.writerow([])
-
-            # Users
-            writer.writerow(["USERS SUMMARY"])
-            writer.writerow(["Total Users", analytics.get("users", {}).get("total", 0)])
-            writer.writerow([])
-            writer.writerow(["Role", "Count"])
-            for role, count in analytics.get("users", {}).get("by_role", {}).items():
-                writer.writerow([role, count])
-            writer.writerow([])
-
-            # Rooms
-            writer.writerow(["ROOMS SUMMARY"])
-            writer.writerow(["Total Rooms", analytics.get("rooms", {}).get("total", 0)])
-            writer.writerow([])
-            writer.writerow(["Status", "Count"])
-            for status, count in (
-                analytics.get("rooms", {}).get("by_availability", {}).items()
-            ):
-                writer.writerow([status, count])
-            writer.writerow([])
-
-            # Bookings
-            writer.writerow(["BOOKINGS SUMMARY"])
-            writer.writerow(["Total Bookings", len(bookings)])
-            writer.writerow(["Total Revenue", f"₹{total_revenue:,.2f}"])
-            writer.writerow(["Pending Revenue", f"₹{pending_revenue:,.2f}"])
-            writer.writerow(["Average Booking Value", f"₹{avg_booking_value:,.2f}"])
-            writer.writerow([])
-            writer.writerow(["Status", "Count"])
-            for status, count in (
-                analytics.get("bookings", {}).get("by_status", {}).items()
-            ):
-                writer.writerow([status, count])
-            writer.writerow([])
-
-            # Recent Bookings
-            writer.writerow(["RECENT BOOKINGS"])
-            writer.writerow(
-                [
-                    "Guest Name",
-                    "Room ID",
-                    "Check-in",
-                    "Check-out",
-                    "Total Price",
-                    "Status",
-                ]
-            )
-            recent_bookings = sorted(
-                bookings, key=lambda x: x.get("created_at", ""), reverse=True
-            )[:20]
-            for booking in recent_bookings:
-                writer.writerow(
-                    [
-                        booking.get("guest_name", "N/A"),
-                        booking.get("room_id", "N/A"),
-                        booking.get("check_in", "N/A"),
-                        booking.get("check_out", "N/A"),
-                        f"₹{float(booking.get('total_price', 0)):,.2f}",
-                        booking.get("status", "N/A"),
-                    ]
-                )
-            writer.writerow([])
-
-            # Detailed Users
-            writer.writerow(["DETAILED USERS LIST"])
-            writer.writerow(["Name", "Email", "Role", "Age"])
-            for user in users:
-                writer.writerow(
-                    [
-                        user.get("name", "N/A"),
-                        user.get("email", "N/A"),
-                        user.get("role", "N/A"),
-                        user.get("age", "N/A"),
-                    ]
-                )
-            writer.writerow([])
-
-            # Detailed Rooms
-            writer.writerow(["DETAILED ROOMS LIST"])
-            writer.writerow(["Room Name", "Location", "Price", "Capacity", "Status"])
-            for room in rooms:
-                writer.writerow(
-                    [
-                        room.get("name", "N/A"),
-                        room.get("location", "N/A"),
-                        room.get("price", "N/A"),
-                        room.get("capacity", "N/A"),
-                        room.get("availability", "N/A"),
-                    ]
-                )
-
-            output.seek(0)
-            csv_filename = filename.replace(".pdf", ".csv")
-
-            response = make_response(output.getvalue())
-            response.headers["Content-Type"] = "text/csv"
-            response.headers["Content-Disposition"] = (
-                f"attachment; filename={csv_filename}"
-            )
-            return response
+        # Fallback to CSV
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Blissful Abodes System Report"])
+        writer.writerow([f"Generated: {datetime.now()}"])
+        writer.writerow([])
+        writer.writerow(["SUMMARY"])
+        writer.writerow(["Metric", "Value"])
+        writer.writerow(["Total Users", len(users)])
+        writer.writerow(["Total Rooms", len(rooms)])
+        writer.writerow(["Total Bookings", len(bookings)])
+        writer.writerow(["Total Revenue", total_revenue])
+        
+        output.seek(0)
+        response = make_response(output.getvalue())
+        response.headers["Content-Type"] = "text/csv"
+        response.headers["Content-Disposition"] = f"attachment; filename={filename.replace('.xlsx', '.csv')}"
+        return response
 
     except Exception as e:
-        print(f"Error generating report: {e}")
-        import traceback
-
-        traceback.print_exc()
+        print(f"Error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 
