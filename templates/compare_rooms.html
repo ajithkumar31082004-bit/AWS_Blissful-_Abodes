@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Rooms - Blissful Abodes{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">Room Comparison</h1>
+        <p class="lead text-muted">Compare features and prices side by side</p>
+    </div>
+
+    {% if rooms %}
+    <!-- Comparison Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered comparison-table">
+            <thead class="table-dark">
+                <tr>
+                    <th class="feature-column">Feature</th>
+                    {% for room in rooms %}
+                    <th class="text-center room-column">
+                        <div class="room-header">
+                            <h5 class="fw-bold mb-2">{{ room.name }}</h5>
+                            <span class="badge bg-primary">{{ room.location }}</span>
+                        </div>
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Room Images -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-image"></i> Image</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {% if room.image_url %}
+                        <img src="{{ room.image_url }}" alt="{{ room.name }}" class="comparison-image">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/placeholder-room.jpg') }}" alt="No image" class="comparison-image">
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Price -->
+                <tr class="highlight-row">
+                    <td class="feature-label"><i class="fas fa-rupee-sign"></i> Price per Night</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        <h4 class="text-success fw-bold mb-0">₹{{ "%.2f"|format(room.price|float) }}</h4>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Availability -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-check-circle"></i> Availability</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {% if room.availability == 'available' %}
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check"></i> Available
+                        </span>
+                        {% else %}
+                        <span class="badge bg-danger fs-6">
+                            <i class="fas fa-times"></i> Booked
+                        </span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Room Type -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-bed"></i> Room Type</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        <strong>{{ room.room_type|default('Standard', true) }}</strong>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Capacity -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-users"></i> Max Guests</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        <strong>{{ room.capacity|default('2', true) }} guests</strong>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Description -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-info-circle"></i> Description</td>
+                    {% for room in rooms %}
+                    <td>
+                        <p class="small mb-0">{{ room.description[:150] }}{% if room.description|length > 150 %}...{% endif %}</p>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Amenities -->
+                <tr class="highlight-row">
+                    <td class="feature-label"><i class="fas fa-concierge-bell"></i> Amenities</td>
+                    {% for room in rooms %}
+                    <td>
+                        {% if room.amenities %}
+                        <ul class="amenities-list">
+                            {% for amenity in room.amenities.split(',')[:5] %}
+                            <li><i class="fas fa-check text-success"></i> {{ amenity.strip() }}</li>
+                            {% endfor %}
+                            {% if room.amenities.split(',')[5:] %}
+                            <li class="text-muted"><i>+{{ room.amenities.split(',')[5:]|length }} more</i></li>
+                            {% endif %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted small mb-0">Standard amenities</p>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Rating -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-star"></i> Rating</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {% set rating = room.rating|default(4.5, true)|float %}
+                        <div class="rating-display">
+                            {% for i in range(5) %}
+                                {% if i < rating|int %}
+                                <i class="fas fa-star text-warning"></i>
+                                {% elif i < rating %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                                {% else %}
+                                <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <div class="mt-1"><strong>{{ "%.1f"|format(rating) }}</strong>/5</div>
+                        </div>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Size -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-ruler-combined"></i> Room Size</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        <strong>{{ room.size|default('25', true) }} m²</strong>
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- View Type -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-mountain"></i> View</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {{ room.view_type|default('City View', true) }}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- WiFi -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-wifi"></i> Free WiFi</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {% if 'wifi' in room.amenities|lower or 'wi-fi' in room.amenities|lower %}
+                        <i class="fas fa-check-circle text-success fa-2x"></i>
+                        {% else %}
+                        <i class="fas fa-times-circle text-danger fa-2x"></i>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Air Conditioning -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-snowflake"></i> Air Conditioning</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {% if 'ac' in room.amenities|lower or 'air conditioning' in room.amenities|lower %}
+                        <i class="fas fa-check-circle text-success fa-2x"></i>
+                        {% else %}
+                        <i class="fas fa-times-circle text-danger fa-2x"></i>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- TV -->
+                <tr>
+                    <td class="feature-label"><i class="fas fa-tv"></i> Television</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {% if 'tv' in room.amenities|lower or 'television' in room.amenities|lower %}
+                        <i class="fas fa-check-circle text-success fa-2x"></i>
+                        {% else %}
+                        <i class="fas fa-times-circle text-danger fa-2x"></i>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- Action Buttons -->
+                <tr class="action-row">
+                    <td class="feature-label"><i class="fas fa-arrow-right"></i> Action</td>
+                    {% for room in rooms %}
+                    <td class="text-center">
+                        {% if room.availability == 'available' %}
+                        <a href="{{ url_for('book_room', room_id=room.room_id) }}" class="btn btn-success w-100 mb-2">
+                            <i class="fas fa-calendar-check"></i> Book Now
+                        </a>
+                        <a href="{{ url_for('rooms') }}?room_id={{ room.room_id }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-info-circle"></i> View Details
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary w-100 mb-2" disabled>
+                            <i class="fas fa-ban"></i> Unavailable
+                        </button>
+                        <form action="{{ url_for('join_waitlist', room_id=room.room_id) }}" method="POST" class="d-inline w-100">
+                            <button type="submit" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-clock"></i> Join Waitlist
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Best for You Recommendation -->
+    <div class="card shadow-sm mt-5">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-thumbs-up"></i> Our Recommendation</h5>
+        </div>
+        <div class="card-body">
+            {% set best_room = rooms|sort(attribute='rating', reverse=true)|first %}
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="fw-bold text-success">{{ best_room.name }}</h4>
+                    <p class="mb-2">Based on ratings and value, we recommend this room for your stay.</p>
+                    <ul class="mb-0">
+                        <li><strong>Best rating:</strong> {{ best_room.rating|default(4.5, true) }}/5 stars</li>
+                        <li><strong>Great value:</strong> ₹{{ best_room.price }}/night</li>
+                        <li><strong>Location:</strong> {{ best_room.location }}</li>
+                    </ul>
+                </div>
+                <div class="col-md-4 text-center">
+                    {% if best_room.availability == 'available' %}
+                    <a href="{{ url_for('book_room', room_id=best_room.room_id) }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-calendar-check"></i> Book This Room
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="text-center mt-5">
+        <a href="{{ url_for('rooms') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search"></i> Browse More Rooms
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-print"></i> Print Comparison
+        </button>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+        <h3>No Rooms to Compare</h3>
+        <p class="text-muted mb-4">Please select at least 2 rooms to compare.</p>
+        <a href="{{ url_for('rooms') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search"></i> Browse Rooms
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .comparison-table {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .comparison-table th {
+        vertical-align: middle;
+        padding: 20px;
+    }
+
+    .comparison-table td {
+        vertical-align: middle;
+        padding: 15px;
+    }
+
+    .feature-column {
+        min-width: 200px;
+        background: #f8f9fa;
+        font-weight: 600;
+        position: sticky;
+        left: 0;
+        z-index: 10;
+    }
+
+    .room-column {
+        min-width: 250px;
+        max-width: 300px;
+    }
+
+    .feature-label {
+        background: #f8f9fa;
+        font-weight: 600;
+        position: sticky;
+        left: 0;
+        z-index: 5;
+    }
+
+    .room-header {
+        padding: 10px 0;
+    }
+
+    .comparison-image {
+        width: 100%;
+        max-width: 200px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .amenities-list {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0;
+        text-align: left;
+    }
+
+    .amenities-list li {
+        padding: 5px 0;
+        font-size: 0.9rem;
+    }
+
+    .highlight-row {
+        background: #fff9e6;
+    }
+
+    .action-row {
+        background: #f0f0f0;
+    }
+
+    .rating-display {
+        font-size: 1.2rem;
+    }
+
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+        .comparison-table {
+            font-size: 0.85rem;
+        }
+
+        .comparison-image {
+            max-width: 150px;
+            height: 100px;
+        }
+
+        .room-column {
+            min-width: 200px;
+        }
+    }
+
+    @media print {
+        .btn, .card-header, nav, footer {
+            display: none !important;
+        }
+
+        .comparison-table {
+            box-shadow: none;
+        }
+    }
+
+    /* Horizontal scroll indicator */
+    .table-responsive {
+        position: relative;
+    }
+
+    .table-responsive::after {
+        content: '→ Scroll to see more';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    @media (max-width: 1200px) {
+        .table-responsive::after {
+            opacity: 1;
+        }
+    }
+
+    .table-responsive:hover::after {
+        opacity: 0;
+    }
+</style>
+
+<script>
+    // Add fade-in animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.comparison-table tbody tr');
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                row.style.transition = 'all 0.5s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, index * 50);
+        });
+    });
+
+    // Highlight best value
+    window.addEventListener('load', function() {
+        const priceRow = document.querySelector('.highlight-row');
+        if (priceRow) {
+            const prices = Array.from(priceRow.querySelectorAll('td h4')).slice(1);
+            const minPrice = Math.min(...prices.map(p => parseFloat(p.textContent.replace('₹', ''))));
+            prices.forEach(p => {
+                if (parseFloat(p.textContent.replace('₹', '')) === minPrice) {
+                    p.parentElement.innerHTML += '<div class="badge bg-success mt-2">Best Value</div>';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

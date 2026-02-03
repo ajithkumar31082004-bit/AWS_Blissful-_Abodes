@@ -1,0 +1,981 @@
+{% extends "base.html" %} {% block title %}Chat Assistant - Blissful Abodes{%
+endblock %} {% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <h4 class="mb-0">
+                            <i class="fas fa-comments"></i> Blissful Abodes
+                            Assistant
+                        </h4>
+                        <div>
+                            <span
+                                class="badge bg-light text-dark"
+                                id="status-badge"
+                            >
+                                <i class="fas fa-circle text-success"></i>
+                                Online
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Chat Messages Area -->
+                    <div
+                        id="chat-messages"
+                        class="p-4"
+                        style="
+                            height: 500px;
+                            overflow-y: auto;
+                            background-color: #f8f9fa;
+                        "
+                    >
+                        <div class="text-center text-muted mb-3">
+                            <small
+                                >Chat started - Context: {{ page_context|title
+                                }}</small
+                            >
+                        </div>
+
+                        <!-- Welcome Message -->
+                        <div class="message-container bot-message mb-3">
+                            <div class="d-flex align-items-start">
+                                <div
+                                    class="avatar bg-primary text-white rounded-circle me-2"
+                                    style="
+                                        width: 40px;
+                                        height: 40px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    "
+                                >
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div
+                                    class="message-content bg-white p-3 rounded shadow-sm"
+                                    style="max-width: 70%"
+                                >
+                                    <strong class="text-primary"
+                                        >Assistant</strong
+                                    >
+                                    {% if page_context == 'rooms' %}
+                                    <p class="mb-1 mt-2">
+                                        Hello {{ user.name }}! I see you're
+                                        browsing our rooms. 🏨
+                                    </p>
+                                    <p class="mb-1">I can help you:</p>
+                                    <ul class="mb-0">
+                                        <li>🔍 Find the perfect room</li>
+                                        <li>📅 Check availability</li>
+                                        <li>🏨 Book a room</li>
+                                        <li>⚖️ Compare room types</li>
+                                    </ul>
+                                    {% elif page_context == 'bookings' %}
+                                    <p class="mb-1 mt-2">
+                                        Hello {{ user.name }}! Managing your
+                                        bookings? 📅
+                                    </p>
+                                    <p class="mb-1">I can help you:</p>
+                                    <ul class="mb-0">
+                                        <li>📋 View booking details</li>
+                                        <li>✏️ Modify bookings</li>
+                                        <li>❌ Cancel bookings</li>
+                                        <li>⭐ Leave reviews</li>
+                                    </ul>
+                                    {% elif page_context == 'reviews' %}
+                                    <p class="mb-1 mt-2">
+                                        Hello {{ user.name }}! Ready to share
+                                        your experience? ⭐
+                                    </p>
+                                    <p class="mb-1">I can help you:</p>
+                                    <ul class="mb-0">
+                                        <li>⭐ Submit a review</li>
+                                        <li>📝 Rate your stay</li>
+                                        <li>💬 Provide feedback</li>
+                                    </ul>
+                                    {% elif page_context == 'dashboard' %}
+                                    <p class="mb-1 mt-2">
+                                        Welcome back, {{ user.name }}! 👋
+                                    </p>
+                                    <p class="mb-1">
+                                        From your dashboard, I can help you:
+                                    </p>
+                                    <ul class="mb-0">
+                                        <li>🏨 Make new bookings</li>
+                                        <li>📜 View booking history</li>
+                                        <li>🎯 Request services</li>
+                                        <li>⭐ Leave reviews</li>
+                                    </ul>
+                                    {% else %}
+                                    <p class="mb-1 mt-2">
+                                        Hello {{ user.name }}! Welcome to
+                                        Blissful Abodes Assistant. 👋
+                                    </p>
+                                    <p class="mb-1">I can help you with:</p>
+                                    <ul class="mb-0">
+                                        <li>🏨 Room Bookings</li>
+                                        <li>⭐ Reviews & Feedback</li>
+                                        <li>📋 Reports & Issues</li>
+                                        <li>🎯 Extra Services</li>
+                                    </ul>
+                                    {% endif %}
+                                    <small class="text-muted d-block mt-2"
+                                        >{{ messages[0].timestamp if messages
+                                        else 'Just now' }}</small
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Previous Messages -->
+                        {% for msg in messages %} {% if msg.sender == 'bot' or
+                        msg.sender == 'admin' %}
+                        <div class="message-container bot-message mb-3">
+                            <div class="d-flex align-items-start">
+                                <div
+                                    class="avatar bg-primary text-white rounded-circle me-2"
+                                    style="
+                                        width: 40px;
+                                        height: 40px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    "
+                                >
+                                    <i
+                                        class="fas fa-{{ 'robot' if msg.sender == 'bot' else 'user-shield' }}"
+                                    ></i>
+                                </div>
+                                <div
+                                    class="message-content bg-white p-3 rounded shadow-sm"
+                                    style="max-width: 70%"
+                                >
+                                    <strong class="text-primary"
+                                        >{{ 'Assistant' if msg.sender == 'bot'
+                                        else 'Admin' }}</strong
+                                    >
+                                    <p
+                                        class="mb-1 mt-2"
+                                        style="white-space: pre-wrap"
+                                    >
+                                        {{ msg.message }}
+                                    </p>
+                                    <small class="text-muted"
+                                        >{{ msg.timestamp }}</small
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        {% elif msg.sender == 'user' %}
+                        <div class="message-container user-message mb-3">
+                            <div
+                                class="d-flex align-items-start justify-content-end"
+                            >
+                                <div
+                                    class="message-content bg-primary text-white p-3 rounded shadow-sm"
+                                    style="max-width: 70%"
+                                >
+                                    <strong>You</strong>
+                                    <p
+                                        class="mb-1 mt-2"
+                                        style="white-space: pre-wrap"
+                                    >
+                                        {{ msg.message }}
+                                    </p>
+                                    <small class="opacity-75"
+                                        >{{ msg.timestamp }}</small
+                                    >
+                                </div>
+                                <div
+                                    class="avatar bg-secondary text-white rounded-circle ms-2"
+                                    style="
+                                        width: 40px;
+                                        height: 40px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    "
+                                >
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %} {% endfor %}
+                    </div>
+
+                    <!-- Quick Actions - Context Aware -->
+                    <div class="border-top border-bottom p-3 bg-light">
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-bolt"></i> Quick Actions {% if
+                            page_context != 'general' %}
+                            <span class="badge bg-primary ms-2"
+                                >{{ page_context|title }} Mode</span
+                            >
+                            {% endif %}
+                        </small>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if page_context == 'rooms' %}
+                            <button
+                                class="btn btn-primary btn-sm"
+                                onclick="quickAction('booking')"
+                            >
+                                <i class="fas fa-calendar-check"></i> Book This
+                                Room
+                            </button>
+                            <button
+                                class="btn btn-outline-info btn-sm"
+                                onclick="sendQuickMessage('Check availability')"
+                            >
+                                <i class="fas fa-calendar"></i> Check
+                                Availability
+                            </button>
+                            <button
+                                class="btn btn-outline-secondary btn-sm"
+                                onclick="sendQuickMessage('Compare rooms')"
+                            >
+                                <i class="fas fa-exchange-alt"></i> Compare
+                                Rooms
+                            </button>
+                            {% elif page_context == 'bookings' %}
+                            <button
+                                class="btn btn-primary btn-sm"
+                                onclick="quickAction('review')"
+                            >
+                                <i class="fas fa-star"></i> Leave Review
+                            </button>
+                            <button
+                                class="btn btn-outline-warning btn-sm"
+                                onclick="quickAction('report')"
+                            >
+                                <i class="fas fa-edit"></i> Modify Booking
+                            </button>
+                            <button
+                                class="btn btn-outline-info btn-sm"
+                                onclick="quickAction('service')"
+                            >
+                                <i class="fas fa-concierge-bell"></i> Request
+                                Service
+                            </button>
+                            {% elif page_context == 'reviews' %}
+                            <button
+                                class="btn btn-success btn-sm"
+                                onclick="quickAction('review')"
+                            >
+                                <i class="fas fa-star"></i> Submit Review
+                            </button>
+                            <button
+                                class="btn btn-outline-primary btn-sm"
+                                onclick="
+                                    sendQuickMessage('How do I leave a review?')
+                                "
+                            >
+                                <i class="fas fa-question-circle"></i> Review
+                                Help
+                            </button>
+                            {% else %}
+                            <button
+                                class="btn btn-outline-primary btn-sm"
+                                onclick="quickAction('booking')"
+                            >
+                                <i class="fas fa-calendar-check"></i> Quick Book
+                            </button>
+                            <button
+                                class="btn btn-outline-success btn-sm"
+                                onclick="quickAction('review')"
+                            >
+                                <i class="fas fa-star"></i> Submit Review
+                            </button>
+                            <button
+                                class="btn btn-outline-warning btn-sm"
+                                onclick="quickAction('report')"
+                            >
+                                <i class="fas fa-exclamation-circle"></i> Report
+                                Issue
+                            </button>
+                            <button
+                                class="btn btn-outline-info btn-sm"
+                                onclick="quickAction('service')"
+                            >
+                                <i class="fas fa-concierge-bell"></i> Request
+                                Service
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="p-3 bg-white">
+                        <form id="chat-form" class="d-flex gap-2">
+                            <input
+                                type="text"
+                                id="message-input"
+                                class="form-control"
+                                placeholder="Type your message here..."
+                                autocomplete="off"
+                                required
+                            />
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </form>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> Press Enter
+                                to send • Type your question or use quick
+                                actions
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Modals -->
+<!-- Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar-check"></i> Quick Booking Request
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form id="booking-form">
+                    <div class="mb-3">
+                        <label class="form-label">Check-in Date</label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="booking-checkin"
+                            required
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Check-out Date</label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="booking-checkout"
+                            required
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Room Type</label>
+                        <select class="form-select" id="booking-roomtype">
+                            <option value="deluxe">Deluxe</option>
+                            <option value="suite">Suite</option>
+                            <option value="family">Family</option>
+                            <option value="vip">VIP</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Number of Guests</label>
+                        <input
+                            type="number"
+                            class="form-control"
+                            id="booking-guests"
+                            value="1"
+                            min="1"
+                            max="10"
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Additional Notes</label>
+                        <textarea
+                            class="form-control"
+                            id="booking-notes"
+                            rows="3"
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="submitBookingRequest()"
+                >
+                    Submit Request
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-star"></i> Submit Review
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form id="review-form">
+                    <div class="mb-3">
+                        <label class="form-label">Booking/Room Number</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="review-booking"
+                            placeholder="Enter booking ID or room number"
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <select class="form-select" id="review-rating">
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ Very Good</option>
+                            <option value="3">⭐⭐⭐ Good</option>
+                            <option value="2">⭐⭐ Fair</option>
+                            <option value="1">⭐ Poor</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Your Review</label>
+                        <textarea
+                            class="form-control"
+                            id="review-comment"
+                            rows="4"
+                            placeholder="Share your experience..."
+                            required
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    onclick="submitReviewRequest()"
+                >
+                    Submit Review
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-circle"></i> Report Issue
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form id="report-form">
+                    <div class="mb-3">
+                        <label class="form-label">Issue Type</label>
+                        <select class="form-select" id="report-type">
+                            <option value="maintenance">
+                                Maintenance Issue
+                            </option>
+                            <option value="cleanliness">
+                                Cleanliness Concern
+                            </option>
+                            <option value="service">Service Problem</option>
+                            <option value="billing">Billing Issue</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Room/Location</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="report-location"
+                            placeholder="Room number or location"
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea
+                            class="form-control"
+                            id="report-description"
+                            rows="4"
+                            placeholder="Please describe the issue in detail..."
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" id="report-priority">
+                            <option value="high">High - Urgent</option>
+                            <option value="medium" selected>
+                                Medium - Normal
+                            </option>
+                            <option value="low">Low - Can Wait</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-warning"
+                    onclick="submitReportRequest()"
+                >
+                    Submit Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Request Modal -->
+<div class="modal fade" id="serviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-concierge-bell"></i> Request Extra Service
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <form id="service-form">
+                    <div class="mb-3">
+                        <label class="form-label">Service Type</label>
+                        <select class="form-select" id="service-type">
+                            <option value="room_service">Room Service</option>
+                            <option value="spa">Spa & Wellness</option>
+                            <option value="restaurant">
+                                Restaurant Reservation
+                            </option>
+                            <option value="laundry">Laundry Service</option>
+                            <option value="transportation">
+                                Transportation/Taxi
+                            </option>
+                            <option value="tour">City Tour</option>
+                            <option value="other">Other Service</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Room Number</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="service-room"
+                            placeholder="Your room number"
+                            required
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Preferred Time</label>
+                        <input
+                            type="datetime-local"
+                            class="form-control"
+                            id="service-time"
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Details</label>
+                        <textarea
+                            class="form-control"
+                            id="service-details"
+                            rows="3"
+                            placeholder="Please provide any specific requirements..."
+                            required
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-info text-white"
+                    onclick="submitServiceRequest()"
+                >
+                    Request Service
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #chat-messages {
+        scroll-behavior: smooth;
+    }
+
+    .message-container {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .avatar {
+        flex-shrink: 0;
+    }
+
+    .message-content {
+        word-wrap: break-word;
+    }
+
+    .btn-sm {
+        white-space: nowrap;
+    }
+</style>
+
+<script>
+    // Store page context
+    const pageContext = "{{ page_context }}";
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        const chatMessages = document.getElementById("chat-messages");
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Initial scroll
+    scrollToBottom();
+
+    // Quick message function for context-aware buttons
+    function sendQuickMessage(message) {
+        document.getElementById("message-input").value = message;
+        document.getElementById("chat-form").dispatchEvent(new Event("submit"));
+    }
+
+    // Chat form submission
+    document
+        .getElementById("chat-form")
+        .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const input = document.getElementById("message-input");
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Disable input
+            input.disabled = true;
+
+            // Add user message to chat
+            addMessageToChat(message, "user");
+            input.value = "";
+
+            try {
+                const response = await fetch("/api/chatbot/send", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        context: pageContext,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Bot response is already added by the backend
+                    // Just refresh or add it if needed
+                    if (data.bot_message) {
+                        addMessageToChat(data.bot_message.message, "bot");
+                    }
+                } else {
+                    addMessageToChat(
+                        "Sorry, there was an error processing your message.",
+                        "bot",
+                    );
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                addMessageToChat("Sorry, there was a connection error.", "bot");
+            } finally {
+                input.disabled = false;
+                input.focus();
+            }
+        });
+
+    function addMessageToChat(message, sender) {
+        const chatMessages = document.getElementById("chat-messages");
+        const timestamp = new Date().toLocaleString();
+
+        let messageHTML = "";
+
+        if (sender === "user") {
+            messageHTML = `
+                <div class="message-container user-message mb-3">
+                    <div class="d-flex align-items-start justify-content-end">
+                        <div class="message-content bg-primary text-white p-3 rounded shadow-sm" style="max-width: 70%;">
+                            <strong>You</strong>
+                            <p class="mb-1 mt-2" style="white-space: pre-wrap;">${message}</p>
+                            <small class="opacity-75">${timestamp}</small>
+                        </div>
+                        <div class="avatar bg-secondary text-white rounded-circle ms-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            messageHTML = `
+                <div class="message-container bot-message mb-3">
+                    <div class="d-flex align-items-start">
+                        <div class="avatar bg-primary text-white rounded-circle me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content bg-white p-3 rounded shadow-sm" style="max-width: 70%;">
+                            <strong class="text-primary">Assistant</strong>
+                            <p class="mb-1 mt-2" style="white-space: pre-wrap;">${message}</p>
+                            <small class="text-muted">${timestamp}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        chatMessages.insertAdjacentHTML("beforeend", messageHTML);
+        scrollToBottom();
+    }
+
+    // Quick Actions
+    function quickAction(type) {
+        if (type === "booking") {
+            new bootstrap.Modal(document.getElementById("bookingModal")).show();
+        } else if (type === "review") {
+            new bootstrap.Modal(document.getElementById("reviewModal")).show();
+        } else if (type === "report") {
+            new bootstrap.Modal(document.getElementById("reportModal")).show();
+        } else if (type === "service") {
+            new bootstrap.Modal(document.getElementById("serviceModal")).show();
+        }
+    }
+
+    // Submit Booking Request
+    async function submitBookingRequest() {
+        const checkin = document.getElementById("booking-checkin").value;
+        const checkout = document.getElementById("booking-checkout").value;
+        const roomtype = document.getElementById("booking-roomtype").value;
+        const guests = document.getElementById("booking-guests").value;
+        const notes = document.getElementById("booking-notes").value;
+
+        if (!checkin || !checkout) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        const details = {
+            check_in: checkin,
+            check_out: checkout,
+            room_type: roomtype,
+            guests: guests,
+            notes: notes,
+        };
+
+        await submitRequest("booking", details);
+        bootstrap.Modal.getInstance(
+            document.getElementById("bookingModal"),
+        ).hide();
+        addMessageToChat(
+            `Booking request submitted for ${roomtype} room from ${checkin} to ${checkout}`,
+            "user",
+        );
+        addMessageToChat(
+            "Thank you! Your booking request has been submitted to our admin team. They will review it and get back to you shortly.",
+            "bot",
+        );
+    }
+
+    // Submit Review Request
+    async function submitReviewRequest() {
+        const booking = document.getElementById("review-booking").value;
+        const rating = document.getElementById("review-rating").value;
+        const comment = document.getElementById("review-comment").value;
+
+        if (!comment) {
+            alert("Please provide your review");
+            return;
+        }
+
+        const details = {
+            booking_id: booking,
+            rating: rating,
+            comment: comment,
+        };
+
+        await submitRequest("review", details);
+        bootstrap.Modal.getInstance(
+            document.getElementById("reviewModal"),
+        ).hide();
+        addMessageToChat(`Submitted review with ${rating} stars`, "user");
+        addMessageToChat(
+            "Thank you for your feedback! Your review has been submitted and will be reviewed by our team.",
+            "bot",
+        );
+    }
+
+    // Submit Report Request
+    async function submitReportRequest() {
+        const type = document.getElementById("report-type").value;
+        const location = document.getElementById("report-location").value;
+        const description = document.getElementById("report-description").value;
+        const priority = document.getElementById("report-priority").value;
+
+        if (!description) {
+            alert("Please describe the issue");
+            return;
+        }
+
+        const details = {
+            issue_type: type,
+            location: location,
+            description: description,
+            priority: priority,
+        };
+
+        await submitRequest("report", details);
+        bootstrap.Modal.getInstance(
+            document.getElementById("reportModal"),
+        ).hide();
+        addMessageToChat(
+            `Reported ${type} issue at ${location || "specified location"}`,
+            "user",
+        );
+        addMessageToChat(
+            "Your report has been submitted to our admin team. We will address this issue as soon as possible. Thank you for bringing this to our attention.",
+            "bot",
+        );
+    }
+
+    // Submit Service Request
+    async function submitServiceRequest() {
+        const type = document.getElementById("service-type").value;
+        const room = document.getElementById("service-room").value;
+        const time = document.getElementById("service-time").value;
+        const details_text = document.getElementById("service-details").value;
+
+        if (!room || !details_text) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        const details = {
+            service_type: type,
+            room_number: room,
+            preferred_time: time,
+            details: details_text,
+        };
+
+        await submitRequest("extra_service", details);
+        bootstrap.Modal.getInstance(
+            document.getElementById("serviceModal"),
+        ).hide();
+        addMessageToChat(
+            `Requested ${type.replace("_", " ")} for room ${room}`,
+            "user",
+        );
+        addMessageToChat(
+            "Your service request has been sent to our staff team. They will contact you shortly to fulfill your request! 🎯",
+            "bot",
+        );
+    }
+
+    // Generic request submission
+    async function submitRequest(type, details) {
+        try {
+            const response = await fetch("/api/chatbot/request", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    type: type,
+                    details: details,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                console.error("Error submitting request:", data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    // Set minimum date for booking
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("booking-checkin").setAttribute("min", today);
+    document.getElementById("booking-checkout").setAttribute("min", today);
+
+    // Update checkout min date when checkin changes
+    document
+        .getElementById("booking-checkin")
+        .addEventListener("change", function () {
+            document
+                .getElementById("booking-checkout")
+                .setAttribute("min", this.value);
+        });
+</script>
+{% endblock %}

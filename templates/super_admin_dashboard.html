@@ -1,0 +1,332 @@
+{% extends "layout.html" %} {% block title %}Super Admin Dashboard - Blissful
+Abodes{% endblock %} {% block extra_css %}
+<style>
+    .admin-dashboard {
+        min-height: calc(100vh - 200px);
+        background: #f8f9fa;
+    }
+
+    .admin-header {
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        color: white;
+        padding: 60px 20px 40px;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 40px;
+    }
+
+    .admin-header h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card h3 {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-card .number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a365d;
+        margin-bottom: 5px;
+    }
+
+    .branch-comparison {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        overflow-x: auto;
+    }
+
+    .branch-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .branch-table th {
+        background: #f8f9fa;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #1a365d;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .branch-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .branch-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .occupancy-bar {
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 5px;
+    }
+
+    .occupancy-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2d9cdb, #1a365d);
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="admin-dashboard">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="dashboard-container">
+            <h1>🏢 Super Admin Dashboard</h1>
+            <p style="font-size: 1.1rem; opacity: 0.9">
+                Consolidated view across all branches - All India Operations
+            </p>
+
+            <div class="stats-grid" style="margin-top: 30px">
+                <div
+                    class="stat-card"
+                    style="
+                        background: rgba(255, 255, 255, 0.15);
+                        backdrop-filter: blur(10px);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    "
+                >
+                    <h3 style="color: rgba(255, 255, 255, 0.9)">
+                        Total Branches
+                    </h3>
+                    <div class="number" style="color: white">
+                        {{ branches|length }}
+                    </div>
+                </div>
+                <div
+                    class="stat-card"
+                    style="
+                        background: rgba(255, 255, 255, 0.15);
+                        backdrop-filter: blur(10px);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    "
+                >
+                    <h3 style="color: rgba(255, 255, 255, 0.9)">Total Rooms</h3>
+                    <div class="number" style="color: white">
+                        {{ analytics.rooms.total if analytics.rooms else 0 }}
+                    </div>
+                </div>
+                <div
+                    class="stat-card"
+                    style="
+                        background: rgba(255, 255, 255, 0.15);
+                        backdrop-filter: blur(10px);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    "
+                >
+                    <h3 style="color: rgba(255, 255, 255, 0.9)">
+                        Total Bookings
+                    </h3>
+                    <div class="number" style="color: white">
+                        {{ analytics.bookings.total if analytics.bookings else 0
+                        }}
+                    </div>
+                </div>
+                <div
+                    class="stat-card"
+                    style="
+                        background: rgba(255, 255, 255, 0.15);
+                        backdrop-filter: blur(10px);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                    "
+                >
+                    <h3 style="color: rgba(255, 255, 255, 0.9)">Total Users</h3>
+                    <div class="number" style="color: white">
+                        {{ analytics.users.total if analytics.users else 0 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Branch Comparison Table -->
+        <div class="branch-comparison">
+            <h2
+                style="
+                    color: #1a365d;
+                    margin-bottom: 20px;
+                    font-family: &quot;Playfair Display&quot;, serif;
+                "
+            >
+                📊 Branch Performance Comparison
+            </h2>
+
+            <table class="branch-table">
+                <thead>
+                    <tr>
+                        <th>Branch</th>
+                        <th>City</th>
+                        <th>Total Rooms</th>
+                        <th>Occupancy Rate</th>
+                        <th>Total Bookings</th>
+                        <th>Revenue (₹)</th>
+                        <th>Avg Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if branch_analytics %} {% for branch_id, data in
+                    branch_analytics.items() %}
+                    <tr>
+                        <td><strong>{{ data.branch_name }}</strong></td>
+                        <td>
+                            {% for branch in branches %} {% if branch.branch_id
+                            == branch_id %} {{ branch.location.city if
+                            branch.location else branch.get('location',
+                            {}).get('city', '') }} {% endif %} {% endfor %}
+                        </td>
+                        <td>{{ data.total_rooms }}</td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                "
+                            >
+                                <div style="width: 100px">
+                                    <div class="occupancy-bar">
+                                        <div
+                                            class="occupancy-fill"
+                                            style="width: {{ data.occupancy_rate }}%;"
+                                        ></div>
+                                    </div>
+                                </div>
+                                <span style="font-weight: 600; color: #1a365d"
+                                    >{{ data.occupancy_rate }}%</span
+                                >
+                            </div>
+                        </td>
+                        <td>{{ data.total_bookings }}</td>
+                        <td style="font-weight: 600; color: #d4af37">
+                            ₹{{ "{:,.0f}".format(data.total_revenue) if
+                            data.total_revenue else 0 }}
+                        </td>
+                        <td>
+                            <span style="color: #d4af37">⭐</span> {{
+                            data.avg_rating }}
+                        </td>
+                    </tr>
+                    {% endfor %} {% else %}
+                    <tr>
+                        <td
+                            colspan="7"
+                            style="
+                                text-align: center;
+                                padding: 40px;
+                                color: #999;
+                            "
+                        >
+                            No branch data available yet
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Quick Actions -->
+        <div
+            style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+                margin-top: 30px;
+            "
+        >
+            <a href="{{ url_for('rooms') }}" style="text-decoration: none">
+                <div
+                    class="stat-card"
+                    style="cursor: pointer; transition: transform 0.3s ease"
+                    onmouseover="this.style.transform = 'translateY(-5px)'"
+                    onmouseout="this.style.transform = 'translateY(0)'"
+                >
+                    <h3>🏨 Manage Rooms</h3>
+                    <div
+                        class="number"
+                        style="font-size: 1.5rem; color: #2d9cdb"
+                    >
+                        View All Rooms
+                    </div>
+                </div>
+            </a>
+
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                style="text-decoration: none"
+            >
+                <div
+                    class="stat-card"
+                    style="cursor: pointer; transition: transform 0.3s ease"
+                    onmouseover="this.style.transform = 'translateY(-5px)'"
+                    onmouseout="this.style.transform = 'translateY(0)'"
+                >
+                    <h3>👥 Manage Users</h3>
+                    <div
+                        class="number"
+                        style="font-size: 1.5rem; color: #2d9cdb"
+                    >
+                        View All Users
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ url_for('index') }}" style="text-decoration: none">
+                <div
+                    class="stat-card"
+                    style="cursor: pointer; transition: transform 0.3s ease"
+                    onmouseover="this.style.transform = 'translateY(-5px)'"
+                    onmouseout="this.style.transform = 'translateY(0)'"
+                >
+                    <h3>🏢 View Branches</h3>
+                    <div
+                        class="number"
+                        style="font-size: 1.5rem; color: #2d9cdb"
+                    >
+                        Explore Branches
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

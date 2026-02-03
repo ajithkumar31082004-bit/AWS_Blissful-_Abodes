@@ -1,0 +1,758 @@
+{% extends "layout.html" %} {% block title %}Book {{ room.name }} - Blissful
+Abodes{% endblock %} {% block extra_css %}
+<style>
+    .booking-header {
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        color: white;
+        padding: 60px 20px;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 40px;
+    }
+
+    .booking-header-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .booking-header h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .room-meta {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .booking-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 40px;
+    }
+
+    .room-details-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .room-image {
+        height: 300px;
+        background: linear-gradient(45deg, #1a365d, #2d9cdb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 5rem;
+    }
+
+    .room-info {
+        padding: 40px;
+    }
+
+    .room-title-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 30px;
+    }
+
+    .room-price-large {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #d4af37;
+    }
+
+    .room-amenities {
+        margin: 30px 0;
+    }
+
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .amenity-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .booking-form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        color: #1a365d;
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+
+    .date-input-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .price-summary {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 30px 0;
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .price-row.total {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1a365d;
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    .terms-checkbox {
+        display: flex;
+        align-items: start;
+        gap: 10px;
+        margin: 25px 0;
+    }
+
+    .terms-checkbox input[type="checkbox"] {
+        margin-top: 5px;
+    }
+
+    .security-note {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: linear-gradient(135deg, #e3f7e7, #d4f1d8);
+        border-radius: 15px;
+        margin-top: 30px;
+        border-left: 4px solid #28a745;
+    }
+
+    .security-note i {
+        font-size: 2rem;
+        color: #28a745;
+    }
+
+    .payment-methods {
+        margin: 20px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .payment-methods label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+
+    .payment-methods input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    @media (max-width: 1024px) {
+        .booking-container {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-form-card {
+            position: static;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .booking-header {
+            padding: 40px 20px;
+        }
+
+        .booking-header h1 {
+            font-size: 2rem;
+        }
+
+        .room-meta {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .date-input-group {
+            grid-template-columns: 1fr;
+        }
+
+        .room-info {
+            padding: 25px;
+        }
+
+        .room-image {
+            height: 200px;
+        }
+    }
+</style>
+{% endblock %} {% block content %}
+<!-- Booking Header -->
+<div class="booking-header">
+    <div class="booking-header-content">
+        <h1>Book {{ room.name }}</h1>
+        <p>Complete your reservation for this luxury room</p>
+
+        <div class="room-meta">
+            <div class="meta-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ room.location }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-user-friends"></i>
+                <span>{{ room.capacity|default('2') }} guests max</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ room.availability|default('Available') }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Container -->
+<div class="booking-container">
+    <!-- Room Details -->
+    <div class="room-details-card">
+        <div class="room-image" style="position: relative">
+            {% if room.image %} {% if room.image.startswith('http') %}
+            <img
+                src="{{ room.image }}"
+                alt="{{ room.name }}"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                    this.style.display = 'none';
+                    this.nextElementSibling.style.display = 'flex';
+                "
+            />
+            {% elif room.image.startswith('/static') %}
+            <img
+                src="{{ room.image }}"
+                alt="{{ room.name }}"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                    this.style.display = 'none';
+                    this.nextElementSibling.style.display = 'flex';
+                "
+            />
+            {% else %}
+            <img
+                src="/static/uploads/rooms/{{ room.image }}"
+                alt="{{ room.name }}"
+                style="width: 100%; height: 100%; object-fit: cover"
+                onerror="
+                    this.style.display = 'none';
+                    this.nextElementSibling.style.display = 'flex';
+                "
+            />
+            {% endif %} {% endif %}
+            <div
+                style="display: {% if room.image %}none{% else %}flex{% endif %}; align-items: center; justify-content: center; width: 100%; height: 100%;"
+            >
+                <i class="fas fa-bed" style="font-size: 5rem; color: white"></i>
+            </div>
+        </div>
+
+        <div class="room-info">
+            <div class="room-title-section">
+                <div>
+                    <h2
+                        style="
+                            font-size: 2rem;
+                            color: #1a365d;
+                            margin-bottom: 10px;
+                        "
+                    >
+                        {{ room.name }}
+                    </h2>
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            color: #666;
+                        "
+                    >
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ room.location }}
+                    </div>
+                </div>
+                <div class="room-price-large">
+                    ₹{{ room.price|default('5999') }}<small
+                        style="font-size: 1rem; color: #666"
+                        >/night</small
+                    >
+                </div>
+            </div>
+
+            <div
+                style="
+                    margin: 30px 0;
+                    padding: 25px;
+                    background: #f8f9fa;
+                    border-radius: 15px;
+                "
+            >
+                <h3 style="color: #1a365d; margin-bottom: 15px">
+                    <i class="fas fa-info-circle"></i> Room Description
+                </h3>
+                <p style="color: #555; line-height: 1.6">
+                    Experience luxury and comfort in our {{ room.name|lower }}.
+                    This beautifully appointed room offers premium amenities and
+                    stunning views, perfect for a relaxing stay.
+                </p>
+            </div>
+
+            <div class="room-amenities">
+                <h3 style="color: #1a365d; margin-bottom: 20px">
+                    <i class="fas fa-star"></i> Room Amenities
+                </h3>
+
+                <div class="amenities-grid">
+                    {% if room.amenities and room.amenities is iterable %} {%
+                    for amenity in room.amenities %}
+                    <div class="amenity-item">
+                        <i
+                            class="fas fa-check-circle"
+                            style="color: #28a745"
+                        ></i>
+                        <span>{{ amenity }}</span>
+                    </div>
+                    {% endfor %} {% else %}
+                    <div class="amenity-item">
+                        <i
+                            class="fas fa-check-circle"
+                            style="color: #28a745"
+                        ></i>
+                        <span>High-speed WiFi</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i
+                            class="fas fa-check-circle"
+                            style="color: #28a745"
+                        ></i>
+                        <span>Flat-screen TV</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i
+                            class="fas fa-check-circle"
+                            style="color: #28a745"
+                        ></i>
+                        <span>Air Conditioning</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i
+                            class="fas fa-check-circle"
+                            style="color: #28a745"
+                        ></i>
+                        <span>Mini Bar</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i
+                            class="fas fa-check-circle"
+                            style="color: #28a745"
+                        ></i>
+                        <span>Coffee Maker</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i
+                            class="fas fa-check-circle"
+                            style="color: #28a745"
+                        ></i>
+                        <span>Private Bathroom</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Booking Policy -->
+            <div
+                style="
+                    margin-top: 40px;
+                    padding-top: 25px;
+                    border-top: 2px solid #f0f0f0;
+                "
+            >
+                <h3 style="color: #1a365d; margin-bottom: 15px">
+                    <i class="fas fa-file-contract"></i> Booking Policy
+                </h3>
+                <ul style="color: #666; list-style: none; padding-left: 0">
+                    <li
+                        style="
+                            margin-bottom: 10px;
+                            display: flex;
+                            align-items: start;
+                            gap: 10px;
+                        "
+                    >
+                        <i class="fas fa-check" style="color: #28a745"></i>
+                        Free cancellation up to 24 hours before check-in
+                    </li>
+                    <li
+                        style="
+                            margin-bottom: 10px;
+                            display: flex;
+                            align-items: start;
+                            gap: 10px;
+                        "
+                    >
+                        <i class="fas fa-check" style="color: #28a745"></i>
+                        No prepayment needed - pay at the property
+                    </li>
+                    <li
+                        style="
+                            margin-bottom: 10px;
+                            display: flex;
+                            align-items: start;
+                            gap: 10px;
+                        "
+                    >
+                        <i class="fas fa-check" style="color: #28a745"></i>
+                        Check-in from 3:00 PM, check-out by 11:00 AM
+                    </li>
+                    <li style="display: flex; align-items: start; gap: 10px">
+                        <i class="fas fa-check" style="color: #28a745"></i>
+                        Instant confirmation upon booking
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="booking-form-card">
+        <h2 class="form-title">Complete Your Booking</h2>
+
+        <form
+            action="{{ url_for('book_room', room_id=room.room_id) }}"
+            method="POST"
+            id="bookingForm"
+        >
+            <!-- Dates -->
+            <div class="form-group">
+                <label for="check_in"
+                    ><i class="fas fa-calendar-alt"></i> Check-in Date</label
+                >
+                <input
+                    type="date"
+                    id="check_in"
+                    name="check_in"
+                    class="form-input"
+                    required
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="check_out"
+                    ><i class="fas fa-calendar-alt"></i> Check-out Date</label
+                >
+                <input
+                    type="date"
+                    id="check_out"
+                    name="check_out"
+                    class="form-input"
+                    required
+                />
+            </div>
+
+            <!-- Guest Information -->
+            <div class="form-group">
+                <label for="guest_name"
+                    ><i class="fas fa-user"></i> Full Name</label
+                >
+                <input
+                    type="text"
+                    id="guest_name"
+                    name="guest_name"
+                    class="form-input"
+                    value="{{ user.name }}"
+                    required
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="guest_email"
+                    ><i class="fas fa-envelope"></i> Email Address</label
+                >
+                <input
+                    type="email"
+                    id="guest_email"
+                    name="guest_email"
+                    class="form-input"
+                    value="{{ user.email }}"
+                    required
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="guest_phone"
+                    ><i class="fas fa-phone"></i> Phone Number</label
+                >
+                <input
+                    type="tel"
+                    id="guest_phone"
+                    name="guest_phone"
+                    class="form-input"
+                    placeholder="+91-98765-43210"
+                    required
+                />
+            </div>
+
+            <!-- Special Requests -->
+            <div class="form-group">
+                <label for="special_requests"
+                    ><i class="fas fa-comment-alt"></i> Special Requests
+                    (Optional)</label
+                >
+                <textarea
+                    id="special_requests"
+                    name="special_requests"
+                    class="form-input"
+                    rows="3"
+                    placeholder="Any special requirements or requests..."
+                ></textarea>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="price-summary">
+                <h3
+                    style="
+                        color: #1a365d;
+                        margin-bottom: 20px;
+                        font-size: 1.1rem;
+                    "
+                >
+                    <i class="fas fa-receipt"></i> Price Summary
+                </h3>
+
+                <div class="price-row">
+                    <span
+                        >₹{{ room.price|default('5999') }} x
+                        <span id="nightsCount">1</span> night</span
+                    >
+                    <span id="roomTotal"
+                        >₹{{ room.price|default('5999') }}</span
+                    >
+                </div>
+
+                <div class="price-row">
+                    <span>Service Fee (10%)</span>
+                    <span id="serviceFee"
+                        >₹{{ (room.price|default(5999) * 0.1)|round|int }}</span
+                    >
+                </div>
+
+                <div class="price-row">
+                    <span>GST (18%)</span>
+                    <span id="taxes"
+                        >₹{{ (room.price|default(5999) * 0.18)|round|int
+                        }}</span
+                    >
+                </div>
+
+                <div class="price-row total">
+                    <span>Total</span>
+                    <span id="totalPrice"
+                        >₹{{ (room.price|default(5999) * 1.28)|round|int
+                        }}</span
+                    >
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="payment-methods">
+                <h4 style="color: #1a365d; margin-bottom: 15px">
+                    <i class="fas fa-credit-card"></i> Payment Method
+                </h4>
+                <label>
+                    <input
+                        type="radio"
+                        name="payment_method"
+                        value="razorpay"
+                        checked
+                    />
+                    <i class="fas fa-cc-mastercard"></i> Razorpay (Card/Net
+                    Banking)
+                </label>
+                <label>
+                    <input type="radio" name="payment_method" value="upi" />
+                    <i class="fas fa-mobile-alt"></i> UPI (Google Pay, PhonePe,
+                    Paytm)
+                </label>
+                <label>
+                    <input
+                        type="radio"
+                        name="payment_method"
+                        value="bank_transfer"
+                    />
+                    <i class="fas fa-university"></i> Bank Transfer
+                </label>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="terms-checkbox">
+                <input type="checkbox" id="terms" name="terms" required />
+                <label for="terms" style="font-size: 0.9rem; color: #666">
+                    I agree to the
+                    <a href="#" style="color: #2d9cdb">terms and conditions</a>
+                    and
+                    <a href="#" style="color: #2d9cdb">cancellation policy</a>.
+                    I understand that my booking will be confirmed instantly and
+                    I will receive an email confirmation.
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-primary btn-large btn-block">
+                <i class="fas fa-lock"></i> Confirm Booking
+            </button>
+
+            <!-- Security Note -->
+            <div class="security-note">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>Secure Booking</strong>
+                    <p style="margin: 5px 0 0; font-size: 0.9rem; color: #555">
+                        Your information is secure with SSL encryption. Powered
+                        by AWS secure cloud services.
+                    </p>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        const checkInInput = document.getElementById('check_in');
+        const checkOutInput = document.getElementById('check_out');
+
+        // Set min dates
+        checkInInput.min = today;
+        checkInInput.value = today;
+
+        // Set check-out to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        checkOutInput.min = tomorrow.toISOString().split('T')[0];
+        checkOutInput.value = tomorrow.toISOString().split('T')[0];
+
+        // Update check-out min when check-in changes
+        checkInInput.addEventListener('change', function() {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOutInput.min = nextDay.toISOString().split('T')[0];
+
+            if (checkOutInput.value < this.value) {
+                checkOutInput.value = nextDay.toISOString().split('T')[0];
+            }
+
+            updatePrice();
+        });
+
+        checkOutInput.addEventListener('change', updatePrice);
+
+        // Calculate nights and update price
+        function updatePrice() {
+            if (!checkInInput.value || !checkOutInput.value) return;
+
+            const checkIn = new Date(checkInInput.value);
+            const checkOut = new Date(checkOutInput.value);
+
+            // Calculate nights
+            const timeDiff = checkOut.getTime() - checkIn.getTime();
+            const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if (nights > 0) {
+                document.getElementById('nightsCount').textContent = nights;
+
+                const roomPrice = {{ room.price|default(5999) }};
+                const roomTotal = roomPrice * nights;
+                const serviceFee = roomTotal * 0.1;
+                const taxes = roomTotal * 0.18;
+                const total = roomTotal + serviceFee + taxes;
+
+                document.getElementById('roomTotal').textContent = '₹' + roomTotal.toFixed(0);
+                document.getElementById('serviceFee').textContent = '₹' + serviceFee.toFixed(0);
+                document.getElementById('taxes').textContent = '₹' + taxes.toFixed(0);
+                document.getElementById('totalPrice').textContent = '₹' + total.toFixed(0);
+            }
+        }
+
+        // Initial price calculation
+        updatePrice();
+
+        // Form validation
+        const form = document.getElementById('bookingForm');
+        form.addEventListener('submit', function(e) {
+            const checkIn = new Date(checkInInput.value);
+            const checkOut = new Date(checkOutInput.value);
+            const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 3600 * 24));
+
+            const phone = document.getElementById('guest_phone').value;
+            const phoneRegex = /^(\+91[-.\s]?)?[789]\d{9}$/;
+
+            if (!phoneRegex.test(phone)) {
+                e.preventDefault();
+                showToast('Please enter a valid Indian phone number starting with +91', 'warning');
+                document.getElementById('guest_phone').focus();
+                return;
+            }
+
+            if (nights <= 0) {
+                e.preventDefault();
+                showToast('Check-out date must be after check-in date', 'warning');
+                checkOutInput.focus();
+            }
+
+            if (!document.getElementById('terms').checked) {
+                e.preventDefault();
+                showToast('Please accept the terms and conditions', 'warning');
+            }
+        });
+    });
+</script>
+{% endblock %}

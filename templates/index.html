@@ -1,0 +1,757 @@
+{% extends "layout.html" %} {% block title %}Welcome to Blissful Abodes - Luxury
+Hotel Booking{% endblock %} {% block extra_css %}
+<style>
+    .hero {
+        background:
+            linear-gradient(rgba(26, 54, 93, 0.9), rgba(26, 54, 93, 0.7)),
+            url("https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070");
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 120px 20px;
+        text-align: center;
+        border-radius: 0 0 40px 40px;
+        margin-bottom: 60px;
+    }
+
+    .hero h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        max-width: 700px;
+        margin: 0 auto 40px;
+        opacity: 0.9;
+    }
+
+    .search-widget {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin: -60px auto 0;
+        position: relative;
+        z-index: 10;
+    }
+
+    .search-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin: 60px auto;
+        max-width: 1200px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        color: #d4af37;
+        margin-bottom: 15px;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a365d;
+        margin: 10px 0;
+    }
+
+    .featured-rooms {
+        padding: 60px 20px;
+        background: #f8f9fa;
+        border-radius: 40px;
+        margin: 60px 0;
+    }
+
+    .section-title {
+        text-align: center;
+        font-family: "Playfair Display", serif;
+        font-size: 2.5rem;
+        color: #1a365d;
+        margin-bottom: 50px;
+    }
+
+    .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .room-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease;
+    }
+
+    .room-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .room-image {
+        height: 200px;
+        background: linear-gradient(45deg, #1a365d, #2d9cdb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 4rem;
+    }
+
+    .room-content {
+        padding: 25px;
+    }
+
+    .room-title {
+        font-size: 1.5rem;
+        color: #1a365d;
+        margin-bottom: 10px;
+    }
+
+    .room-location {
+        color: #666;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .room-price {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #d4af37;
+        margin: 15px 0;
+    }
+
+    .cta-section {
+        text-align: center;
+        padding: 80px 20px;
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        color: white;
+        border-radius: 40px;
+        margin: 60px 0;
+    }
+
+    .cta-title {
+        font-family: "Playfair Display", serif;
+        font-size: 2.8rem;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .hero {
+            padding: 80px 20px;
+        }
+
+        .search-widget {
+            margin: -40px 20px 0;
+            padding: 20px;
+        }
+
+        .search-form {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %} {% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>{{ _('Experience Bliss Across India') }}</h1>
+        <p>
+            {{ _('Multi-branch luxury hotels across India. Choose your perfect
+            destination and book your stay.') }}
+        </p>
+    </div>
+</section>
+
+<!-- Prominent View All Rooms Button -->
+<div
+    class="container"
+    style="
+        text-align: center;
+        margin: -30px auto 40px;
+        position: relative;
+        z-index: 100;
+    "
+>
+    <a
+        href="{{ url_for('rooms') }}"
+        class="btn-primary"
+        style="
+            display: inline-block;
+            padding: 20px 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 50px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, #d4af37, #f4d160);
+            color: #1a365d;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        "
+        onmouseover="
+            this.style.transform = 'scale(1.05)';
+            this.style.boxShadow = '0 20px 45px rgba(0, 0, 0, 0.3)';
+        "
+        onmouseout="
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.2)';
+        "
+    >
+        <i class="fas fa-door-open"></i> VIEW ALL ROOMS
+    </a>
+</div>
+
+<style>
+    @keyframes pulse {
+        0%,
+        100% {
+            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.3);
+        }
+        50% {
+            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.6);
+        }
+    }
+</style>
+
+<!-- Branch Selection Section -->
+<section style="padding: 60px 20px; background: #f8f9fa">
+    <div class="container">
+        <h2 class="section-title" style="margin-bottom: 40px">
+            {{ _('Select Your Branch') }}
+        </h2>
+
+        <div
+            class="branches-grid"
+            style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 30px;
+                max-width: 1400px;
+                margin: 0 auto;
+            "
+        >
+            {% if branches %} {% for branch in branches %}
+            <div
+                class="branch-card"
+                style="
+                    background: white;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                    transition: transform 0.3s ease;
+                    cursor: pointer;
+                "
+                onclick="window.location.href='{{ url_for('branch_detail', branch_id=branch.branch_id) }}'"
+            >
+                <div
+                    class="branch-image"
+                    style="
+                        height: 180px;
+                        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 4rem;
+                    "
+                >
+                    {% if branch.branch_id == 'BLISS-MUM' %}🌊 {% elif
+                    branch.branch_id == 'BLISS-DEL' %}🕌 {% elif
+                    branch.branch_id == 'BLISS-BLR' %}💻 {% elif
+                    branch.branch_id == 'BLISS-GOA' %}🏖️ {% elif
+                    branch.branch_id == 'BLISS-JPR' %}🏰 {% else %}🏨{% endif %}
+                </div>
+                <div class="branch-content" style="padding: 25px">
+                    <h3
+                        style="
+                            font-size: 1.4rem;
+                            color: #1a365d;
+                            margin-bottom: 10px;
+                        "
+                    >
+                        {{ branch.get('name', 'Branch') }}
+                    </h3>
+                    <p
+                        style="
+                            color: #666;
+                            margin-bottom: 15px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        "
+                    >
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ branch.get('city', 'India') }}
+                    </p>
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-top: 20px;
+                        "
+                    >
+                        <div>
+                            <span style="font-size: 0.9rem; color: #999"
+                                >Starting from</span
+                            >
+                            <div
+                                style="
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
+                                    color: #d4af37;
+                                "
+                            >
+                                ₹{{ branch.starting_price if
+                                branch.starting_price else
+                                branch.get('starting_price', 4500) }}/night
+                            </div>
+                        </div>
+                        <a
+                            href="{{ url_for('branch_detail', branch_id=branch.branch_id) }}"
+                            class="btn-primary"
+                            style="padding: 10px 20px; text-decoration: none"
+                        >
+                            <i class="fas fa-arrow-right"></i> Explore
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %} {% else %}
+            <!-- Default branches if none loaded -->
+            <div
+                class="branch-card"
+                style="
+                    background: white;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                "
+            >
+                <div
+                    class="branch-image"
+                    style="
+                        height: 180px;
+                        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 4rem;
+                    "
+                >
+                    🌊
+                </div>
+                <div class="branch-content" style="padding: 25px">
+                    <h3
+                        style="
+                            font-size: 1.4rem;
+                            color: #1a365d;
+                            margin-bottom: 10px;
+                        "
+                    >
+                        Blissful Abodes Mumbai
+                    </h3>
+                    <p style="color: #666; margin-bottom: 15px">
+                        <i class="fas fa-map-marker-alt"></i> Mumbai,
+                        Maharashtra
+                    </p>
+                    <div
+                        style="
+                            font-size: 1.5rem;
+                            font-weight: 700;
+                            color: #d4af37;
+                            margin-top: 20px;
+                        "
+                    >
+                        ₹4,500/night
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Search Widget -->
+<div class="container">
+    <div class="search-widget">
+        <h3 style="text-align: center; margin-bottom: 25px; color: #1a365d">
+            {{ _('Search Availability') }}
+        </h3>
+        <form action="{{ url_for('rooms') }}" method="GET" class="search-form">
+            <div class="form-group">
+                <label for="branch_id">{{ _('Select Branch') }}</label>
+                <select name="branch_id" id="branch_id" class="form-control">
+                    <option value="">{{ _('All Branches') }}</option>
+                    {% if branches %} {% for branch in branches %}
+                    <option value="{{ branch.branch_id }}">
+                        {{ branch.get('name', branch.branch_id) }}
+                    </option>
+                    {% endfor %} {% endif %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="check_in">{{ _('Check-in') }}</label>
+                <input
+                    type="date"
+                    id="check_in"
+                    name="check_in"
+                    class="form-control"
+                    required
+                />
+            </div>
+            <div class="form-group">
+                <label for="check_out">{{ _('Check-out') }}</label>
+                <input
+                    type="date"
+                    id="check_out"
+                    name="check_out"
+                    class="form-control"
+                    required
+                />
+            </div>
+            <div class="form-group">
+                <label for="guests">{{ _('Guests') }}</label>
+                <select name="guests" id="guests" class="form-control">
+                    <option value="1">1 {{ _('Adult') }}</option>
+                    <option value="2">2 {{ _('Adults') }}</option>
+                    <option value="3">3 {{ _('Adults') }}</option>
+                    <option value="4">4+ {{ _('Adults') }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button
+                    type="submit"
+                    class="btn-primary btn-block"
+                    style="margin-top: 28px"
+                >
+                    <i class="fas fa-search"></i> {{ _('Search Availability') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="container">
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number" id="happyGuests">5000+</div>
+            <div class="stat-label">Happy Guests</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-number" id="successfulBookings">12000+</div>
+            <div class="stat-label">Successful Bookings</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-hotel"></i>
+            </div>
+            <div class="stat-number" id="luxuryRooms">150+</div>
+            <div class="stat-label">Luxury Rooms</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Real-time Updates</div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Rooms -->
+<section class="featured-rooms">
+    <div class="container">
+        <h2 class="section-title">Featured Luxury Rooms</h2>
+
+        <div class="rooms-grid">
+            {% if featured_rooms %} {% for room in featured_rooms %}
+            <div class="room-card">
+                <div class="room-image">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <div class="room-content">
+                    <h3 class="room-title">{{ room.name }}</h3>
+                    <div class="room-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ room.location }}
+                    </div>
+                    <div class="room-price">
+                        ₹{{ room.price|default('5999') }}/night
+                    </div>
+                    <div class="room-status">
+                        <span class="badge badge-success">
+                            <i class="fas fa-check-circle"></i> {{
+                            room.availability|default('Available') }}
+                        </span>
+                    </div>
+                    <a
+                        href="{{ url_for('book_room', room_id=room.room_id) }}"
+                        class="btn-secondary btn-block"
+                        style="margin-top: 15px"
+                    >
+                        <i class="fas fa-book"></i> Book Now
+                    </a>
+                </div>
+            </div>
+            {% endfor %} {% else %}
+            <!-- Sample rooms for demo -->
+            <div class="room-card">
+                <div
+                    class="room-image"
+                    style="background: linear-gradient(45deg, #1a365d, #d4af37)"
+                >
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="room-content">
+                    <h3 class="room-title">Presidential Suite</h3>
+                    <div class="room-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Mumbai, Maharashtra
+                    </div>
+                    <div class="room-price">₹22,000/night</div>
+                    <div class="room-status">
+                        <span class="badge badge-success">
+                            <i class="fas fa-check-circle"></i> Available
+                        </span>
+                    </div>
+                    <a
+                        href="#"
+                        class="btn-secondary btn-block"
+                        style="margin-top: 15px"
+                    >
+                        <i class="fas fa-book"></i> Book Now
+                    </a>
+                </div>
+            </div>
+
+            <div class="room-card">
+                <div
+                    class="room-image"
+                    style="background: linear-gradient(45deg, #2d9cdb, #1a365d)"
+                >
+                    <i class="fas fa-water"></i>
+                </div>
+                <div class="room-content">
+                    <h3 class="room-title">Ocean View Deluxe</h3>
+                    <div class="room-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Goa
+                    </div>
+                    <div class="room-price">₹12,000/night</div>
+                    <div class="room-status">
+                        <span class="badge badge-success">
+                            <i class="fas fa-check-circle"></i> Available
+                        </span>
+                    </div>
+                    <a
+                        href="#"
+                        class="btn-secondary btn-block"
+                        style="margin-top: 15px"
+                    >
+                        <i class="fas fa-book"></i> Book Now
+                    </a>
+                </div>
+            </div>
+
+            <div class="room-card">
+                <div
+                    class="room-image"
+                    style="background: linear-gradient(45deg, #d4af37, #2d9cdb)"
+                >
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <div class="room-content">
+                    <h3 class="room-title">Mountain Retreat Suite</h3>
+                    <div class="room-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Himachal Pradesh
+                    </div>
+                    <div class="room-price">₹17,500/night</div>
+                    <div class="room-status">
+                        <span class="badge badge-success">
+                            <i class="fas fa-check-circle"></i> Available
+                        </span>
+                    </div>
+                    <a
+                        href="#"
+                        class="btn-secondary btn-block"
+                        style="margin-top: 15px"
+                    >
+                        <i class="fas fa-book"></i> Book Now
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center; margin-top: 40px">
+            <a href="{{ url_for('rooms') }}" class="btn-primary btn-large">
+                <i class="fas fa-door-open"></i> View All Rooms
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2 class="cta-title">Ready for Your Dream Stay?</h2>
+        <p
+            style="
+                font-size: 1.2rem;
+                max-width: 700px;
+                margin: 0 auto 40px;
+                opacity: 0.9;
+            "
+        >
+            Join thousands of satisfied guests who have experienced luxury with
+            Blissful Abodes. Real-time booking, instant confirmations, and
+            AWS-powered reliability.
+        </p>
+
+        {% if not session.user_id %}
+        <a href="{{ url_for('register') }}" class="btn-light btn-large">
+            <i class="fas fa-user-plus"></i> Create Your Account
+        </a>
+        {% else %}
+        <a href="{{ url_for('rooms') }}" class="btn-light btn-large">
+            <i class="fas fa-search"></i> Book Your Next Stay
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Trust Indicators -->
+<div class="container" style="text-align: center; padding: 40px 0">
+    <h3 style="color: #666; margin-bottom: 30px; font-weight: 500">
+        <i class="fas fa-shield-alt"></i> Powered by AWS Secure Cloud Services
+    </h3>
+    <div
+        style="
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        "
+    >
+        <div class="tech-badge"><i class="fab fa-aws"></i> Amazon EC2</div>
+        <div class="tech-badge"><i class="fab fa-aws"></i> DynamoDB</div>
+        <div class="tech-badge"><i class="fab fa-aws"></i> SNS</div>
+        <div class="tech-badge"><i class="fab fa-aws"></i> IAM Security</div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+    // Initialize counters when page loads
+    document.addEventListener("DOMContentLoaded", function () {
+        // Set today's date as min for check-in (Indian format)
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("check_in").min = today;
+
+        // Update check-out min date when check-in changes
+        document
+            .getElementById("check_in")
+            .addEventListener("change", function () {
+                document.getElementById("check_out").min = this.value;
+            });
+
+        // Animate stats
+        setTimeout(() => {
+            animateCounter(
+                document.getElementById("happyGuests"),
+                0,
+                5000,
+                2000,
+            );
+            animateCounter(
+                document.getElementById("successfulBookings"),
+                0,
+                12000,
+                2000,
+            );
+            animateCounter(
+                document.getElementById("luxuryRooms"),
+                0,
+                150,
+                1500,
+            );
+        }, 500);
+    });
+
+    function animateCounter(element, start, end, duration) {
+        let startTime = null;
+
+        function animation(currentTime) {
+            if (!startTime) startTime = currentTime;
+            const progress = currentTime - startTime;
+            const increment = Math.floor((end - start) * (progress / duration));
+
+            if (progress < duration) {
+                element.textContent = start + increment + "+";
+                requestAnimationFrame(animation);
+            } else {
+                element.textContent = end + "+";
+            }
+        }
+
+        requestAnimationFrame(animation);
+    }
+</script>
+{% endblock %}

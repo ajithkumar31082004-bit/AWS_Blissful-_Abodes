@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Room - Blissful Abodes</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 700px;
+        padding: 40px;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 500;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="file"],
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.3s;
+      }
+
+      input[type="text"]:focus,
+      input[type="number"]:focus,
+      input[type="file"]:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+
+      .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .image-preview {
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      .image-preview img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 5px;
+        border: 2px solid #ddd;
+        padding: 5px;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 20px;
+        border: 2px dashed #667eea;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background-color: #f8f9ff;
+      }
+
+      .file-input-label:hover {
+        border-color: #764ba2;
+        background-color: #f0f1ff;
+      }
+
+      .file-input-label.dragover {
+        border-color: #764ba2;
+        background-color: #e8e9ff;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .file-name {
+        color: #666;
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+      }
+
+      button {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-cancel {
+        background: #f0f0f0;
+        color: #333;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-cancel:hover {
+        background: #e0e0e0;
+      }
+
+      .help-text {
+        font-size: 12px;
+        color: #999;
+        margin-top: 5px;
+      }
+
+      .required {
+        color: #e74c3c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🏨 Create New Room</h1>
+      <p class="subtitle">Add a new room to the Blissful Abodes inventory</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <form
+        method="POST"
+        action="{{ url_for('create_room') }}"
+        enctype="multipart/form-data"
+      >
+        <!-- Room Image (URL or Upload) -->
+        <div class="form-group">
+          <label>Room Image</label>
+          <div class="help-text" style="margin-bottom: 10px;">
+            Upload an image OR paste an image URL (open-source). If both are provided, URL wins.
+          </div>
+
+          <label for="image_url">Image URL (optional)</label>
+          <input
+            type="text"
+            id="image_url"
+            name="image_url"
+            placeholder="https://... (paste an open-source image URL)"
+          />
+          <div class="help-text">Example: an Unsplash image URL</div>
+
+          <div class="file-input-wrapper">
+            <label for="room_image" class="file-input-label" id="dropZone">
+              <div>📸 Drag & drop image here or click to select</div>
+              <div class="help-text">PNG, JPG, JPEG, GIF, WEBP (Max 5MB)</div>
+            </label>
+            <input
+              type="file"
+              id="room_image"
+              name="room_image"
+              accept=".png,.jpg,.jpeg,.gif,.webp"
+            />
+          </div>
+          <div class="image-preview" id="imagePreview"></div>
+          <div class="file-name" id="fileName"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="name">Room Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            placeholder="e.g., Deluxe Suite"
+          />
+          <div class="help-text">Enter the name/title of the room</div>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location <span class="required">*</span></label>
+          <select
+            id="location"
+            name="location"
+            required
+            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
+          >
+            <option value="">-- Select Location --</option>
+            <option value="Mumbai, Maharashtra">Mumbai, Maharashtra</option>
+            <option value="Delhi, NCR">Delhi, NCR</option>
+            <option value="Bangalore, Karnataka">Bangalore, Karnataka</option>
+            <option value="Goa">Goa</option>
+            <option value="Chennai, Tamil Nadu">Chennai, Tamil Nadu</option>
+          </select>
+          <div class="help-text">Select the branch location</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price"
+              >Price per Night (₹) <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              id="price"
+              name="price"
+              required
+              placeholder="0.00"
+              step="0.01"
+              min="0.01"
+            />
+            <div class="help-text">Must be greater than 0</div>
+          </div>
+
+          <div class="form-group">
+            <label for="capacity"
+              >Capacity (Guests) <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              id="capacity"
+              name="capacity"
+              required
+              placeholder="1"
+              min="1"
+              step="1"
+            />
+            <div class="help-text">Number of guests</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Amenities</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="WiFi" style="width: auto;">
+              <span>📶 WiFi</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="TV" style="width: auto;">
+              <span>📺 TV</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="AC" style="width: auto;">
+              <span>❄️ Air Conditioning</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Mini Bar" style="width: auto;">
+              <span>🍷 Mini Bar</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Balcony" style="width: auto;">
+              <span>🌳 Balcony</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Jacuzzi" style="width: auto;">
+              <span>🛁 Jacuzzi</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="King Bed" style="width: auto;">
+              <span>🛏️ King Bed</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+              <input type="checkbox" name="amenities" value="Room Service" style="width: auto;">
+              <span>🍽️ Room Service</span>
+            </label>
+          </div>
+          <div class="help-text">Select all amenities that apply</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="room_type">Room Type</label>
+            <select
+              id="room_type"
+              name="room_type"
+              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;"
+            >
+              <option value="">-- Select Type --</option>
+              <option value="single">Single Room</option>
+              <option value="double">Double Room</option>
+              <option value="family">Family Suite</option>
+              <option value="couple">Couple/Romantic</option>
+              <option value="vip">VIP/Presidential</option>
+            </select>
+            <div class="help-text">Select the room category</div>
+          </div>
+          <div class="form-group">
+            <label for="virtual_tour_360_url">360° Tour Image URL (optional)</label>
+            <input
+              type="text"
+              id="virtual_tour_360_url"
+              name="virtual_tour_360_url"
+              placeholder="https://... (equirectangular 360 panorama image)"
+            />
+            <div class="help-text">If empty, we auto-pick a demo 360° image.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="matterport_url">Matterport URL (optional)</label>
+          <input
+            type="text"
+            id="matterport_url"
+            name="matterport_url"
+            placeholder="https://my.matterport.com/show/?m=XXXXX"
+          />
+        </div>
+
+        <div class="buttons">
+          <a href="{{ url_for('admin_dashboard') }}" class="btn-cancel"
+            >Cancel</a
+          >
+          <button type="submit" class="btn-submit">Create Room</button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById("room_image");
+      const dropZone = document.getElementById("dropZone");
+      const imagePreview = document.getElementById("imagePreview");
+      const fileName = document.getElementById("fileName");
+
+      // Click to select file
+      dropZone.addEventListener("click", () => fileInput.click());
+
+      // Drag and drop
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+      });
+
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          fileInput.files = files;
+          handleFileSelect();
+        }
+      });
+
+      // File selection change
+      fileInput.addEventListener("change", handleFileSelect);
+
+      function handleFileSelect() {
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+
+          // Display file name
+          fileName.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+
+          // Display preview
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    </script>
+  </body>
+</html>

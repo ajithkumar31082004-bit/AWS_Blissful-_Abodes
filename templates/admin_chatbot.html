@@ -1,0 +1,1019 @@
+{% extends "base.html" %} {% block title %}Admin Chatbot Management - Blissful
+Abodes{% endblock %} {% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-3">
+                <i class="fas fa-robot"></i> Chatbot Management Dashboard
+            </h2>
+            <p class="text-muted">Manage all chat requests from users</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">
+                                Total Requests
+                            </h6>
+                            <h2 class="mt-2 mb-0">{{ all_requests|length }}</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">
+                                Pending
+                            </h6>
+                            <h2 class="mt-2 mb-0">
+                                {{ pending_requests|length }}
+                            </h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">
+                                Processing
+                            </h6>
+                            <h2 class="mt-2 mb-0">
+                                {{ processing_requests|length }}
+                            </h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div
+                        class="d-flex justify-content-between align-items-center"
+                    >
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">
+                                Completed
+                            </h6>
+                            <h2 class="mt-2 mb-0">
+                                {{ all_requests|selectattr('status', 'equalto',
+                                'completed')|list|length }}
+                            </h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Type Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check text-primary fs-2"></i>
+                    <h5 class="mt-2">Booking Requests</h5>
+                    <h3>{{ booking_requests|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-star text-warning fs-2"></i>
+                    <h5 class="mt-2">Review Requests</h5>
+                    <h3>{{ review_requests|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-circle text-danger fs-2"></i>
+                    <h5 class="mt-2">Report Requests</h5>
+                    <h3>{{ report_requests|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-concierge-bell text-info fs-2"></i>
+                    <h5 class="mt-2">Service Requests</h5>
+                    <h3>{{ extra_service_requests|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Actions -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <label class="form-label">Filter by Status</label>
+                            <select
+                                class="form-select"
+                                id="filter-status"
+                                onchange="filterRequests()"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Filter by Type</label>
+                            <select
+                                class="form-select"
+                                id="filter-type"
+                                onchange="filterRequests()"
+                            >
+                                <option value="">All Types</option>
+                                <option value="booking">Booking</option>
+                                <option value="review">Review</option>
+                                <option value="report">Report</option>
+                                <option value="extra_service">
+                                    Extra Service
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Search</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="search-input"
+                                placeholder="Search by user or ID..."
+                                onkeyup="filterRequests()"
+                            />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button
+                                class="btn btn-primary w-100"
+                                onclick="refreshRequests()"
+                            >
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button
+                                class="btn btn-info w-100"
+                                onclick="viewAllChats()"
+                            >
+                                <i class="fas fa-comments"></i> All Chats
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button
+                                class="btn btn-danger w-100"
+                                onclick="viewAllReports()"
+                            >
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Reports
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i> All Chat Requests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-striped table-hover"
+                            id="requests-table"
+                        >
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>User</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Staff Assigned</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in
+                                all_requests|sort(attribute='created_at',
+                                reverse=True) %}
+                                <tr
+                                    data-status="{{ req.status }}"
+                                    data-type="{{ req.request_type }}"
+                                    data-user="{{ req.user_id }}"
+                                >
+                                    <td>
+                                        <small class="font-monospace"
+                                            >{{ req.request_id[:8] }}...</small
+                                        >
+                                    </td>
+                                    <td>
+                                        <small>{{ req.user_id[:8] }}...</small>
+                                    </td>
+                                    <td>
+                                        {% if req.request_type == 'booking' %}
+                                        <span class="badge bg-primary"
+                                            ><i
+                                                class="fas fa-calendar-check"
+                                            ></i>
+                                            Booking</span
+                                        >
+                                        {% elif req.request_type == 'review' %}
+                                        <span class="badge bg-warning text-dark"
+                                            ><i class="fas fa-star"></i>
+                                            Review</span
+                                        >
+                                        {% elif req.request_type == 'report' %}
+                                        <span class="badge bg-danger"
+                                            ><i
+                                                class="fas fa-exclamation-circle"
+                                            ></i>
+                                            Report</span
+                                        >
+                                        {% elif req.request_type ==
+                                        'extra_service' %}
+                                        <span class="badge bg-info"
+                                            ><i
+                                                class="fas fa-concierge-bell"
+                                            ></i>
+                                            Service</span
+                                        >
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if req.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark"
+                                            >Pending</span
+                                        >
+                                        {% elif req.status == 'processing' %}
+                                        <span class="badge bg-info"
+                                            >Processing</span
+                                        >
+                                        {% elif req.status == 'completed' %}
+                                        <span class="badge bg-success"
+                                            >Completed</span
+                                        >
+                                        {% elif req.status == 'cancelled' %}
+                                        <span class="badge bg-secondary"
+                                            >Cancelled</span
+                                        >
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small
+                                            >{{ req.created_at[:19] if
+                                            req.created_at else 'N/A' }}</small
+                                        >
+                                    </td>
+                                    <td>
+                                        {% if req.staff_assigned %}
+                                        <small class="text-success"
+                                            ><i class="fas fa-user-check"></i>
+                                            {{ req.staff_assigned[:8]
+                                            }}...</small
+                                        >
+                                        {% else %}
+                                        <small class="text-muted"
+                                            >Not assigned</small
+                                        >
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button
+                                                class="btn btn-outline-primary"
+                                                onclick="viewRequest('{{ req.request_id }}')"
+                                            >
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button
+                                                class="btn btn-outline-success"
+                                                onclick="updateRequestStatus('{{ req.request_id }}', 'processing')"
+                                            >
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                            <button
+                                                class="btn btn-outline-info"
+                                                onclick="updateRequestStatus('{{ req.request_id }}', 'completed')"
+                                            >
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button
+                                                class="btn btn-outline-danger"
+                                                onclick="deleteRequest('{{ req.request_id }}')"
+                                            >
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Detail Modal -->
+<div class="modal fade" id="requestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle"></i> Request Details
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+            <div class="modal-body" id="request-details">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Close
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    onclick="processRequest()"
+                >
+                    <i class="fas fa-check"></i> Mark as Completed
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Chats Modal -->
+<div class="modal fade" id="allChatsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-comments"></i> All User Chats
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> View and monitor all user
+                    chat conversations
+                </div>
+                <div class="mb-3">
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="chat-search"
+                        placeholder="Search chats..."
+                        onkeyup="filterChats()"
+                    />
+                </div>
+                <div
+                    id="all-chats-content"
+                    style="max-height: 500px; overflow-y: auto"
+                >
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Reports Modal -->
+<div class="modal fade" id="allReportsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> All Reports &
+                    Issues
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <strong>Priority Reports:</strong> Review and address guest
+                    issues immediately
+                </div>
+                <div class="mb-3">
+                    <div class="btn-group w-100" role="group">
+                        <button
+                            class="btn btn-outline-danger"
+                            onclick="filterReportsByPriority('all')"
+                        >
+                            All
+                        </button>
+                        <button
+                            class="btn btn-outline-danger"
+                            onclick="filterReportsByPriority('high')"
+                        >
+                            High Priority
+                        </button>
+                        <button
+                            class="btn btn-outline-warning"
+                            onclick="filterReportsByPriority('medium')"
+                        >
+                            Medium
+                        </button>
+                        <button
+                            class="btn btn-outline-info"
+                            onclick="filterReportsByPriority('low')"
+                        >
+                            Low
+                        </button>
+                    </div>
+                </div>
+                <div
+                    id="all-reports-content"
+                    style="max-height: 500px; overflow-y: auto"
+                >
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-warning"
+                    onclick="exportReports()"
+                >
+                    <i class="fas fa-download"></i> Export Reports
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentRequestId = null;
+
+    function filterRequests() {
+        const statusFilter = document
+            .getElementById("filter-status")
+            .value.toLowerCase();
+        const typeFilter = document
+            .getElementById("filter-type")
+            .value.toLowerCase();
+        const searchTerm = document
+            .getElementById("search-input")
+            .value.toLowerCase();
+
+        const rows = document.querySelectorAll("#requests-table tbody tr");
+
+        rows.forEach((row) => {
+            const status = row.getAttribute("data-status");
+            const type = row.getAttribute("data-type");
+            const text = row.textContent.toLowerCase();
+
+            let show = true;
+
+            if (statusFilter && status !== statusFilter) {
+                show = false;
+            }
+
+            if (typeFilter && type !== typeFilter) {
+                show = false;
+            }
+
+            if (searchTerm && !text.includes(searchTerm)) {
+                show = false;
+            }
+
+            row.style.display = show ? "" : "none";
+        });
+    }
+
+    async function viewRequest(requestId) {
+        currentRequestId = requestId;
+        const modal = new bootstrap.Modal(
+            document.getElementById("requestModal"),
+        );
+        modal.show();
+
+        try {
+            const response = await fetch(
+                `/api/admin/chatbot/request/${requestId}`,
+            );
+            const data = await response.json();
+
+            if (data.success) {
+                const req = data.request;
+                const details = req.details || {};
+
+                let detailsHTML = `
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Request ID:</strong><br>
+                            <code>${req.request_id}</code>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>User ID:</strong><br>
+                            <code>${req.user_id}</code>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Type:</strong><br>
+                            <span class="badge bg-primary">${req.request_type}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Status:</strong><br>
+                            <span class="badge bg-${getStatusColor(req.status)}">${req.status}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Created:</strong><br>
+                            ${req.created_at}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Updated:</strong><br>
+                            ${req.updated_at}
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>Request Details:</h6>
+                    <div class="bg-light p-3 rounded">
+                        <pre class="mb-0">${JSON.stringify(details, null, 2)}</pre>
+                    </div>
+                `;
+
+                if (req.admin_notes) {
+                    detailsHTML += `
+                        <hr>
+                        <h6>Admin Notes:</h6>
+                        <div class="alert alert-info">
+                            ${req.admin_notes}
+                        </div>
+                    `;
+                }
+
+                if (req.staff_assigned) {
+                    detailsHTML += `
+                        <hr>
+                        <h6>Assigned Staff:</h6>
+                        <div class="alert alert-success">
+                            <i class="fas fa-user-check"></i> ${req.staff_assigned}
+                        </div>
+                    `;
+                }
+
+                document.getElementById("request-details").innerHTML =
+                    detailsHTML;
+            } else {
+                document.getElementById("request-details").innerHTML = `
+                    <div class="alert alert-danger">
+                        Error loading request details: ${data.error}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById("request-details").innerHTML = `
+                <div class="alert alert-danger">
+                    Error loading request details
+                </div>
+            `;
+        }
+    }
+
+    async function updateRequestStatus(requestId, status) {
+        if (
+            !confirm(`Are you sure you want to mark this request as ${status}?`)
+        ) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `/api/admin/chatbot/request/${requestId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ status: status }),
+                },
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert("Request updated successfully!");
+                location.reload();
+            } else {
+                alert("Error updating request: " + data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error updating request");
+        }
+    }
+
+    async function deleteRequest(requestId) {
+        if (
+            !confirm(
+                "Are you sure you want to delete this request? This action cannot be undone.",
+            )
+        ) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `/api/admin/chatbot/request/${requestId}`,
+                {
+                    method: "DELETE",
+                },
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert("Request deleted successfully!");
+                location.reload();
+            } else {
+                alert("Error deleting request: " + data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error deleting request");
+        }
+    }
+
+    async function processRequest() {
+        if (!currentRequestId) return;
+
+        await updateRequestStatus(currentRequestId, "completed");
+        bootstrap.Modal.getInstance(
+            document.getElementById("requestModal"),
+        ).hide();
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            pending: "warning",
+            processing: "info",
+            completed: "success",
+            cancelled: "secondary",
+        };
+        return colors[status] || "secondary";
+    }
+
+    function refreshRequests() {
+        location.reload();
+    }
+
+    // View all chats
+    async function viewAllChats() {
+        const modal = new bootstrap.Modal(
+            document.getElementById("allChatsModal"),
+        );
+        modal.show();
+
+        const contentDiv = document.getElementById("all-chats-content");
+        contentDiv.innerHTML =
+            '<div class="text-center"><div class="spinner-border"></div></div>';
+
+        try {
+            // Mock data - replace with actual API call
+            const chats = [
+                {
+                    user: "John Doe",
+                    message: "Need help with booking",
+                    timestamp: "2024-01-15 10:30",
+                    unread: true,
+                },
+                {
+                    user: "Jane Smith",
+                    message: "Room service request",
+                    timestamp: "2024-01-15 11:45",
+                    unread: false,
+                },
+                {
+                    user: "Mike Johnson",
+                    message: "Check-out question",
+                    timestamp: "2024-01-15 12:20",
+                    unread: true,
+                },
+            ];
+
+            let html = '<div class="list-group">';
+            chats.forEach((chat) => {
+                html += `
+                    <div class="list-group-item ${chat.unread ? "border-primary" : ""}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="fas fa-user"></i> ${chat.user}
+                                    ${chat.unread ? '<span class="badge bg-primary ms-2">New</span>' : ""}
+                                </h6>
+                                <p class="mb-1">${chat.message}</p>
+                                <small class="text-muted">${chat.timestamp}</small>
+                            </div>
+                            <button class="btn btn-sm btn-primary" onclick="respondToChat('${chat.user}')">
+                                <i class="fas fa-reply"></i> Respond
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += "</div>";
+
+            contentDiv.innerHTML = html;
+        } catch (error) {
+            contentDiv.innerHTML =
+                '<div class="alert alert-danger">Error loading chats</div>';
+        }
+    }
+
+    // View all reports
+    async function viewAllReports() {
+        const modal = new bootstrap.Modal(
+            document.getElementById("allReportsModal"),
+        );
+        modal.show();
+
+        const contentDiv = document.getElementById("all-reports-content");
+        contentDiv.innerHTML =
+            '<div class="text-center"><div class="spinner-border"></div></div>';
+
+        try {
+            const response = await fetch(
+                "/api/admin/chatbot/requests?type=report",
+            );
+            const data = await response.json();
+
+            if (data.success) {
+                let html = "";
+                data.requests.forEach((report) => {
+                    const details = report.details || {};
+                    const priorityClass =
+                        details.priority === "high"
+                            ? "danger"
+                            : details.priority === "medium"
+                              ? "warning"
+                              : "info";
+
+                    html += `
+                        <div class="card mb-3 border-${priorityClass}" data-priority="${details.priority}">
+                            <div class="card-header bg-${priorityClass} text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong><i class="fas fa-exclamation-circle"></i> ${details.issue_type || "Issue"}</strong>
+                                        <span class="badge bg-light text-dark ms-2">${details.priority || "medium"} Priority</span>
+                                    </div>
+                                    <span class="badge bg-light text-dark">${report.status}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Location:</strong> ${details.location || "Not specified"}</p>
+                                <p><strong>Description:</strong> ${details.description || "No description"}</p>
+                                <p><strong>Reported:</strong> <small>${report.created_at}</small></p>
+                                ${report.admin_notes ? `<div class="alert alert-info mt-2"><strong>Admin Notes:</strong> ${report.admin_notes}</div>` : ""}
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-sm btn-success" onclick="resolveReport('${report.request_id}')">
+                                    <i class="fas fa-check"></i> Resolve
+                                </button>
+                                <button class="btn btn-sm btn-primary" onclick="viewRequest('${report.request_id}')">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="assignStaff('${report.request_id}')">
+                                    <i class="fas fa-user-plus"></i> Assign Staff
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (data.requests.length === 0) {
+                    html =
+                        '<div class="alert alert-success text-center"><i class="fas fa-check-circle"></i> No open reports! All issues resolved.</div>';
+                }
+
+                contentDiv.innerHTML = html;
+            } else {
+                contentDiv.innerHTML =
+                    '<div class="alert alert-danger">Error loading reports</div>';
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            contentDiv.innerHTML =
+                '<div class="alert alert-danger">Error loading reports</div>';
+        }
+    }
+
+    // Filter reports by priority
+    function filterReportsByPriority(priority) {
+        const reports = document.querySelectorAll("#all-reports-content .card");
+        reports.forEach((report) => {
+            if (
+                priority === "all" ||
+                report.getAttribute("data-priority") === priority
+            ) {
+                report.style.display = "";
+            } else {
+                report.style.display = "none";
+            }
+        });
+    }
+
+    // Filter chats
+    function filterChats() {
+        const searchTerm = document
+            .getElementById("chat-search")
+            .value.toLowerCase();
+        const chatItems = document.querySelectorAll(
+            "#all-chats-content .list-group-item",
+        );
+
+        chatItems.forEach((item) => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchTerm) ? "" : "none";
+        });
+    }
+
+    // Respond to chat
+    function respondToChat(user) {
+        alert(`Opening chat with ${user}...`);
+        // Implement actual chat response functionality
+    }
+
+    // Resolve report
+    async function resolveReport(requestId) {
+        if (!confirm("Mark this report as resolved?")) return;
+
+        try {
+            const response = await fetch(
+                `/api/admin/chatbot/request/${requestId}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: "completed" }),
+                },
+            );
+
+            const data = await response.json();
+            if (data.success) {
+                alert("Report resolved successfully!");
+                viewAllReports(); // Refresh the list
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error resolving report");
+        }
+    }
+
+    // Assign staff
+    function assignStaff(requestId) {
+        const staffId = prompt("Enter staff user ID to assign:");
+        if (!staffId) return;
+
+        fetch(`/api/admin/chatbot/request/${requestId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ staff_assigned: staffId }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    alert("Staff assigned successfully!");
+                    viewAllReports();
+                } else {
+                    alert("Error: " + data.error);
+                }
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                alert("Error assigning staff");
+            });
+    }
+
+    // Export reports
+    function exportReports() {
+        alert("Exporting reports to CSV... (Feature coming soon)");
+        // Implement CSV export functionality
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(refreshRequests, 30000);
+</script>
+
+<style>
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+</style>
+{% endblock %}

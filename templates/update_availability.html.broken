@@ -1,0 +1,343 @@
+{% extends "base.html" %} {% block title %}Update Room Status - Staff
+Dashboard{% endblock %} {% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-door-open"></i> Update Room Status
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages =
+                    get_flashed_messages(with_categories=true) %} {% if messages
+                    %} {% for category, message in messages %}
+                    <div
+                        class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+                        role="alert"
+                    >
+                        {{ message }}
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                        ></button>
+                    </div>
+                    {% endfor %} {% endif %} {% endwith %}
+
+                    <!-- Room Information -->
+                    <div class="alert alert-light border mb-4">
+                        <h6 class="mb-3">
+                            <i class="fas fa-info-circle"></i> Room Details
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Room:</strong> {{ room.name }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Location:</strong> {{ room.location
+                                    }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Capacity:</strong> {{ room.capacity
+                                    }} guests
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Price:</strong> ₹{{ room.price
+                                    }}/night
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Update Form -->
+                    <form method="POST" class="mb-4">
+                        <div class="mb-4">
+                            <label for="availability" class="form-label">
+                                <strong
+                                    ><i class="fas fa-check-circle"></i> Room
+                                    Status *</strong
+                                >
+                            </label>
+
+                            <!-- Status Options -->
+                            <div class="status-grid">
+                                <!-- Available -->
+                                <div class="status-option">
+                                    <input
+                                        type="radio"
+                                        id="available"
+                                        name="availability"
+                                        value="available"
+                                        {%
+                                        if
+                                        room.availability=""
+                                        ="available"
+                                        %}checked{%
+                                        endif
+                                        %}
+                                        required
+                                    />
+                                    <label
+                                        for="available"
+                                        class="status-label available-label"
+                                    >
+                                        <i
+                                            class="fas fa-check-circle fa-2x mb-2"
+                                        ></i>
+                                        <div class="status-text">Available</div>
+                                        <small>Ready for guests</small>
+                                    </label>
+                                </div>
+
+                                <!-- Occupied -->
+                                <div class="status-option">
+                                    <input
+                                        type="radio"
+                                        id="occupied"
+                                        name="availability"
+                                        value="occupied"
+                                        {%
+                                        if
+                                        room.availability=""
+                                        ="occupied"
+                                        %}checked{%
+                                        endif
+                                        %}
+                                    />
+                                    <label
+                                        for="occupied"
+                                        class="status-label occupied-label"
+                                    >
+                                        <i
+                                            class="fas fa-user-check fa-2x mb-2"
+                                        ></i>
+                                        <div class="status-text">Occupied</div>
+                                        <small>Guest checked in</small>
+                                    </label>
+                                </div>
+
+                                <!-- Cleaning -->
+                                <div class="status-option">
+                                    <input
+                                        type="radio"
+                                        id="cleaning"
+                                        name="availability"
+                                        value="cleaning"
+                                        {%
+                                        if
+                                        room.availability=""
+                                        ="cleaning"
+                                        %}checked{%
+                                        endif
+                                        %}
+                                    />
+                                    <label
+                                        for="cleaning"
+                                        class="status-label cleaning-label"
+                                    >
+                                        <i class="fas fa-broom fa-2x mb-2"></i>
+                                        <div class="status-text">Cleaning</div>
+                                        <small>In housekeeping</small>
+                                    </label>
+                                </div>
+
+                                <!-- Maintenance -->
+                                <div class="status-option">
+                                    <input
+                                        type="radio"
+                                        id="maintenance"
+                                        name="availability"
+                                        value="maintenance"
+                                        {%
+                                        if
+                                        room.availability=""
+                                        ="maintenance"
+                                        %}checked{%
+                                        endif
+                                        %}
+                                    />
+                                    <label
+                                        for="maintenance"
+                                        class="status-label maintenance-label"
+                                    >
+                                        <i class="fas fa-tools fa-2x mb-2"></i>
+                                        <div class="status-text">
+                                            Maintenance
+                                        </div>
+                                        <small>Under repair</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2 pt-3">
+                            <button
+                                type="submit"
+                                class="btn btn-primary btn-lg flex-grow-1"
+                            >
+                                <i class="fas fa-save"></i> Update Status
+                            </button>
+                            <a
+                                href="{{ url_for('staff_dashboard') }}"
+                                class="btn btn-secondary btn-lg flex-grow-1"
+                            >
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Status Guide -->
+                    <div class="alert alert-info mt-4">
+                        <h6>
+                            <i class="fas fa-question-circle"></i> Status Guide
+                        </h6>
+                        <ul class="mb-0 small">
+                            <li>
+                                <strong>Available:</strong> Room is clean and
+                                ready for new guests
+                            </li>
+                            <li>
+                                <strong>Occupied:</strong> Guest is currently
+                                staying in the room
+                            </li>
+                            <li>
+                                <strong>Cleaning:</strong> Housekeeping is
+                                preparing/cleaning the room
+                            </li>
+                            <li>
+                                <strong>Maintenance:</strong> Room is under
+                                repair or maintenance
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        border: none;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0;
+        padding: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    /* Status Grid */
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .status-option {
+        position: relative;
+    }
+
+    .status-option input[type="radio"] {
+        display: none;
+    }
+
+    .status-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+        text-decoration: none;
+        color: #666;
+        min-height: 150px;
+    }
+
+    .status-option input[type="radio"]:checked + label {
+        border-width: 3px;
+        transform: scale(1.05);
+    }
+
+    /* Available Status */
+    .available-label {
+        color: #28a745;
+    }
+
+    .status-option input[value="available"]:checked + .available-label {
+        background-color: #d4edda;
+        border-color: #28a745;
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Occupied Status */
+    .occupied-label {
+        color: #ffc107;
+    }
+
+    .status-option input[value="occupied"]:checked + .occupied-label {
+        background-color: #fff3cd;
+        border-color: #ffc107;
+        box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+    }
+
+    /* Cleaning Status */
+    .cleaning-label {
+        color: #17a2b8;
+    }
+
+    .status-option input[value="cleaning"]:checked + .cleaning-label {
+        background-color: #d1ecf1;
+        border-color: #17a2b8;
+        box-shadow: 0 0 10px rgba(23, 162, 184, 0.3);
+    }
+
+    /* Maintenance Status */
+    .maintenance-label {
+        color: #dc3545;
+    }
+
+    .status-option input[value="maintenance"]:checked + .maintenance-label {
+        background-color: #f8d7da;
+        border-color: #dc3545;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+    }
+
+    .status-text {
+        font-weight: 600;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .status-label small {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        opacity: 0.8;
+    }
+
+    .btn {
+        border-radius: 5px;
+        font-weight: 600;
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block title %}Hotel Services - Blissful Abodes{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">Premium Hotel Services</h1>
+        <p class="lead text-muted">Enhance your stay with our exclusive services</p>
+    </div>
+
+    <!-- Branch Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('services_list') }}">
+                        <div class="input-group">
+                            <label class="input-group-text"><i class="fas fa-map-marker-alt"></i></label>
+                            <select name="branch_id" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Locations</option>
+                                {% for branch in branches %}
+                                <option value="{{ branch.branch_id }}"
+                                        {% if request.args.get('branch_id') == branch.branch_id %}selected{% endif %}>
+                                    {{ branch.name }} - {{ branch.city }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group w-100" role="group">
+                <button class="btn btn-outline-primary active" onclick="filterServices('all')">
+                    <i class="fas fa-th-large"></i> All Services
+                </button>
+                <button class="btn btn-outline-primary" onclick="filterServices('spa')">
+                    <i class="fas fa-spa"></i> Spa
+                </button>
+                <button class="btn btn-outline-primary" onclick="filterServices('restaurant')">
+                    <i class="fas fa-utensils"></i> Dining
+                </button>
+                <button class="btn btn-outline-primary" onclick="filterServices('transportation')">
+                    <i class="fas fa-car"></i> Transport
+                </button>
+                <button class="btn btn-outline-primary" onclick="filterServices('tour')">
+                    <i class="fas fa-map-signs"></i> Tours
+                </button>
+                <button class="btn btn-outline-primary" onclick="filterServices('laundry')">
+                    <i class="fas fa-tshirt"></i> Laundry
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services List -->
+    {% if services %}
+    <div class="row" id="servicesContainer">
+        {% for service in services %}
+        <div class="col-md-6 col-lg-4 mb-4 service-card" data-service-type="{{ service.service_type }}">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient text-white service-header-{{ service.service_type }}">
+                    <h5 class="mb-0">
+                        {% if service.service_type == 'spa' %}
+                            <i class="fas fa-spa"></i>
+                        {% elif service.service_type == 'restaurant' %}
+                            <i class="fas fa-utensils"></i>
+                        {% elif service.service_type == 'transportation' %}
+                            <i class="fas fa-car"></i>
+                        {% elif service.service_type == 'tour' %}
+                            <i class="fas fa-map-signs"></i>
+                        {% elif service.service_type == 'laundry' %}
+                            <i class="fas fa-tshirt"></i>
+                        {% else %}
+                            <i class="fas fa-concierge-bell"></i>
+                        {% endif %}
+                        {{ service.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ service.description }}</p>
+
+                    <div class="service-details mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-clock text-primary"></i> Duration:</span>
+                            <strong>{{ service.duration_minutes }} minutes</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-rupee-sign text-success"></i> Price:</span>
+                            <strong class="text-success">₹{{ service.price }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-info-circle text-info"></i> Status:</span>
+                            {% if service.available %}
+                            <span class="badge bg-success">Available</span>
+                            {% else %}
+                            <span class="badge bg-danger">Unavailable</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if service.available %}
+                    <button class="btn btn-primary w-100"
+                            onclick="openBookingModal('{{ service.service_id }}', '{{ service.name }}', {{ service.price }})">
+                        <i class="fas fa-calendar-check"></i> Book Now
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary w-100" disabled>
+                        <i class="fas fa-times"></i> Currently Unavailable
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle fa-3x mb-3"></i>
+        <h4>No Services Available</h4>
+        <p>We're currently setting up services at this location. Please check back soon!</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Service Booking Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalServiceName">Book Service</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="serviceBookingForm">
+                <div class="modal-body">
+                    <input type="hidden" id="service_id" name="service_id">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-calendar"></i> Booking Date
+                        </label>
+                        <input type="date"
+                               class="form-control"
+                               id="booking_date"
+                               name="booking_date"
+                               min="{{ now().strftime('%Y-%m-%d') }}"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-clock"></i> Preferred Time
+                        </label>
+                        <input type="time"
+                               class="form-control"
+                               id="booking_time"
+                               name="booking_time"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-hotel"></i> Link to Room Booking (Optional)
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="booking_id"
+                               name="booking_id"
+                               placeholder="Enter your booking ID if applicable">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-sticky-note"></i> Special Requests / Notes
+                        </label>
+                        <textarea class="form-control"
+                                  id="notes"
+                                  name="notes"
+                                  rows="3"
+                                  placeholder="Any special requirements or preferences..."></textarea>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>Price:</strong> <span id="modalServicePrice"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Confirm Booking
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let bookingModal;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        bookingModal = new bootstrap.Modal(document.getElementById('bookingModal'));
+    });
+
+    function openBookingModal(serviceId, serviceName, servicePrice) {
+        document.getElementById('service_id').value = serviceId;
+        document.getElementById('modalServiceName').textContent = 'Book ' + serviceName;
+        document.getElementById('modalServicePrice').textContent = '₹' + servicePrice;
+        bookingModal.show();
+    }
+
+    // Service booking form submission
+    document.getElementById('serviceBookingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const serviceId = document.getElementById('service_id').value;
+
+        fetch(`/service/${serviceId}/book`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bookingModal.hide();
+                alert('Service booked successfully! Check your service bookings for details.');
+                this.reset();
+            } else {
+                alert('Error booking service: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+    });
+
+    // Filter services by type
+    function filterServices(type) {
+        const cards = document.querySelectorAll('.service-card');
+        const buttons = document.querySelectorAll('.btn-group button');
+
+        // Update active button
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.closest('button').classList.add('active');
+
+        // Filter cards
+        cards.forEach(card => {
+            if (type === 'all' || card.dataset.serviceType === type) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+<style>
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    }
+
+    .service-header-spa {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .service-header-restaurant {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .service-header-transportation {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .service-header-tour {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .service-header-laundry {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+        border: none;
+    }
+
+    .service-details {
+        border-top: 2px solid #f0f0f0;
+        border-bottom: 2px solid #f0f0f0;
+        padding: 15px 0;
+    }
+
+    .btn-group button {
+        border-radius: 0;
+        font-size: 0.9rem;
+        padding: 10px 15px;
+    }
+
+    .btn-group button:first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    .btn-group button:last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-direction: column;
+        }
+
+        .btn-group button {
+            border-radius: 5px !important;
+            margin-bottom: 5px;
+        }
+    }
+</style>
+{% endblock %}

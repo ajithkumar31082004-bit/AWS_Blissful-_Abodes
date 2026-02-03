@@ -1,0 +1,956 @@
+{% extends "layout.html" %} {% block title %}Browse Rooms - Blissful Abodes{%
+endblock %} {% block extra_css %}
+<style>
+    .rooms-header {
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        color: white;
+        padding: 60px 20px 40px;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 40px;
+    }
+
+    .rooms-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-family: "Playfair Display", serif;
+    }
+
+    .rooms-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .rooms-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 30px;
+    }
+
+    .filters-sidebar {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .filter-section {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+
+    .filter-title {
+        font-weight: 600;
+        color: #1a365d;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .filter-option input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .filter-option label {
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .price-range-container {
+        margin-top: 15px;
+    }
+
+    .price-range-container input[type="range"] {
+        width: 100%;
+    }
+
+    .price-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        font-weight: 600;
+        color: #1a365d;
+    }
+
+    .clear-filters-btn {
+        width: 100%;
+        padding: 12px;
+        background: #f0f0f0;
+        border: none;
+        border-radius: 8px;
+        color: #333;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .clear-filters-btn:hover {
+        background: #e0e0e0;
+    }
+
+    .rooms-main {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .results-count {
+        font-weight: 600;
+        color: #1a365d;
+        font-size: 1.1rem;
+    }
+
+    .sort-controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .sort-controls select {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .room-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .room-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .room-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border-color: #2d9cdb;
+    }
+
+    .room-image-container {
+        position: relative;
+        height: 220px;
+        background: #f0f0f0;
+        overflow: hidden;
+    }
+
+    .room-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .room-availability-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .availability-available {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .availability-unavailable {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .room-info {
+        padding: 20px;
+    }
+
+    .room-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1a365d;
+        margin-bottom: 8px;
+    }
+
+    .room-location {
+        color: #666;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 12px;
+    }
+
+    .room-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #d4af37;
+        margin-bottom: 12px;
+    }
+
+    .room-price small {
+        font-size: 0.7rem;
+        color: #999;
+    }
+
+    .book-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .book-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(26, 54, 93, 0.4);
+    }
+
+    .book-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #666;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+    }
+
+    .empty-state p {
+        color: #999;
+        max-width: 500px;
+        margin: 0 auto 30px;
+    }
+
+    @media (max-width: 1024px) {
+        .rooms-container {
+            grid-template-columns: 1fr;
+        }
+
+        .filters-sidebar {
+            position: static;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .rooms-header h1 {
+            font-size: 2rem;
+        }
+
+        .room-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .results-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %} {% block content %}
+<!-- Header -->
+<div class="rooms-header">
+    <div style="max-width: 1200px; margin: 0 auto">
+        <h1>🏨 Browse Our Luxury Rooms</h1>
+        <p>Find the perfect room for your stay at Blissful Abodes</p>
+    </div>
+</div>
+
+<!-- Main Container -->
+<div class="rooms-container">
+    <!-- Filters Sidebar -->
+    <div class="filters-sidebar">
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-sliders-h"></i> Filters
+            </div>
+        </div>
+
+        <!-- Branch Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-building"></i> Branch
+            </div>
+            <form
+                method="GET"
+                action="{{ url_for('rooms') }}"
+                id="branchFilterForm"
+            >
+                <select
+                    name="branch_id"
+                    class="form-control"
+                    style="
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                        margin-bottom: 10px;
+                    "
+                    onchange="submitBranchFilter()"
+                >
+                    <option value="">All Branches</option>
+                    {% if branches %} 
+                    {% for branch in branches %}
+                    <option
+                        value="{{ branch.branch_id }}"
+                        {% if filters.branch_id == branch.branch_id %}selected{% endif %}
+                    >
+                        {% if branch.name %}
+                            {{ branch.name }}
+                        {% elif branch.get('name') %}
+                            {{ branch.get('name') }}
+                        {% else %}
+                            {{ branch.branch_id }}
+                        {% endif %}
+                    </option>
+                    {% endfor %} 
+                    {% endif %}
+                </select>
+                {% if filters.check_in %}<input
+                    type="hidden"
+                    name="check_in"
+                    value="{{ filters.check_in }}"
+                />{% endif %} 
+                {% if filters.check_out %}<input
+                    type="hidden"
+                    name="check_out"
+                    value="{{ filters.check_out }}"
+                />{% endif %} 
+                {% if filters.room_type %}<input
+                    type="hidden"
+                    name="room_type"
+                    value="{{ filters.room_type }}"
+                />{% endif %}
+            </form>
+            
+            {% if selected_branch %}
+            <div
+                style="
+                    margin-top: 15px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, #e3f2fd, #f0f7ff);
+                    border-left: 4px solid #2d9cdb;
+                    border-radius: 8px;
+                    font-size: 0.9rem;
+                "
+            >
+                <strong style="color: #1a365d; display: block; margin-bottom: 5px;">
+                    {% if selected_branch.name %}
+                        {{ selected_branch.name }}
+                    {% elif selected_branch.get('name') %}
+                        {{ selected_branch.get('name') }}
+                    {% else %}
+                        {{ selected_branch.branch_id }}
+                    {% endif %}
+                </strong>
+                <span style="color: #666; display: block;">
+                    <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>
+                    {% if selected_branch.city %}
+                        {{ selected_branch.city }}
+                    {% elif selected_branch.get('city') %}
+                        {{ selected_branch.get('city') }}
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Price Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-tag"></i> Price Range
+            </div>
+            <div class="price-range-container">
+                <input
+                    type="range"
+                    id="priceRange"
+                    min="0"
+                    max="100000"
+                    value="100000"
+                    step="1000"
+                />
+                <div class="price-display">
+                    <span>₹0</span>
+                    <span>-</span>
+                    <span id="maxPrice">₹1,00,000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capacity Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-users"></i> Room Capacity
+            </div>
+            <div class="price-range-container">
+                <input
+                    type="range"
+                    id="capacityRange"
+                    min="1"
+                    max="8"
+                    value="1"
+                    step="1"
+                />
+                <div class="price-display">
+                    <span>Minimum Capacity:</span>
+                    <span id="maxCapacity">1+ guests</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-calendar-check"></i> Availability
+            </div>
+            <div class="filter-option">
+                <input
+                    type="radio"
+                    id="avail-all"
+                    name="availability"
+                    value="all"
+                    checked
+                />
+                <label for="avail-all">All Rooms</label>
+            </div>
+            <div class="filter-option">
+                <input
+                    type="radio"
+                    id="avail-available"
+                    name="availability"
+                    value="available"
+                />
+                <label for="avail-available">Available Now</label>
+            </div>
+            <div class="filter-option">
+                <input
+                    type="radio"
+                    id="avail-soon"
+                    name="availability"
+                    value="soon"
+                />
+                <label for="avail-soon">Coming Soon</label>
+            </div>
+        </div>
+
+        <!-- Rating Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-star"></i> Guest Rating
+            </div>
+            <div class="filter-option">
+                <input
+                    type="radio"
+                    id="rating-all"
+                    name="rating"
+                    value="all"
+                    checked
+                />
+                <label for="rating-all">All Ratings</label>
+            </div>
+            <div class="filter-option">
+                <input type="radio" id="rating-4" name="rating" value="4" />
+                <label for="rating-4">⭐⭐⭐⭐+ (4 & up)</label>
+            </div>
+            <div class="filter-option">
+                <input type="radio" id="rating-3" name="rating" value="3" />
+                <label for="rating-3">⭐⭐⭐+ (3 & up)</label>
+            </div>
+            <div class="filter-option">
+                <input type="radio" id="rating-5" name="rating" value="5" />
+                <label for="rating-5">⭐⭐⭐⭐⭐ (5 stars)</label>
+            </div>
+        </div>
+
+        <!-- Amenities Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-check-circle"></i> Amenities
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px">
+                <label
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+                    "
+                >
+                    <input type="checkbox" name="amenity" value="WiFi" />
+                    <span><i class="fas fa-wifi"></i> WiFi</span>
+                </label>
+                <label
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+                    "
+                >
+                    <input type="checkbox" name="amenity" value="AC" />
+                    <span
+                        ><i class="fas fa-snowflake"></i> Air Conditioning</span
+                    >
+                </label>
+                <label
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+                    "
+                >
+                    <input type="checkbox" name="amenity" value="TV" />
+                    <span><i class="fas fa-tv"></i> Television</span>
+                </label>
+                <label
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+                    "
+                >
+                    <input type="checkbox" name="amenity" value="Kitchen" />
+                    <span><i class="fas fa-utensils"></i> Kitchen</span>
+                </label>
+                <label
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+                    "
+                >
+                    <input type="checkbox" name="amenity" value="Jacuzzi" />
+                    <span><i class="fas fa-hot-tub"></i> Jacuzzi</span>
+                </label>
+                <label
+                    style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        cursor: pointer;
+                    "
+                >
+                    <input type="checkbox" name="amenity" value="Balcony" />
+                    <span><i class="fas fa-tree"></i> Balcony</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Clear Filters -->
+        <button class="clear-filters-btn" onclick="clearFilters()">
+            <i class="fas fa-redo"></i> Clear All Filters
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="rooms-main">
+        <!-- Results Header -->
+        <div class="results-header">
+            <div class="results-count">
+                <span id="roomCount">{{ rooms|length }}</span> rooms found
+            </div>
+            <div class="sort-controls">
+                <label for="sortBy" style="font-weight: 600">Sort by:</label>
+                <select id="sortBy" onchange="sortRooms(this.value)">
+                    <option value="popular">Most Popular</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="name_asc">Name: A to Z</option>
+                    <option value="rating_high">Rating: High to Low</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Room Grid -->
+        <div class="room-grid" id="roomGrid">
+            {% if rooms %} {% for room in rooms %}
+            <div
+                class="room-card"
+                data-room-id="{{ room.room_id }}"
+                data-price="{{ room.price }}"
+                data-name="{{ room.name }}"
+                data-available="{{ room.availability == 'available' }}"
+                data-capacity="{{ room.capacity|default(1) }}"
+                data-amenities="{% for amenity in room.amenities|default([]) %}{{ amenity }}{% if not loop.last %},{% endif %}{% endfor %}"
+                data-rating="4.8"
+            >
+                <div class="room-image-container">
+                    {% if room.image %} {% if room.image.startswith('http') %}
+                    <img
+                        src="{{ room.image }}"
+                        alt="{{ room.name }}"
+                        class="room-image"
+                        loading="lazy"
+                        onerror="this.src = '/placeholder-room-image'"
+                    />
+                    {% elif room.image.startswith('/static') %}
+                    <img
+                        src="{{ room.image }}"
+                        alt="{{ room.name }}"
+                        class="room-image"
+                        loading="lazy"
+                        onerror="this.src = '/placeholder-room-image'"
+                    />
+                    {% else %}
+                    <img
+                        src="/static/uploads/rooms/{{ room.image }}"
+                        alt="{{ room.name }}"
+                        class="room-image"
+                        loading="lazy"
+                        onerror="this.src = '/placeholder-room-image'"
+                    />
+                    {% endif %} {% else %}
+                    <img
+                        src="/placeholder-room-image"
+                        alt="{{ room.name }}"
+                        class="room-image"
+                        loading="lazy"
+                    />
+                    {% endif %}
+                    <div
+                        class="room-availability-badge {% if room.availability == 'available' %}availability-available{% else %}availability-unavailable{% endif %}"
+                    >
+                        <i
+                            class="fas fa-{% if room.availability == 'available' %}check-circle{% else %}times-circle{% endif %}"
+                        ></i>
+                        {{ room.availability|capitalize }}
+                    </div>
+                </div>
+
+                <div class="room-info">
+                    <h3 class="room-name">{{ room.name }}</h3>
+
+                    <div class="room-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ room.location }}
+                    </div>
+
+                    <div class="room-price">
+                        ₹{{ "%.2f"|format(room.price) }}
+                        <small>/night</small>
+                    </div>
+
+                    {% if room.availability == 'available' %}
+                    <a
+                        href="{{ url_for('book_room', room_id=room.room_id) }}"
+                        class="book-btn"
+                    >
+                        <i class="fas fa-check"></i> Book Now
+                    </a>
+                    {% else %}
+                    <button class="book-btn" disabled>
+                        <i class="fas fa-lock"></i> Not Available
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %} {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>No Rooms Available</h3>
+                <p>
+                    No rooms match your search criteria. Please try adjusting
+                    your filters or check back later.
+                </p>
+                <a
+                    href="{{ url_for('index') }}"
+                    class="btn-primary"
+                    style="display: inline-block"
+                >
+                    <i class="fas fa-home"></i> Go Back Home
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+    function submitBranchFilter() {
+        document.getElementById('branchFilterForm').submit();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const priceRange = document.getElementById("priceRange");
+        const maxPriceDisplay = document.getElementById("maxPrice");
+        const availabilityRadios = document.querySelectorAll(
+            'input[name="availability"]',
+        );
+        const capacityRange = document.getElementById("capacityRange");
+        const maxCapacityDisplay = document.getElementById("maxCapacity");
+        const ratingRadios = document.querySelectorAll('input[name="rating"]');
+        const amenityCheckboxes = document.querySelectorAll(
+            'input[name="amenity"]',
+        );
+
+        // Price range filter
+        if (priceRange) {
+            priceRange.addEventListener("input", function () {
+                const formattedPrice = new Intl.NumberFormat('en-IN').format(this.value);
+                maxPriceDisplay.textContent = "₹" + formattedPrice;
+                filterRooms();
+            });
+        }
+
+        // Capacity range filter
+        if (capacityRange) {
+            capacityRange.addEventListener("input", function () {
+                maxCapacityDisplay.textContent = this.value + "+ guests";
+                filterRooms();
+            });
+        }
+
+        // Availability filter
+        availabilityRadios.forEach((radio) => {
+            radio.addEventListener("change", filterRooms);
+        });
+
+        // Rating filter
+        ratingRadios.forEach((radio) => {
+            radio.addEventListener("change", filterRooms);
+        });
+
+        // Amenity filter
+        amenityCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener("change", filterRooms);
+        });
+    });
+
+    function filterRooms() {
+        const priceRange = document.getElementById("priceRange");
+        const capacityRange = document.getElementById("capacityRange");
+        const maxPrice = parseFloat(priceRange.value);
+        const minCapacity = parseFloat(capacityRange.value);
+        const availabilityFilter = document.querySelector(
+            'input[name="availability"]:checked',
+        ).value;
+        const ratingFilter = document.querySelector(
+            'input[name="rating"]:checked',
+        ).value;
+        const selectedAmenities = Array.from(
+            document.querySelectorAll('input[name="amenity"]:checked'),
+        ).map((cb) => cb.value);
+        const roomCards = document.querySelectorAll(".room-card");
+
+        let visibleCount = 0;
+
+        roomCards.forEach((card) => {
+            const price = parseFloat(card.getAttribute("data-price"));
+            const capacity = parseInt(card.getAttribute("data-capacity"));
+            const isAvailable = card.getAttribute("data-available") === "true";
+            const roomAmenities = card
+                .getAttribute("data-amenities")
+                .split(",")
+                .map((a) => a.trim());
+            const rating = parseFloat(card.getAttribute("data-rating")) || 5;
+
+            // Price filter
+            let passPrice = price <= maxPrice;
+
+            // Capacity filter
+            let passCapacity = capacity >= minCapacity;
+
+            // Availability filter
+            let passAvailability = true;
+            if (availabilityFilter === "available") {
+                passAvailability = isAvailable;
+            } else if (availabilityFilter === "soon") {
+                passAvailability = !isAvailable;
+            }
+
+            // Rating filter
+            let passRating = true;
+            if (ratingFilter !== "all") {
+                const minRating = parseFloat(ratingFilter);
+                passRating = rating >= minRating;
+            }
+
+            // Amenities filter
+            let passAmenities = true;
+            if (selectedAmenities.length > 0) {
+                passAmenities = selectedAmenities.some((amenity) =>
+                    roomAmenities.some((ra) =>
+                        ra.toLowerCase().includes(amenity.toLowerCase()),
+                    ),
+                );
+            }
+
+            const show =
+                passPrice &&
+                passCapacity &&
+                passAvailability &&
+                passRating &&
+                passAmenities;
+            card.style.display = show ? "block" : "none";
+            if (show) visibleCount++;
+        });
+
+        // Update room count
+        document.getElementById("roomCount").textContent = visibleCount;
+
+        // Show empty state if no rooms match
+        if (visibleCount === 0) {
+            const roomGrid = document.getElementById("roomGrid");
+            if (!roomGrid.querySelector(".empty-state-dynamic")) {
+                const emptyState = document.createElement("div");
+                emptyState.className = "empty-state-dynamic";
+                emptyState.style.gridColumn = "1 / -1";
+                emptyState.style.display = "block";
+                emptyState.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 15px;">
+                        <div style="font-size: 3rem; color: #ddd; margin-bottom: 15px;">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="color: #666; margin-bottom: 15px;">No Rooms Match Your Filters</h3>
+                        <p style="color: #999; margin-bottom: 20px;">Try adjusting your filters to find more rooms.</p>
+                        <button onclick="clearFilters()" class="btn-primary" style="display: inline-block;">
+                            <i class="fas fa-redo"></i> Clear All Filters
+                        </button>
+                    </div>
+                `;
+                roomGrid.appendChild(emptyState);
+            }
+        } else {
+            const emptyStateDynamic = document.querySelector(
+                ".empty-state-dynamic",
+            );
+            if (emptyStateDynamic) emptyStateDynamic.remove();
+        }
+    }
+
+    function sortRooms(sortBy) {
+        const roomGrid = document.getElementById("roomGrid");
+        const roomCards = Array.from(roomGrid.querySelectorAll(".room-card"));
+
+        roomCards.sort((a, b) => {
+            const aPrice = parseFloat(a.getAttribute("data-price"));
+            const bPrice = parseFloat(b.getAttribute("data-price"));
+            const aName = a.getAttribute("data-name");
+            const bName = b.getAttribute("data-name");
+            const aRating = parseFloat(a.getAttribute("data-rating")) || 0;
+            const bRating = parseFloat(b.getAttribute("data-rating")) || 0;
+
+            switch (sortBy) {
+                case "price_asc":
+                    return aPrice - bPrice;
+                case "price_desc":
+                    return bPrice - aPrice;
+                case "name_asc":
+                    return aName.localeCompare(bName);
+                case "rating_high":
+                    return bRating - aRating;
+                default:
+                    return 0;
+            }
+        });
+
+        // Re-append sorted rooms
+        roomCards.forEach((card) => roomGrid.appendChild(card));
+    }
+
+    function clearFilters() {
+        document.getElementById("priceRange").value = 100000;
+        document.getElementById("maxPrice").textContent = "₹100000";
+        document.getElementById("capacityRange").value = 1;
+        document.getElementById("maxCapacity").textContent = "1 guests";
+        document.getElementById("avail-all").checked = true;
+        document.getElementById("rating-all").checked = true;
+        document.getElementById("sortBy").value = "popular";
+
+        // Uncheck all amenities
+        document
+            .querySelectorAll('input[name="amenity"]:checked')
+            .forEach((cb) => {
+                cb.checked = false;
+            });
+
+        // Show all rooms
+        document.querySelectorAll(".room-card").forEach((card) => {
+            card.style.display = "block";
+        });
+
+        // Remove empty state if exists
+        const emptyStateDynamic = document.querySelector(
+            ".empty-state-dynamic",
+        );
+        if (emptyStateDynamic) emptyStateDynamic.remove();
+
+        // Update count
+        const totalRooms = document.querySelectorAll(".room-card").length;
+        document.getElementById("roomCount").textContent = totalRooms;
+
+        showToast("All filters cleared", "info");
+    }
+</script>
+{% endblock %}

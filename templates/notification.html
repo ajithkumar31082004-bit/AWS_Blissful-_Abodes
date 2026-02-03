@@ -1,0 +1,144 @@
+{% extends "layout.html" %} {% block title %}Notifications - Blissful Abodes{%
+endblock %} {% block extra_css %}
+<style>
+    .notifications-page {
+        min-height: calc(100vh - 200px);
+        padding: 40px 20px;
+        background: #f8f9fa;
+    }
+
+    .notifications-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        color: #1a365d;
+        margin-bottom: 10px;
+        font-family: "Playfair Display", serif;
+    }
+
+    .page-subtitle {
+        color: #666;
+        margin-bottom: 40px;
+    }
+
+    .notification {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid #2d9cdb;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .notification-icon {
+        font-size: 1.8rem;
+        flex-shrink: 0;
+    }
+
+    .notification-content {
+        flex: 1;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #1a365d;
+        margin-bottom: 8px;
+    }
+
+    .notification-message {
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .notification-time {
+        font-size: 0.9rem;
+        color: #999;
+    }
+
+    .notification.booking {
+        border-left-color: #28a745;
+    }
+
+    .notification.alert {
+        border-left-color: #dc3545;
+    }
+
+    .notification.info {
+        border-left-color: #ffc107;
+    }
+
+    .empty-notifications {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 10px;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="notifications-page">
+    <div class="notifications-container">
+        <h1 class="page-title">🔔 Notifications</h1>
+        <p class="page-subtitle">
+            Stay updated with your bookings and account activity
+        </p>
+
+        <div class="notification booking">
+            <div class="notification-icon">📅</div>
+            <div class="notification-content">
+                <div class="notification-title">Booking Confirmed</div>
+                <div class="notification-message">
+                    Your booking for the Deluxe Suite has been confirmed.
+                    Check-in date: July 20, 2024
+                </div>
+                <div class="notification-time">2 hours ago</div>
+            </div>
+        </div>
+
+        <div class="notification info">
+            <div class="notification-icon">ℹ️</div>
+            <div class="notification-content">
+                <div class="notification-title">Special Offer Available</div>
+                <div class="notification-message">
+                    Use coupon code SUMMER20 to get 20% off on your next booking
+                </div>
+                <div class="notification-time">1 day ago</div>
+            </div>
+        </div>
+
+        <div class="notification booking">
+            <div class="notification-icon">✓</div>
+            <div class="notification-content">
+                <div class="notification-title">Payment Received</div>
+                <div class="notification-message">
+                    Payment of ₹49,551 has been received and processed
+                    successfully
+                </div>
+                <div class="notification-time">3 days ago</div>
+            </div>
+        </div>
+
+        <div class="notification alert">
+            <div class="notification-icon">⚠️</div>
+            <div class="notification-content">
+                <div class="notification-title">Checkout Reminder</div>
+                <div class="notification-message">
+                    Your checkout date is tomorrow. Please complete checkout by
+                    11:00 AM
+                </div>
+                <div class="notification-time">5 days ago</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

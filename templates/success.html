@@ -1,0 +1,362 @@
+{% extends "layout.html" %} {% block title %}Booking Confirmed - Blissful
+Abodes{% endblock %} {% block extra_css %}
+<style>
+  .success-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  }
+
+  .success-container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    padding: 60px 40px;
+  }
+
+  .success-icon {
+    font-size: 5rem;
+    color: #28a745;
+    margin-bottom: 25px;
+    animation: scaleIn 0.6s ease;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .success-title {
+    font-size: 2.5rem;
+    color: #1a365d;
+    margin-bottom: 15px;
+    font-family: "Playfair Display", serif;
+  }
+
+  .success-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .booking-info {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    margin: 30px 0;
+    text-align: left;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    color: #666;
+    font-weight: 600;
+  }
+
+  .info-value {
+    color: #1a365d;
+    font-weight: 600;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .btn-primary-action {
+    background: linear-gradient(135deg, #1a365d, #2d9cdb);
+    color: white;
+  }
+
+  .btn-primary-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(26, 54, 93, 0.4);
+  }
+
+  .btn-secondary-action {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-secondary-action:hover {
+    background: #e0e0e0;
+  }
+
+  .confirmation-note {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 25px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .confirmation-note i {
+    font-size: 1.3rem;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="success-page">
+  <div class="success-container">
+    <div class="success-icon">✓</div>
+
+    <h1 class="success-title">Booking Confirmed!</h1>
+
+    <p class="success-message">
+      Your reservation has been successfully created. A confirmation email has
+      been sent to your registered email address.
+    </p>
+
+    <div class="booking-info">
+      <div class="info-row">
+        <span class="info-label">Booking ID:</span>
+        <span class="info-value">{{ booking_id[:12]|upper }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Status:</span>
+        <span class="info-value">✓ Confirmed</span>
+      </div>
+      {% if booking %}
+      <div class="info-row">
+        <span class="info-label">Check-in:</span>
+        <span class="info-value">{{ booking.check_in }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Check-out:</span>
+        <span class="info-value">{{ booking.check_out }}</span>
+      </div>
+      {% if room %}
+      <div class="info-row">
+        <span class="info-label">Room:</span>
+        <span class="info-value">{{ room.name }}</span>
+      </div>
+      {% endif %}
+      <div class="info-row">
+        <span class="info-label">Nights:</span>
+        <span class="info-value"
+          >{{ booking.nights }} night{% if booking.nights != 1 %}s{% endif
+          %}</span
+        >
+      </div>
+      {% if booking.subtotal %}
+      <div class="info-row">
+        <span class="info-label">Subtotal:</span>
+        <span class="info-value">₹{{ "{:,.0f}".format(booking.subtotal|float) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Service Fee (10%):</span>
+        <span class="info-value">₹{{ "{:,.0f}".format(booking.service_fee|float) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">GST (18%):</span>
+        <span class="info-value">₹{{ "{:,.0f}".format(booking.gst|float) }}</span>
+      </div>
+      {% endif %}
+      <div class="info-row">
+        <span class="info-label">Total Amount:</span>
+        <span class="info-value" style="color: #d4af37"
+          >₹{{ "{:,.0f}".format(booking.total_price|float) }}</span
+        >
+      </div>
+      {% else %}
+      <div class="info-row">
+        <span class="info-label">Confirmation Email:</span>
+        <span class="info-value">{{ user.email }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="confirmation-note">
+      <i class="fas fa-info-circle"></i>
+      <div>
+        <strong>What's Next?</strong>
+        <br />
+        Check your email for the confirmation details. You can modify or cancel
+        your booking up to 24 hours before check-in.
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button onclick="downloadReceipt()" class="action-btn btn-primary-action" style="background: linear-gradient(135deg, #28a745, #20c997);">
+        <i class="fas fa-download"></i> Download Receipt
+      </button>
+      <a
+        href="{{ url_for('my_bookings') }}"
+        class="action-btn btn-primary-action"
+      >
+        <i class="fas fa-calendar-alt"></i> View My Bookings
+      </a>
+      <a href="{{ url_for('rooms') }}" class="action-btn btn-secondary-action">
+        <i class="fas fa-door-open"></i> Book More Rooms
+      </a>
+      <a href="{{ url_for('index') }}" class="action-btn btn-secondary-action">
+        <i class="fas fa-home"></i> Back to Home
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Display booking confirmation message
+    showToast("Booking confirmed successfully!", "success");
+
+    // Optional: Auto-scroll to top
+    window.scrollTo(0, 0);
+  });
+
+  function downloadReceipt() {
+      // Use the hidden receipt template for full details
+      const element = document.getElementById('receipt-template');
+      
+      // Temporarily move it into view but keep it invisible to user if possible, 
+      // or just trust html2canvas to render off-screen elements (it usually needs them added to DOM)
+      // We'll clone it and append to body with visible styles if needed, but 'element' is already in DOM.
+      // html2canvas works best if the element is in the document flow.
+      // The style "top: -10000px" is already effectively hiding it.
+      
+      showToast("Generating detailed receipt...", "info");
+
+      html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+      }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          // Create PDF (A4)
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          
+          const pdfWidth = 210; 
+          const pdfHeight = 297; 
+          const imgProps = pdf.getImageProperties(imgData);
+          const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+          pdf.save('Blissful_Abodes_Receipt_{{ booking_id[:8]|upper }}.pdf');
+          
+          showToast("Detailed receipt downloaded!", "success");
+      }).catch(err => {
+          console.error('Error generating receipt:', err);
+          showToast("Failed to generate receipt", "error");
+      });
+  }
+</script>
+
+<!-- Hidden Receipt Template for PDF Generation -->
+<div id="receipt-template" style="width: 800px; background: white; padding: 40px; position: fixed; top: 0; left: -10000px; font-family: 'Helvetica', sans-serif; color: #333; box-sizing: border-box; z-index: -1;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #1a365d; padding-bottom: 20px; margin-bottom: 30px;">
+    <div>
+      <h1 style="color: #1a365d; margin: 0; font-size: 28px;">Blissful Abodes</h1>
+      <p style="margin: 5px 0; color: #666;">Luxury Hotel Booking</p>
+      <div style="margin-top: 10px; font-size: 13px; color: #888;">
+        123 Cloud Avenue, AWS Region<br>
+        Digital India
+      </div>
+    </div>
+    <div style="text-align: right;">
+      <h2 style="color: #d4af37; margin: 0; font-size: 24px;">CONFIRMED</h2>
+      <p style="margin: 5px 0;"><strong>Receipt #:</strong> {{ booking_id[:8]|upper }}</p>
+      <p style="margin: 5px 0;"><strong>Date:</strong> {{ booking.booking_date if booking.booking_date else "Today" }}</p>
+    </div>
+  </div>
+
+  <!-- Info Grid -->
+  <div style="display: flex; gap: 40px; margin-bottom: 30px;">
+    <div style="flex: 1;">
+      <h3 style="color: #1a365d; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 16px;">GUEST DETAILS</h3>
+      <p style="margin: 5px 0;"><strong>Name:</strong> {{ user.name if user.name else user.get('name', 'Guest') }}</p>
+      <p style="margin: 5px 0;"><strong>Email:</strong> {{ user.email }}</p>
+      <p style="margin: 5px 0;"><strong>Booking Status:</strong> Confirmed</p>
+    </div>
+    <div style="flex: 1;">
+      <h3 style="color: #1a365d; border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 16px;">STAY DETAILS</h3>
+      <p style="margin: 5px 0;"><strong>Room:</strong> {{ room.name }}</p>
+      <p style="margin: 5px 0;"><strong>Check-in:</strong> {{ booking.check_in }}</p>
+      <p style="margin: 5px 0;"><strong>Check-out:</strong> {{ booking.check_out }}</p>
+      <p style="margin: 5px 0;"><strong>Duration:</strong> {{ booking.nights }} Night(s)</p>
+    </div>
+  </div>
+
+  <!-- Pricing Table -->
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 50px;">
+    <thead>
+      <tr style="background: #f8f9fa; color: #1a365d;">
+        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Description</th>
+        <th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd;">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #eee;">Room Rate ({{ booking.nights }} nights)</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.subtotal|float) }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #eee;">Service Fee (10%)</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.service_fee|float) }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #eee;">GST (18%)</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #eee;">₹{{ "{:,.2f}".format(booking.gst|float) }}</td>
+      </tr>
+      <tr style="font-weight: bold; font-size: 18px; color: #1a365d;">
+        <td style="padding: 15px 12px; text-align: right;">TOTAL AMOUNT PAID</td>
+        <td style="padding: 15px 12px; text-align: right; color: #d4af37;">₹{{ "{:,.2f}".format(booking.total_price|float) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Footer -->
+  <div style="text-align: center; border-top: 1px solid #ddd; padding-top: 20px; color: #999; font-size: 12px;">
+    <p style="margin: 5px 0;">Thank you for choosing Blissful Abodes Hotels & Resorts.</p>
+    <p style="margin: 5px 0;">This is a computer generated receipt and does not require a physical signature.</p>
+    <p style="margin: 5px 0;">www.blissfulabodes.com | support@blissfulabodes.com</p>
+  </div>
+</div>
+{% endblock %}

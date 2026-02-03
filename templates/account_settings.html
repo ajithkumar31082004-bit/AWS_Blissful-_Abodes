@@ -1,0 +1,545 @@
+{% extends "layout.html" %}
+{% block title %}Account Settings - Blissful Abodes{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .settings-header {
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        color: white;
+        padding: 50px 30px;
+        border-radius: 20px;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .settings-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .settings-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+    }
+
+    .settings-section {
+        margin-bottom: 40px;
+    }
+
+    .settings-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        color: #1a365d;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i {
+        color: #2d9cdb;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #2d9cdb;
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.1);
+    }
+
+    .form-input:disabled {
+        background: #f8f9fa;
+        cursor: not-allowed;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        color: white;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.3);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .info-box {
+        background: #e3f2fd;
+        border-left: 4px solid #2d9cdb;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .info-box i {
+        color: #2d9cdb;
+        margin-right: 10px;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+    }
+
+    .warning-box i {
+        color: #ffc107;
+        margin-right: 10px;
+    }
+
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border-left: 4px solid #28a745;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border-left: 4px solid #dc3545;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #1a365d, #2d9cdb);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 20px;
+        font-weight: 700;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 25px;
+    }
+
+    .stat-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        border: 2px solid #e0e0e0;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a365d;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+    }
+
+    .password-field {
+        position: relative;
+    }
+
+    @media (max-width: 768px) {
+        .settings-header h1 {
+            font-size: 2rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-group {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <!-- Settings Header -->
+    <div class="settings-header">
+        <div class="profile-avatar">
+            {{ user.name[0]|upper if user.name else 'G' }}
+        </div>
+        <h1>Account Settings</h1>
+        <p>Manage your profile and preferences</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'success' %}
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% elif category == 'danger' or category == 'error' %}
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Account Overview -->
+    <div class="settings-card">
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fas fa-user-circle"></i>
+                Account Overview
+            </h2>
+
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <strong>Member since:</strong> {{ user.created_at[:10] if user.created_at else 'Recently' }}
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value">{{ user.role|title }}</div>
+                    <div class="stat-label">Account Type</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ user.email }}</div>
+                    <div class="stat-label">Email Address</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Information Form -->
+    <div class="settings-card">
+        <form method="POST" action="{{ url_for('account_settings') }}">
+            <!-- Personal Information -->
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-id-card"></i>
+                    Personal Information
+                </h2>
+
+                <div class="form-group">
+                    <label class="form-label" for="name">
+                        <i class="fas fa-user"></i> Full Name *
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="form-input"
+                        value="{{ user.name }}"
+                        required
+                    />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="email">
+                            <i class="fas fa-envelope"></i> Email Address *
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="form-input"
+                            value="{{ user.email }}"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone">
+                            <i class="fas fa-phone"></i> Phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            class="form-input"
+                            value="{{ user.phone if user.phone else '' }}"
+                            placeholder="+91-XXXXX-XXXXX"
+                        />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="age">
+                        <i class="fas fa-birthday-cake"></i> Age *
+                    </label>
+                    <input
+                        type="number"
+                        id="age"
+                        name="age"
+                        class="form-input"
+                        value="{{ user.age }}"
+                        min="18"
+                        max="120"
+                        required
+                    />
+                </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <i class="fas fa-lock"></i>
+                    Change Password
+                </h2>
+
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Leave password fields empty if you don't want to change your password.
+                </div>
+
+                <div class="form-group password-field">
+                    <label class="form-label" for="new_password">
+                        <i class="fas fa-key"></i> New Password
+                    </label>
+                    <input
+                        type="password"
+                        id="new_password"
+                        name="new_password"
+                        class="form-input"
+                        placeholder="Enter new password (leave blank to keep current)"
+                        minlength="6"
+                    />
+                    <span class="toggle-password" onclick="togglePassword('new_password')">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+
+                <div class="form-group password-field">
+                    <label class="form-label" for="confirm_password">
+                        <i class="fas fa-check-circle"></i> Confirm New Password
+                    </label>
+                    <input
+                        type="password"
+                        id="confirm_password"
+                        name="confirm_password"
+                        class="form-input"
+                        placeholder="Confirm new password"
+                    />
+                    <span class="toggle-password" onclick="togglePassword('confirm_password')">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="btn-group">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+                <a href="{{ url_for('guest_dashboard') }}" class="btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="settings-card" style="border: 2px solid #dc3545;">
+        <div class="settings-section">
+            <h2 class="section-title" style="color: #dc3545;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Danger Zone
+            </h2>
+
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Delete your account permanently. This action cannot be undone.</span>
+            </div>
+
+            <button
+                class="btn-secondary"
+                style="background: #dc3545;"
+                onclick="confirmDelete()"
+            >
+                <i class="fas fa-trash-alt"></i>
+                Delete Account
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Password visibility toggle
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = field.nextElementSibling.querySelector('i');
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Password confirmation validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        if (newPassword && newPassword !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+
+        if (newPassword && newPassword.length < 6) {
+            e.preventDefault();
+            alert('Password must be at least 6 characters long!');
+            return false;
+        }
+    });
+
+    // Delete account confirmation
+    function confirmDelete() {
+        if (confirm('Are you sure you want to delete your account? This action cannot be undone!')) {
+            if (confirm('This will permanently delete all your bookings and data. Are you absolutely sure?')) {
+                alert('Account deletion feature will be implemented soon. Please contact support for now.');
+                // TODO: Implement delete account functionality
+                // window.location.href = '/account/delete';
+            }
+        }
+    }
+
+    // Auto-dismiss success messages after 5 seconds
+    setTimeout(function() {
+        const successMessages = document.querySelectorAll('.success-message');
+        successMessages.forEach(function(msg) {
+            msg.style.transition = 'opacity 0.5s ease';
+            msg.style.opacity = '0';
+            setTimeout(function() {
+                msg.remove();
+            }, 500);
+        });
+    }, 5000);
+</script>
+{% endblock %}

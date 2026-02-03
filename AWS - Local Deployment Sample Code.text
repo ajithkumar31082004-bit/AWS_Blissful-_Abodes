@@ -1,0 +1,209 @@
+
+SAMPLE CODE FOR LOCAL DEPLOYMENT
+NOTE: THIS CODE WILL NOT BE SAME FOR EVERY PROJECT, IT IS JUST FOR YOUR UNDERSTANDING. IF FACING ANY DOUBTS PLEASE CONNECT WITH YOUR MENTOR
+Develop the Frontend using HTML and Flask
+All students are required to initially develop the frontend using HTML pages and Flask for server-side logic.
+
+Important Instructions:
+●	Start by creating the necessary HTML pages and Flask routes (app.py) to build the core functionality of your application.
+●	During the initial development phase, store and retrieve data using Python dictionaries or lists locally. This will allow you to design, test, and validate your application logic without external database dependencies.
+●	Ensure your app runs smoothly with local data structures before integrating any cloud services.
+
+
+Post Troven Access Activation:
+
+●	Once Troven Labs access is provided (valid for 3 hours), you must immediately proceed with Milestone 1 of your Guided Project instructions.
+●	At this point, modify your app.py and replace local dictionary/list operations with AWS services (such as DynamoDB, RDS, or others as per project requirements).
+●	Using the temporary credentials provided by Troven Labs, securely connect your application to AWS resources.
+●	Since the AWS configuration is lightweight and already instructed in the milestones, you should be able to complete the cloud integration efficiently within the allotted time.
+
+
+
+
+
+
+Description of code:
+
+1. Imports:
+ 
+
+●	Flask: Main class to create the web app.
+
+●	render_template: Loads HTML templates.
+
+●	request: Handles form data (like login form).
+
+●	redirect, url_for: Redirect users to different pages.
+
+●	session: Stores logged-in user data securely.
+
+●	flash: Shows quick alert messages like "Logged in successfully".
+
+●	generate_password_hash, check_password_hash: Secures user passwords.
+
+●	datetime: Used to store booking time.
+
+●	json: Used to view/debug users/bookings in JSON format.
+
+2. Flask App Initialization:
+ 
+●	app = Flask(__name__): Starts the Flask application.
+
+●	app.secret_key: Required to safely use sessions and flashes.
+
+3. Temporary In-Memory Storage:
+ 
+
+●	users: List to store registered users.
+
+●	bookings: List to store all ticket bookings.
+
+●	booking_counter: A simple ID counter for bookings.
+
+
+4. Authentication Routes:
+4.1. Homepage /:
+
+ 
+4.2. Login /login:
+ 
+●	If GET: Show the login page.
+
+●	If POST: Validate user login.
+
+●	Check if the email exists and password is correct.
+
+●	If success, save user info in session.
+
+●	If wrong, flash an "Invalid" message.
+
+     4.3. Signup /signup: 
+●	If GET: Show signup form.
+
+●	If POST:
+
+●	Collect user details.
+
+●	Check if email already exists.
+
+●	Save the user with hashed password into users.
+
+●	Redirect to login after successful registration.
+
+4.4. Logout /logout:
+ 
+●	Remove the user from session (log out).
+
+●	Flash a message.
+
+●	Redirect to homepage.
+
+5. Main Application Pages:
+5.1. Home After Login /home1, About Page /about, Contact Page /contact_us
+ 
+
+●	Check if the user is logged in.
+
+●	If yes, show home1.html.
+
+●	If no, redirect to login page.
+●	Show About page.
+●	Show Contact Us page.
+
+
+
+
+
+5.2. Booking Page /b1:
+ 
+
+●	Only accessible if logged in.
+
+●	Loads b1.html.
+
+●	Displays movie details passed through the URL (like movie name, theater, address, price).
+
+5.3. Ticket Booking Submission /tickets:
+ 
+ 
+
+●	Accepts POST data after selecting seats.
+
+●	Creates a new booking.
+
+●	Adds booking to bookings list.
+
+●	Booking info includes:
+
+●	Movie details
+
+●	Theater
+
+●	Seats selected
+
+●	Price
+
+●	Timestamp
+
+●	Displays the confirmation in tickets.html.
+
+6.Running the Flask App:
+ 
+
+●	Starts the app on your machine at http://localhost:5000.
+
+●	debug=True means it auto-reloads when you change the code.
+
+
+
+
+7.Application Testing and In-Memory Data Storage Proof:
+
+ 
+ 
+●	During the application run, user registrations and movie bookings were captured and stored temporarily using in-memory Python structures (dictionaries/lists).
+●	Since no external database (like MySQL or DynamoDB) was integrated yet, all data remained within the application's memory during the active session.
+
+
+
+
+
+
+
+
+
+
+7.1Proof of Data Storage (Server Logs):
+1)User Registration Confirmation:
+✅ Current Users List: [
+  {
+    'id': 1,
+    'name': 'Kusuma',
+    'email': 'xyz@gmail.com',
+    'password': 'scrypt:32768:8:1$8n30HdqSU7z3yxiS$5d3f9a9a8d285ce23074b260899b4937475ffa696f0f3353a3e42f369f9c10ef32a871057f23865326c8402ec93244d2be2b6eda9418e66e84c21825ee19010c'
+  }
+]
+
+2)User Login and Session Initialization:
+👤 Logged In User Session: {'id': 1, 'name': 'Kusuma', 'email': 'xyz@gmail.com'}
+👤 Current Session User Info: {'email': 'xyz@gmail.com', 'id': 1, 'name': 'Kusuma'}
+
+3)Booking Confirmation Logs:
+🎟️ Booking Added: {'booking_id': 2, 'user_id': 1, 'movie': 'Karthikeya 2', 'theater': 'PVR Icon, Hitech City', 'address': 'Hitech City Main Road, Hyderabad', 'price': '175', 'seats': None, 'booking_time': '2025-04-26 20:18:34'}
+
+4)All Bookings Snapshot:
+📦 All Bookings: [
+  {'booking_id': 1, 'user_id': 1, 'movie': 'RRR', 'theater': 'Prasads Multiplex, Necklace Road', 'address': 'Necklace Road, Hyderabad, Telangana 500004', 'price': '200', 'seats': None, 'booking_time': '2025-04-26 20:17:21'},
+  {'booking_id': 2, 'user_id': 1, 'movie': 'Karthikeya 2', 'theater': 'PVR Icon, Hitech City', 'address': 'Hitech City Main Road, Hyderabad', 'price': '175', 'seats': None, 'booking_time': '2025-04-26 20:18:34'}
+]
+
+
+
+
+
+
+
+
+
+
+

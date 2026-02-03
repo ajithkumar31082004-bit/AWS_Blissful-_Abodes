@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}My Waitlist - Blissful Abodes{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">My Waitlist</h1>
+        <p class="lead text-muted">Rooms you're waiting for</p>
+    </div>
+
+    {% if waitlist %}
+    <div class="row">
+        {% for item in waitlist %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm {% if item.status == 'active' %}border-primary{% elif item.status == 'notified' %}border-success{% else %}border-secondary{% endif %}">
+                <div class="card-header {% if item.status == 'active' %}bg-primary text-white{% elif item.status == 'notified' %}bg-success text-white{% else %}bg-secondary text-white{% endif %}">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock"></i>
+                        {% if item.status == 'active' %}Waiting{% elif item.status == 'notified' %}Available!{% else %}{{ item.status|title }}{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title fw-bold">{{ item.room_name }}</h6>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted"><i class="fas fa-calendar-check"></i> Check-in:</span>
+                            <strong>{{ item.check_in }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted"><i class="fas fa-calendar-times"></i> Check-out:</span>
+                            <strong>{{ item.check_out }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted"><i class="fas fa-clock"></i> Added:</span>
+                            <strong>{{ item.created_at[:10] }}</strong>
+                        </div>
+                    </div>
+
+                    {% if item.status == 'active' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> We'll notify you when this room becomes available
+                    </div>
+                    <button class="btn btn-danger w-100" onclick="removeFromWaitlist('{{ item.waitlist_id }}')">
+                        <i class="fas fa-times"></i> Remove from Waitlist
+                    </button>
+                    {% elif item.status == 'notified' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> This room is now available!
+                    </div>
+                    <a href="{{ url_for('book_room', room_id=item.room_id) }}" class="btn btn-success w-100 mb-2">
+                        <i class="fas fa-bookmark"></i> Book Now
+                    </a>
+                    <button class="btn btn-outline-secondary w-100" onclick="removeFromWaitlist('{{ item.waitlist_id }}')">
+                        <i class="fas fa-times"></i> Not Interested
+                    </button>
+                    {% else %}
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-ban"></i> No longer active
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-muted small">
+                    <i class="fas fa-hashtag"></i> Waitlist ID: {{ item.waitlist_id[:8] }}...
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Waitlist Statistics -->
+    <div class="row mt-5">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <h2 class="display-4">{{ waitlist|selectattr('status', 'equalto', 'active')|list|length }}</h2>
+                    <p class="mb-0">Active Waitlist Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <h2 class="display-4">{{ waitlist|selectattr('status', 'equalto', 'notified')|list|length }}</h2>
+                    <p class="mb-0">Available Now</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <h2 class="display-4">{{ waitlist|length }}</h2>
+                    <p class="mb-0">Total Entries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-list-ul fa-5x text-muted mb-4"></i>
+        <h3>No Waitlist Items</h3>
+        <p class="text-muted mb-4">You haven't joined any waitlists yet. When a room you want is unavailable, you can join the waitlist to be notified when it becomes available.</p>
+        <a href="{{ url_for('rooms') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search"></i> Browse Rooms
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- How It Works Section -->
+    <div class="card shadow-sm mt-5">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-question-circle"></i> How Waitlist Works</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 text-center mb-3">
+                    <div class="mb-2">
+                        <i class="fas fa-search fa-3x text-primary"></i>
+                    </div>
+                    <h6 class="fw-bold">1. Find a Room</h6>
+                    <p class="small text-muted">Browse our available rooms</p>
+                </div>
+                <div class="col-md-3 text-center mb-3">
+                    <div class="mb-2">
+                        <i class="fas fa-clock fa-3x text-warning"></i>
+                    </div>
+                    <h6 class="fw-bold">2. Join Waitlist</h6>
+                    <p class="small text-muted">If unavailable, join the waitlist</p>
+                </div>
+                <div class="col-md-3 text-center mb-3">
+                    <div class="mb-2">
+                        <i class="fas fa-bell fa-3x text-info"></i>
+                    </div>
+                    <h6 class="fw-bold">3. Get Notified</h6>
+                    <p class="small text-muted">We'll email you when available</p>
+                </div>
+                <div class="col-md-3 text-center mb-3">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle fa-3x text-success"></i>
+                    </div>
+                    <h6 class="fw-bold">4. Book Fast</h6>
+                    <p class="small text-muted">Book before someone else does</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function removeFromWaitlist(waitlistId) {
+        if (confirm('Are you sure you want to remove this item from your waitlist?')) {
+            fetch(`/waitlist/${waitlistId}/remove`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Removed from waitlist successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+    }
+
+    // Auto-refresh every 5 minutes to check for updates
+    setTimeout(function() {
+        location.reload();
+    }, 300000); // 5 minutes
+</script>
+
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+    }
+
+    .btn {
+        border-radius: 5px;
+        font-weight: 500;
+    }
+
+    .alert {
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+
+    .display-4 {
+        font-weight: 700;
+    }
+</style>
+{% endblock %}

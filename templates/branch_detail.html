@@ -1,0 +1,202 @@
+{% extends "layout.html" %}
+{% block title %}{{ branch.branch_name if branch.branch_name else branch.get('branch_name', 'Branch') }} - Blissful Abodes{% endblock %}
+
+{% block extra_css %}
+<style>
+  .branch-hero {
+    background: linear-gradient(135deg, #1a365d, #2d9cdb);
+    color: white;
+    padding: 80px 20px 60px;
+    border-radius: 0 0 40px 40px;
+    margin-bottom: 40px;
+  }
+
+  .branch-hero h1 {
+    font-size: 2.8rem;
+    margin-bottom: 15px;
+    font-family: "Playfair Display", serif;
+  }
+
+  .branch-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  .info-card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  }
+
+  .info-card h3 {
+    color: #1a365d;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rooms-section {
+    padding: 40px 20px;
+    background: #f8f9fa;
+  }
+
+  .rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .room-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+  }
+
+  .room-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .room-image {
+    height: 200px;
+    background: linear-gradient(45deg, #1a365d, #2d9cdb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 4rem;
+  }
+
+  .room-content {
+    padding: 20px;
+  }
+
+  .room-price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #d4af37;
+    margin: 15px 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Branch Hero Section -->
+<section class="branch-hero">
+  <div class="container">
+    <h1>{{ branch.branch_name if branch.branch_name else branch.get('branch_name', 'Branch') }}</h1>
+    <p style="font-size: 1.2rem; opacity: 0.9;">
+      {% if branch.location %}
+        <i class="fas fa-map-marker-alt"></i> 
+        {{ branch.location.address if branch.location.address else branch.get('location', {}).get('address', '') }}, 
+        {{ branch.location.city if branch.location.city else branch.get('location', {}).get('city', '') }}
+      {% endif %}
+    </p>
+  </div>
+</section>
+
+<!-- Branch Information -->
+<div class="branch-info">
+  <div class="info-card">
+    <h3><i class="fas fa-phone"></i> Contact</h3>
+    <p><strong>Phone:</strong> {{ branch.contact.phone if branch.contact else branch.get('contact', {}).get('phone', 'N/A') }}</p>
+    <p><strong>Email:</strong> {{ branch.contact.email if branch.contact else branch.get('contact', {}).get('email', 'N/A') }}</p>
+    <p><strong>Manager:</strong> {{ branch.contact.manager if branch.contact else branch.get('contact', {}).get('manager', 'N/A') }}</p>
+  </div>
+
+  <div class="info-card">
+    <h3><i class="fas fa-clock"></i> Check-in/out</h3>
+    <p><strong>Check-in:</strong> {{ branch.check_in_time if branch.check_in_time else branch.get('check_in_time', '14:00') }}</p>
+    <p><strong>Check-out:</strong> {{ branch.check_out_time if branch.check_out_time else branch.get('check_out_time', '12:00') }}</p>
+    <p><strong>Total Rooms:</strong> {{ branch.total_rooms if branch.total_rooms else branch.get('total_rooms', 0) }}</p>
+  </div>
+
+  <div class="info-card">
+    <h3><i class="fas fa-star"></i> Starting Price</h3>
+    <div style="font-size: 2rem; font-weight: 700; color: #d4af37; margin-top: 10px;">
+      ₹{{ branch.starting_price if branch.starting_price else branch.get('starting_price', 4500) }}/night
+    </div>
+  </div>
+
+  <div class="info-card">
+    <h3><i class="fas fa-list"></i> Amenities</h3>
+    <ul style="list-style: none; padding: 0; margin-top: 10px;">
+      {% if branch.amenities %}
+        {% for amenity in branch.amenities %}
+        <li style="padding: 5px 0;"><i class="fas fa-check-circle" style="color: #2d9cdb;"></i> {{ amenity }}</li>
+        {% endfor %}
+      {% else %}
+        {% for amenity in branch.get('amenities', []) %}
+        <li style="padding: 5px 0;"><i class="fas fa-check-circle" style="color: #2d9cdb;"></i> {{ amenity }}</li>
+        {% endfor %}
+      {% endif %}
+    </ul>
+  </div>
+</div>
+
+<!-- Rooms Section -->
+<section class="rooms-section">
+  <div class="container">
+    <h2 style="text-align: center; font-family: 'Playfair Display', serif; font-size: 2.5rem; color: #1a365d; margin-bottom: 40px;">
+      Available Rooms at {{ branch.branch_name if branch.branch_name else branch.get('branch_name', 'this Branch') }}
+    </h2>
+
+    {% if rooms %}
+    <div class="rooms-grid">
+      {% for room in rooms %}
+      <div class="room-card">
+        <div class="room-image">
+          {% if room.room_type == 'vip' %}👑
+          {% elif room.room_type == 'couple' %}💑
+          {% elif room.room_type == 'family' %}👨‍👩‍👧‍👦
+          {% elif room.room_type == 'double' %}🛏️
+          {% else %}🛏️{% endif %}
+        </div>
+        <div class="room-content">
+          <h3 style="font-size: 1.4rem; color: #1a365d; margin-bottom: 10px;">{{ room.name }}</h3>
+          <p style="color: #666; margin-bottom: 10px;">
+            <i class="fas fa-users"></i> Capacity: {{ room.capacity }} {{ 'guest' if room.capacity == 1 else 'guests' }}
+          </p>
+          {% if room.room_type %}
+          <p style="color: #666; margin-bottom: 15px;">
+            <i class="fas fa-tag"></i> Type: {{ room.room_type|title }}
+          </p>
+          {% endif %}
+          <div class="room-price">₹{{ room.price }}/night</div>
+          <div style="margin: 15px 0;">
+            <span class="badge badge-success">
+              <i class="fas fa-check-circle"></i> {{ room.availability|title if room.availability else 'Available' }}
+            </span>
+          </div>
+          <a href="{{ url_for('book_room', room_id=room.room_id) }}" class="btn-primary btn-block" style="margin-top: 15px; text-align: center; text-decoration: none; display: block;">
+            <i class="fas fa-book"></i> Book Now
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 15px;">
+      <i class="fas fa-bed" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+      <h3 style="color: #666; margin-bottom: 10px;">No rooms available</h3>
+      <p style="color: #999;">Check back later for room availability at this branch.</p>
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="{{ url_for('rooms', branch_id=branch.branch_id if branch.branch_id else branch.get('branch_id', '')) }}" class="btn-primary btn-large">
+        <i class="fas fa-search"></i> View All Rooms
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

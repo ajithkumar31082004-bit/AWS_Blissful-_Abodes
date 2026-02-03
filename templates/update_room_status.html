@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Update Room Status{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-door-open"></i> Update Room Status</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Room:</strong> {{ room.name }}<br>
+                        <strong>Location:</strong> {{ room.location }}<br>
+                        <strong>Current Status:</strong> {{ room.availability }}
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>New Status:</strong></label>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="availability" value="available" id="available" 
+                                    {% if room.availability == 'available' %}checked{% endif %} required>
+                                <label class="form-check-label" for="available">
+                                    <i class="fas fa-check-circle text-success"></i> Available
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="availability" value="occupied" id="occupied"
+                                    {% if room.availability == 'occupied' %}checked{% endif %}>
+                                <label class="form-check-label" for="occupied">
+                                    <i class="fas fa-user text-warning"></i> Occupied
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="availability" value="unavailable" id="unavailable"
+                                    {% if room.availability == 'unavailable' %}checked{% endif %}>
+                                <label class="form-check-label" for="unavailable">
+                                    <i class="fas fa-ban text-danger"></i> Unavailable
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="availability" value="cleaning" id="cleaning"
+                                    {% if room.availability == 'cleaning' %}checked{% endif %}>
+                                <label class="form-check-label" for="cleaning">
+                                    <i class="fas fa-broom text-info"></i> Cleaning
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="availability" value="maintenance" id="maintenance"
+                                    {% if room.availability == 'maintenance' %}checked{% endif %}>
+                                <label class="form-check-label" for="maintenance">
+                                    <i class="fas fa-tools text-secondary"></i> Maintenance
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Status
+                            </button>
+                            <a href="{{ url_for('staff_dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
