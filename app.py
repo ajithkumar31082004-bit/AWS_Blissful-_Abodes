@@ -18,6 +18,7 @@ LANGUAGES = {"en": "English", "hi": "Hindi"}
 import boto3
 from datetime import datetime, timedelta
 import uuid
+import random
 from functools import wraps
 import os
 
@@ -32,6 +33,7 @@ import json
 try:
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+
     OPENPYXL_AVAILABLE = True
 except ImportError:
     OPENPYXL_AVAILABLE = False
@@ -453,13 +455,13 @@ def init_sample_rooms():
 def create_inline_sample_rooms():
     """Create sample rooms inline if populate_rooms.py is not available"""
     try:
-        # Check if rooms already exist
+        # Check if rooms already exist - limit to 150
         existing_rooms = get_all_rooms()
-        if len(existing_rooms) > 50:
+        if len(existing_rooms) >= 150:
             print(f"Rooms already exist ({len(existing_rooms)}), skipping population")
             return
 
-        print("Creating 100+ sample Indian rooms...")
+        print("Creating 150 sample rooms...")
 
         cities = [
             "Mumbai, Maharashtra",
@@ -467,22 +469,26 @@ def create_inline_sample_rooms():
             "Bangalore, Karnataka",
             "Goa",
             "Chennai, Tamil Nadu",
+            "Jaipur, Rajasthan",
+            "Kochi, Kerala",
+            "Hyderabad, Telangana",
         ]
 
         room_count = 0
 
-        # Single Rooms (20 instead of 30)
-        for i in range(1, 21):
+        # 1. Single Rooms (60 rooms)
+        for i in range(1, 61):
             city = cities[i % len(cities)]
+            price = random.randint(2000, 5000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"Single Room {i:03d}",
                 "location": city,
-                "price": float(3999 + ((i - 1) % 6) * 1000),
+                "price": float(price),
                 "capacity": 1,
                 "amenities": ["WiFi", "TV", "AC", "Work Desk", "Private Bathroom"],
-                "availability": "available" if i % 10 != 0 else "unavailable",
-                "image": get_room_image_url("single", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.2 else "unavailable",
+                "image": get_room_image_url("single", i - 1),
                 "room_type": "single",
                 "virtual_tour_360_url": get_360_tour_image("single", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -490,14 +496,15 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Double Rooms (15 instead of 30)
-        for i in range(1, 16):
+        # 2. Double Rooms (50 rooms)
+        for i in range(1, 51):
             city = cities[(i + 1) % len(cities)]
+            price = random.randint(5000, 10000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"Double Room {i:03d}",
                 "location": city,
-                "price": float(5999 + ((i - 1) % 10) * 1000),
+                "price": float(price),
                 "capacity": 2,
                 "amenities": [
                     "Double Bed",
@@ -508,8 +515,8 @@ def create_inline_sample_rooms():
                     "Private Bathroom",
                     "Coffee Maker",
                 ],
-                "availability": "available" if i % 8 != 0 else "unavailable",
-                "image": get_room_image_url("double", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.2 else "unavailable",
+                "image": get_room_image_url("double", i - 1),
                 "room_type": "double",
                 "virtual_tour_360_url": get_360_tour_image("double", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -517,15 +524,16 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Family Suites (10 instead of 20)
-        for i in range(1, 11):
-            beds = 3 + (i % 3)
+        # 3. Family Suites (30 rooms)
+        for i in range(1, 31):
+            beds = 3 + (i % 2)  # 3 or 4 beds
             city = cities[(i + 2) % len(cities)]
+            price = random.randint(10000, 20000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"Family Suite {i:03d} ({beds} Beds)",
                 "location": city,
-                "price": float(8999 + ((i - 1) % 10) * 1500 + (beds * 1000)),
+                "price": float(price),
                 "capacity": 2 * beds,
                 "amenities": [
                     f"{beds} Queen Beds",
@@ -534,11 +542,10 @@ def create_inline_sample_rooms():
                     "AC",
                     "Kitchenette",
                     "Two Bathrooms",
-                    "Sofa Bed",
                     "Dining Area",
                 ],
-                "availability": "available" if i % 7 != 0 else "unavailable",
-                "image": get_room_image_url("family", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.3 else "unavailable",
+                "image": get_room_image_url("family", i - 1),
                 "room_type": "family",
                 "virtual_tour_360_url": get_360_tour_image("family", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -546,19 +553,16 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-        # Couple/Romantic Rooms (5 instead of 10)
-        romantic_names = [
-            "Honeymoon Suite",
-            "Romantic Retreat",
-            "Lovers Paradise",
-        ]
-        for i in range(1, 6):
+        # 4. Couple/Romantic Rooms (10 rooms)
+        romantic_names = ["Honeymoon Suite", "Romantic Retreat", "Lovers Paradise"]
+        for i in range(1, 11):
             city = cities[(i + 3) % len(cities)]
+            price = random.randint(12000, 25000)
             room = {
                 "room_id": str(uuid.uuid4()),
                 "name": f"{romantic_names[i % len(romantic_names)]} {i:02d}",
                 "location": city,
-                "price": float(12999 + ((i - 1) % 8) * 2000),
+                "price": float(price),
                 "capacity": 2,
                 "amenities": [
                     "King Bed",
@@ -566,13 +570,12 @@ def create_inline_sample_rooms():
                     "Smart TV",
                     "AC",
                     "Jacuzzi",
-                    "Champagne Bucket",
                     "Romantic Decor",
                     "Balcony",
                     "Premium Toiletries",
                 ],
-                "availability": "available" if i % 6 != 0 else "unavailable",
-                "image": get_room_image_url("couple", i - 1),  # Open-source room image
+                "availability": "available" if random.random() > 0.2 else "unavailable",
+                "image": get_room_image_url("couple", i - 1),
                 "room_type": "couple",
                 "virtual_tour_360_url": get_360_tour_image("couple", i - 1),
                 "created_at": datetime.now().isoformat(),
@@ -580,44 +583,7 @@ def create_inline_sample_rooms():
             add_room(room)
             room_count += 1
 
-            # VIP/Presidential Suites (0 - removed to keep total at 50)
-            # Removed to maintain exactly 50 rooms
-            city = cities[(i + 4) % len(cities)]
-            room = {
-                "room_id": str(uuid.uuid4()),
-                "name": f"{vip_names[i % len(vip_names)]} {i:02d}",
-                "location": city,
-                "price": float(39999 + ((i - 1) % 10) * 7000),
-                "capacity": 4 + (i % 3),
-                "amenities": [
-                    "Multiple King Beds",
-                    "High-speed WiFi",
-                    "Multiple Smart TVs",
-                    "Smart Home System",
-                    "Private Jacuzzi",
-                    "Wet Bar",
-                    "Full Kitchen",
-                    "Dining Room",
-                    "Living Area",
-                    "Butler Service",
-                    "Panoramic Views",
-                ],
-                "availability": "available" if i % 5 != 0 else "unavailable",
-                "image": get_room_image_url("vip", i - 1),  # Open-source room image
-                "room_type": "vip",
-                "virtual_tour_360_url": get_360_tour_image("vip", i - 1),
-                "created_at": datetime.now().isoformat(),
-            }
-            add_room(room)
-            room_count += 1
-
-        print(f"✓ Successfully created {room_count}+ sample rooms")
-        print(f"  • Single Rooms: 30 (₹3,999 - ₹9,999)")
-        print(f"  • Double Rooms: 30 (₹5,999 - ₹15,999)")
-        print(f"  • Family Suites: 20 (₹8,999 - ₹24,999)")
-        print(f"  • Couple Rooms: 10 (₹12,999 - ₹29,999)")
-        print(f"  • VIP Suites: 10 (₹39,999 - ₹111,999)")
-        print(f"  TOTAL: {room_count}+ rooms across {len(cities)} Indian cities\n")
+        print(f"Successfully initialized {room_count} rooms in database")
 
     except Exception as e:
         print(f"Error creating inline sample rooms: {e}")
@@ -3534,12 +3500,22 @@ def generate_system_report():
         bookings = get_all_bookings()
 
         # Calculate revenue metrics
-        total_revenue = sum(float(b.get("total_price", 0)) for b in bookings if b.get("payment_status") == "paid")
-        pending_revenue = sum(float(b.get("total_price", 0)) for b in bookings if b.get("payment_status") == "pending")
+        total_revenue = sum(
+            float(b.get("total_price", 0))
+            for b in bookings
+            if b.get("payment_status") == "paid"
+        )
+        pending_revenue = sum(
+            float(b.get("total_price", 0))
+            for b in bookings
+            if b.get("payment_status") == "pending"
+        )
         avg_booking_value = total_revenue / len(bookings) if len(bookings) > 0 else 0
 
         # Calculate occupancy
-        occupied_rooms = len([r for r in rooms if r.get("availability") == "unavailable"])
+        occupied_rooms = len(
+            [r for r in rooms if r.get("availability") == "unavailable"]
+        )
         occupancy_rate = (occupied_rooms / len(rooms) * 100) if len(rooms) > 0 else 0
 
         # Generate filename with timestamp
@@ -3548,20 +3524,29 @@ def generate_system_report():
 
         if OPENPYXL_AVAILABLE:
             wb = openpyxl.Workbook()
-            
+
             # Summary Sheet
             ws_summary = wb.active
             ws_summary.title = "Summary"
-            
-            title_font = Font(name='Arial', size=14, bold=True, color='1A365D')
-            header_font = Font(name='Arial', size=11, bold=True, color='FFFFFF')
-            header_fill = PatternFill(start_color='1A365D', end_color='1A365D', fill_type='solid')
-            border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
-            
-            ws_summary['A1'] = "BLISSFUL ABODES SYSTEM REPORT"
-            ws_summary['A1'].font = title_font
-            ws_summary['A2'] = f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            
+
+            title_font = Font(name="Arial", size=14, bold=True, color="1A365D")
+            header_font = Font(name="Arial", size=11, bold=True, color="FFFFFF")
+            header_fill = PatternFill(
+                start_color="1A365D", end_color="1A365D", fill_type="solid"
+            )
+            border = Border(
+                left=Side(style="thin"),
+                right=Side(style="thin"),
+                top=Side(style="thin"),
+                bottom=Side(style="thin"),
+            )
+
+            ws_summary["A1"] = "BLISSFUL ABODES SYSTEM REPORT"
+            ws_summary["A1"].font = title_font
+            ws_summary["A2"] = (
+                f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+
             summary_data = [
                 ["Metric", "Value"],
                 ["Total Users", len(users)],
@@ -3572,7 +3557,7 @@ def generate_system_report():
                 ["Pending Revenue", f"₹{pending_revenue:,.2f}"],
                 ["Avg Booking Value", f"₹{avg_booking_value:,.2f}"],
             ]
-            
+
             for r_idx, row in enumerate(summary_data, 4):
                 for c_idx, val in enumerate(row, 1):
                     cell = ws_summary.cell(row=r_idx, column=c_idx, value=val)
@@ -3589,13 +3574,21 @@ def generate_system_report():
                 cell.font = header_font
                 cell.fill = header_fill
                 cell.border = border
-            
+
             for r_idx, user in enumerate(users, 2):
-                ws_users.cell(row=r_idx, column=1, value=user.get("name", "N/A")).border = border
-                ws_users.cell(row=r_idx, column=2, value=user.get("email", "N/A")).border = border
-                ws_users.cell(row=r_idx, column=3, value=user.get("role", "N/A")).border = border
-                ws_users.cell(row=r_idx, column=4, value=user.get("age", "N/A")).border = border
-            
+                ws_users.cell(
+                    row=r_idx, column=1, value=user.get("name", "N/A")
+                ).border = border
+                ws_users.cell(
+                    row=r_idx, column=2, value=user.get("email", "N/A")
+                ).border = border
+                ws_users.cell(
+                    row=r_idx, column=3, value=user.get("role", "N/A")
+                ).border = border
+                ws_users.cell(
+                    row=r_idx, column=4, value=user.get("age", "N/A")
+                ).border = border
+
             # Rooms Sheet
             ws_rooms = wb.create_sheet("Rooms")
             headers = ["Room Name", "Location", "Price", "Status"]
@@ -3604,12 +3597,20 @@ def generate_system_report():
                 cell.font = header_font
                 cell.fill = header_fill
                 cell.border = border
-            
+
             for r_idx, room in enumerate(rooms, 2):
-                ws_rooms.cell(row=r_idx, column=1, value=room.get("name", "N/A")).border = border
-                ws_rooms.cell(row=r_idx, column=2, value=room.get("location", "N/A")).border = border
-                ws_rooms.cell(row=r_idx, column=3, value=room.get("price", 0)).border = border
-                ws_rooms.cell(row=r_idx, column=4, value=room.get("availability", "N/A")).border = border
+                ws_rooms.cell(
+                    row=r_idx, column=1, value=room.get("name", "N/A")
+                ).border = border
+                ws_rooms.cell(
+                    row=r_idx, column=2, value=room.get("location", "N/A")
+                ).border = border
+                ws_rooms.cell(
+                    row=r_idx, column=3, value=room.get("price", 0)
+                ).border = border
+                ws_rooms.cell(
+                    row=r_idx, column=4, value=room.get("availability", "N/A")
+                ).border = border
 
             # Bookings Sheet
             ws_bookings = wb.create_sheet("Bookings")
@@ -3619,19 +3620,36 @@ def generate_system_report():
                 cell.font = header_font
                 cell.fill = header_fill
                 cell.border = border
-            
+
             for r_idx, b in enumerate(bookings, 2):
-                ws_bookings.cell(row=r_idx, column=1, value=b.get("guest_name", "N/A")).border = border
-                ws_bookings.cell(row=r_idx, column=2, value=b.get("room_id", "N/A")).border = border
-                ws_bookings.cell(row=r_idx, column=3, value=b.get("check_in", "N/A")).border = border
-                ws_bookings.cell(row=r_idx, column=4, value=b.get("check_out", "N/A")).border = border
-                ws_bookings.cell(row=r_idx, column=5, value=float(b.get("total_price", 0))).border = border
-                ws_bookings.cell(row=r_idx, column=6, value=b.get("status", "N/A")).border = border
+                ws_bookings.cell(
+                    row=r_idx, column=1, value=b.get("guest_name", "N/A")
+                ).border = border
+                ws_bookings.cell(
+                    row=r_idx, column=2, value=b.get("room_id", "N/A")
+                ).border = border
+                ws_bookings.cell(
+                    row=r_idx, column=3, value=b.get("check_in", "N/A")
+                ).border = border
+                ws_bookings.cell(
+                    row=r_idx, column=4, value=b.get("check_out", "N/A")
+                ).border = border
+                ws_bookings.cell(
+                    row=r_idx, column=5, value=float(b.get("total_price", 0))
+                ).border = border
+                ws_bookings.cell(
+                    row=r_idx, column=6, value=b.get("status", "N/A")
+                ).border = border
 
             buffer = BytesIO()
             wb.save(buffer)
             buffer.seek(0)
-            return send_file(buffer, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", as_attachment=True, download_name=filename)
+            return send_file(
+                buffer,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                as_attachment=True,
+                download_name=filename,
+            )
 
         # Fallback to CSV
         output = StringIO()
@@ -3645,11 +3663,13 @@ def generate_system_report():
         writer.writerow(["Total Rooms", len(rooms)])
         writer.writerow(["Total Bookings", len(bookings)])
         writer.writerow(["Total Revenue", total_revenue])
-        
+
         output.seek(0)
         response = make_response(output.getvalue())
         response.headers["Content-Type"] = "text/csv"
-        response.headers["Content-Disposition"] = f"attachment; filename={filename.replace('.xlsx', '.csv')}"
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename={filename.replace('.xlsx', '.csv')}"
+        )
         return response
 
     except Exception as e:
