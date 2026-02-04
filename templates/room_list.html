@@ -636,7 +636,7 @@ endblock %} {% block extra_css %}
             <div
                 class="room-card"
                 data-room-id="{{ room.room_id }}"
-                data-price="{{ room.price }}"
+                data-price="{{ room.price if room.price else 0 }}"
                 data-name="{{ room.name }}"
                 data-available="{{ room.availability == 'available' }}"
                 data-capacity="{{ room.capacity|default(1) }}"
@@ -695,7 +695,7 @@ endblock %} {% block extra_css %}
                     </div>
 
                     <div class="room-price">
-                        ₹{{ "%.2f"|format(room.price) }}
+                        ₹{{ "%.2f"|format(room.price if room.price else 0) }}
                         <small>/night</small>
                     </div>
 
