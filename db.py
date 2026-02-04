@@ -2136,7 +2136,6 @@ def populate_rooms_with_images():
         ("Bangalore, Karnataka", "BLISS-BLR"),
         ("Chennai, Tamil Nadu", "BLISS-CHE"),
         ("Goa", "BLISS-GOA"),
-        ("Jaipur, Rajasthan", "BLISS-JPR"),
     ]
 
     room_count = 0
