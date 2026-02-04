@@ -58,7 +58,7 @@ except Exception as e:
     AWS_AVAILABLE = False
 
 # SNS Topic ARN
-SNS_TOPIC_ARN = f"arn:aws:sns:us-east-1:491694398940:blissful-abodes-notifications:cd590201-8b3c-4eab-ad55-db9988652de2"
+SNS_TOPIC_ARN = f"arn:aws:sns:us-east-1:545009838066:blissful-abodes-notifications:1cb87596-baa4-4492-a276-2e6a6dcdec42"
 
 # File Upload Configuration
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "static", "uploads")
