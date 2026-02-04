@@ -2154,7 +2154,7 @@ def populate_rooms_with_images():
             "room_type": "single",
             "location": city_name,
             "branch_id": branch_id,
-            "price": 3999 + ((i - 1) % 6) * 1000,
+            "price": 2000 + ((i - 1) % 6) * 500,
             "capacity": 1,
             "amenities": ["WiFi", "TV", "AC", "Work Desk", "Private Bathroom"],
             "availability": "available" if i % 10 != 0 else "unavailable",
