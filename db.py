@@ -1861,8 +1861,18 @@ def get_past_bookings(user_id):
                 # Include if status is completed/cancelled even without date
                 past_bookings.append(booking)
         except (ValueError, TypeError, AttributeError) as e:
-            print(f"Error parsing past booking date: {e}")
-            pass
+            # Try alternate date format if YYYY-MM-DD fails
+            try:
+                if check_out_str:
+                    check_out = datetime.strptime(check_out_str, "%d/%m/%Y").date()
+                    if check_out < today or booking.get("status") in [
+                        "completed",
+                        "cancelled",
+                    ]:
+                        past_bookings.append(booking)
+            except Exception:
+                print(f"Error parsing past booking date '{check_out_str}': {e}")
+                pass
 
     return sorted(past_bookings, key=lambda x: x.get("check_out", ""), reverse=True)
 
@@ -1882,8 +1892,15 @@ def get_upcoming_bookings(user_id):
                 if check_in >= today and booking.get("status") == "confirmed":
                     upcoming_bookings.append(booking)
         except (ValueError, TypeError, AttributeError) as e:
-            print(f"Error parsing upcoming booking date: {e}")
-            pass
+            # Try alternate date format if YYYY-MM-DD fails
+            try:
+                if check_in_str:
+                    check_in = datetime.strptime(check_in_str, "%d/%m/%Y").date()
+                    if check_in >= today and booking.get("status") == "confirmed":
+                        upcoming_bookings.append(booking)
+            except Exception:
+                print(f"Error parsing upcoming booking date '{check_in_str}': {e}")
+                pass
 
     return sorted(upcoming_bookings, key=lambda x: x.get("check_in", ""))
 
