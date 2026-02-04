@@ -2133,18 +2133,8 @@ def populate_rooms_with_images():
         ("Mumbai, Maharashtra", "BLISS-MUM"),
         ("New Delhi, Delhi", "BLISS-DEL"),
         ("Bangalore, Karnataka", "BLISS-BLR"),
-        ("Kolkata, West Bengal", None),
-        ("Chennai, Tamil Nadu", None),
-        ("Hyderabad, Telangana", None),
         ("Goa", "BLISS-GOA"),
-        ("Jaipur, Rajasthan", "BLISS-JPR"),
-        ("Shimla, Himachal Pradesh", None),
-        ("Kochi, Kerala", None),
-        ("Agra, Uttar Pradesh", None),
-        ("Varanasi, Uttar Pradesh", None),
-        ("Pune, Maharashtra", None),
-        ("Ahmedabad, Gujarat", None),
-        ("Lucknow, Uttar Pradesh", None),
+        ("Chennai, Tamil Nadu", "BLISS-CHE"),
     ]
 
     room_count = 0
